@@ -1,24 +1,33 @@
 {
-  "name": "hagen",
-  "version": "1.0.0",
-  "description": "A colorful logger for JS in Node and in the Browser",
-  "keywords": ["log", "logger", "logging", "node", "browser", "colorful", "color", "colors"],
-  "main": "hagen.js",
-  "repository": "https://github.com/github:j0hnm4r5/hagen",
-  "author": "John Mars <john@M4R5.io> (http://M4R5.io)",
-  "license": "MIT",
-  "private": false,
-  "dependencies": {
-    "chalk": "^2.4.1"
-  },
-  "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-core": "^6.26.3",
-    "babel-preset-env": "^1.7.0",
-    "prettier": "^1.12.1",
-    "xo": "^0.21.0"
-  },
-  "prettier": {
+	"name": "hagen",
+	"version": "1.0.1",
+	"description": "A colorful logger for JS in Node and in the Browser",
+	"keywords": [
+		"log",
+		"logger",
+		"logging",
+		"node",
+		"browser",
+		"colorful",
+		"color",
+		"colors"
+	],
+	"main": "hagen.js",
+	"repository": "https://github.com/github:j0hnm4r5/hagen",
+	"author": "John Mars <john@M4R5.io> (http://M4R5.io)",
+	"license": "MIT",
+	"private": false,
+	"dependencies": {
+		"chalk": "^2.4.1"
+	},
+	"devDependencies": {
+		"babel": "^6.23.0",
+		"babel-core": "^6.26.3",
+		"babel-preset-env": "^1.7.0",
+		"prettier": "^1.12.1",
+		"xo": "^0.21.0"
+	},
+	"prettier": {
 		"printWidth": 92,
 		"tabWidth": 4,
 		"useTabs": true,
