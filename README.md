@@ -47,3 +47,6 @@ hagen.error("123", "This is bad.");
 ## Authors
 
 *   [John Mars](http://m4r5.io)
+## License
+
+MIT © John Mars
