@@ -2,7 +2,7 @@
   "name": "hagen",
   "version": "1.0.0",
   "description": "A colorful logger for JS in Node and in the Browser",
-  "keywords": ["log", "logger", "logging", "node", "browser", "colorful", "color", "colors"]
+  "keywords": ["log", "logger", "logging", "node", "browser", "colorful", "color", "colors"],
   "main": "hagen.js",
   "repository": "https://github.com/github:j0hnm4r5/hagen",
   "author": "John Mars <john@M4R5.io> (http://M4R5.io)",
