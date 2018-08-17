@@ -1,79 +1,41 @@
 {
-	"name": "hagen",
-	"version": "1.0.2",
-	"description": "A colorful logger for JS in Node and in the Browser",
-	"keywords": [
-		"log",
-		"logger",
-		"logging",
-		"node",
-		"browser",
-		"colorful",
-		"color",
-		"colors"
-	],
-	"main": "hagen.js",
-	"repository": "https://github.com/github:j0hnm4r5/hagen",
-	"author": "John Mars <john@M4R5.io> (http://M4R5.io)",
-	"license": "MIT",
-	"private": false,
-	"dependencies": {
-		"chalk": "^2.4.1"
-	},
-	"devDependencies": {
-		"babel": "^6.23.0",
-		"babel-core": "^6.26.3",
-		"babel-preset-env": "^1.7.0",
-		"prettier": "^1.12.1",
-		"xo": "^0.21.0"
-	},
-	"prettier": {
-		"printWidth": 92,
-		"tabWidth": 4,
-		"useTabs": true,
-		"semicolons": true,
-		"singleQuote": false,
-		"trailingComma": "es5",
-		"bracketSpacing": true,
-		"arrowParens": "always"
-	},
-	"babel": {
-		"presets": [
-			[
-				"env",
-				{
-					"targets": {
-						"node": "current",
-						"browsers": "Chrome >= 65"
-					}
-				}
-			]
-		]
-	},
-	"xo": {
-		"rules": {
-			"import/newline-after-import": "off",
-			"import/order": "off",
-			"import/first": "off",
-			"prefer-template": "warn",
-			"no-shadow": "error",
-			"no-warning-comments": "off",
-			"guard-for-in": "error",
-			"import/no-unassigned-import": "off",
-			"camelcase": [
-				"error",
-				{
-					"properties": "never"
-				}
-			]
-		},
-		"prettier": true,
-		"envs": [
-			"browser",
-			"node"
-		],
-		"globals": [
-			"_"
-		]
-	}
+    "name": "hagen",
+    "version": "1.0.2",
+    "description": "A colorful logger for JS in Node and in the Browser",
+    "keywords": [
+        "log",
+        "logger",
+        "logging",
+        "node",
+        "browser",
+        "colorful",
+        "color",
+        "colors"
+    ],
+    "main": "hagen.js",
+    "repository": "https://github.com/github:j0hnm4r5/hagen",
+    "author": "John Mars <john@M4R5.io> (http://M4R5.io)",
+    "license": "MIT",
+    "private": false,
+    "scripts": {
+        "test": "node ./test/test.js"
+    },
+    "dependencies": {
+        "chalk": "^2.4.1",
+        "detect-node": "^2.0.3"
+    },
+    "devDependencies": {
+        "babel": "^6.23.0",
+        "babel-eslint": "^8.2.6",
+        "babel-preset-env": "^1.7.0",
+        "eslint": "^5.3.0",
+        "eslint-config-airbnb-base": "^13.1.0",
+        "eslint-config-prettier": "^3.0.1",
+        "eslint-formatter-pretty": "^1.3.0",
+        "eslint-plugin-import": "^2.14.0",
+        "eslint-plugin-prettier": "^2.6.2",
+        "eslint-plugin-promise": "^3.8.0",
+        "eslint-plugin-unicorn": "^5.0.0",
+        "prettier": "^1.14.2"
+    }
 }
