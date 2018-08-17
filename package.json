@@ -18,7 +18,8 @@
     "license": "MIT",
     "private": false,
     "scripts": {
-        "test": "node ./test/test.js"
+        "test:node": "node ./test/node.js",
+        "test:browser": "parcel ./test/browser.html"
     },
     "dependencies": {
         "chalk": "^2.4.1",
@@ -36,6 +37,7 @@
         "eslint-plugin-prettier": "^2.6.2",
         "eslint-plugin-promise": "^3.8.0",
         "eslint-plugin-unicorn": "^5.0.0",
+        "parcel-bundler": "^1.9.7",
         "prettier": "^1.14.2"
     }
 }

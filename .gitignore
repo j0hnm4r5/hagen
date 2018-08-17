@@ -1,3 +1,5 @@
+.cache
+dist/ 
 
 # Created by https://www.gitignore.io/api/osx,node,linux,macos,windows,sublimetext,visualstudiocode
 

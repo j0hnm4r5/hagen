@@ -26,6 +26,6 @@ hagen.log(`COLOR`, `This is color 12`, 12);
 
 // test weirdness
 hagen.log(`COLOR`, `This is color -1`, -1);
-hagen.log(`COLOR`, `This is color -1`, 0.5);
+hagen.log(`COLOR`, `This is color 0.5`, 0.5);
 hagen.log(`COLOR`, `This is color ABC`, `ABC`);
 hagen.error(`COLOR`, `This is color ABC`, `ABC`);
