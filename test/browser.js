@@ -1,4 +1,4 @@
-import hagen from "../hagen";
+import hagen from '..';
 
 // test label colors
 hagen.log(`COMPONENT`, `Hello, World!`);

@@ -1,4 +1,4 @@
-const hagen = require(`../hagen`);
+const hagen = require(`../index`);
 
 // test label colors
 hagen.log(`COMPONENT`, `Hello, World!`);

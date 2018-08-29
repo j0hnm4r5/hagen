@@ -12,18 +12,18 @@
         "color",
         "colors"
     ],
-    "main": "hagen.js",
+    "main": "index.js",
     "repository": "https://github.com/github:j0hnm4r5/hagen",
     "author": "John Mars <john@M4R5.io> (http://M4R5.io)",
     "license": "MIT",
-    "private": false,
     "scripts": {
         "test:node": "node ./test/node.js",
         "test:browser": "parcel ./test/browser.html"
     },
     "dependencies": {
         "chalk": "^2.4.1",
-        "detect-node": "^2.0.3"
+        "detect-node": "^2.0.3",
+        "esm": "^3.0.80"
     },
     "devDependencies": {
         "babel": "^6.23.0",

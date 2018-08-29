@@ -6,10 +6,13 @@
  *
  */
 
-const chalk = require(`chalk`);
-const isNode = require(`detect-node`);
+import chalk from "chalk";
+// const chalk = require(`chalk`);
+import isNode from "detect-node";
+// const isNode = require(`detect-node`);
 
-const materialColors = require(`./utils/gColors`);
+import materialColors from "./utils/gColors";
+// const materialColors = require(`./utils/gColors`);
 
 const textColors = Object.freeze({
     LIGHT: materialColors.gray[50],
@@ -34,7 +37,6 @@ const colors = [
 
 // Writes to console colored text, from the passed-in logger
 function logg(logger, color, label, message) {
-    // TODO: Try to get rid of the if...else, and just have a uniform logging method
     if (isNode) {
         logger(
             chalk
