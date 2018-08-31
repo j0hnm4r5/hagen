@@ -8,10 +8,11 @@
 
 // ========= IMPORTS =========
 
-const isNode = require(`detect-node`);
+const isNode = require("detect-node");
+const chalk = require("chalk");
 
 // ========= COLORS =========
-const colorList = require(`./utils/colors`);
+const colorList = require("./utils/colors");
 
 const textColors = Object.freeze({
 	LIGHT: colorList.gray[50],
@@ -39,7 +40,6 @@ const colors = [
 // Writes to console colored text, from the passed-in logger
 function logg(logger, color, label, message) {
 	if (isNode) {
-		const chalk = require(`chalk`);
 		logger(
 			chalk
 				.bgHex(color.bg)

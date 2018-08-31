@@ -1,26 +1,25 @@
 {
-    "env": {
-        "browser": true,
-        "node": true
-    },
-    "extends": [
-        "airbnb-base",
-        "plugin:promise/recommended",
-        "plugin:unicorn/recommended",
-        "plugin:prettier/recommended"
-    ],
-    "plugins": ["import", "promise", "unicorn"],
-    "rules": {
-        "prettier/prettier": "error",
-        "quotes": ["error", "backtick"],
-        "no-console": "off",
-        "no-plusplus": "off",
-        "prefer-const": "error",
-        "prefer-template": "error",
-        "import/first": "off",
-        "unicorn/filename-case": "off",
-        "radix": "off",
-        "import/prefer-default-export": "off",
-        "no-use-before-define": "off"
-    }
+	"env": {
+		"browser": true,
+		"node": true
+	},
+	"extends": [
+		"airbnb-base",
+		"plugin:promise/recommended",
+		"plugin:unicorn/recommended",
+		"plugin:prettier/recommended"
+	],
+	"plugins": ["import", "promise", "unicorn"],
+	"rules": {
+		"prettier/prettier": "error",
+		"no-console": "off",
+		"no-plusplus": "off",
+		"prefer-const": "error",
+		"prefer-template": "error",
+		"import/first": "off",
+		"unicorn/filename-case": "off",
+		"radix": "off",
+		"import/prefer-default-export": "off",
+		"no-use-before-define": "off"
+	}
 }
