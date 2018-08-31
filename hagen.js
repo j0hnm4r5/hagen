@@ -11,27 +11,27 @@
 const isNode = require(`detect-node`);
 
 // ========= COLORS =========
-const materialColors = require(`./utils/gColors`);
+const colorList = require(`./utils/colors`);
 
 const textColors = Object.freeze({
-	LIGHT: materialColors.gray[50],
-	DARK: materialColors.gray[900],
+	LIGHT: colorList.gray[50],
+	DARK: colorList.gray[900],
 });
 
 const reservedColors = Object.freeze({
-	WARN: { bg: materialColors.gray[500], text: textColors.DARK },
-	ERROR: { bg: materialColors.gray[900], text: textColors.LIGHT },
+	WARN: { bg: colorList.gray[500], text: textColors.DARK },
+	ERROR: { bg: colorList.gray[900], text: textColors.LIGHT },
 });
 
 const colors = [
-	{ bg: materialColors.blue[500], text: textColors.LIGHT }, // blue
-	{ bg: materialColors.red[500], text: textColors.LIGHT }, // red
-	{ bg: materialColors.yellow[500], text: textColors.DARK }, // yellow
-	{ bg: materialColors.green[500], text: textColors.LIGHT }, // green
-	{ bg: materialColors.orange[500], text: textColors.LIGHT }, // orange
-	{ bg: materialColors.pink[500], text: textColors.LIGHT }, // pink
-	{ bg: materialColors.purple[500], text: textColors.LIGHT }, // purple
-	{ bg: materialColors.cyan[500], text: textColors.DARK }, // cyan
+	{ bg: colorList.blue[500], text: textColors.LIGHT }, // blue
+	{ bg: colorList.red[500], text: textColors.LIGHT }, // red
+	{ bg: colorList.yellow[500], text: textColors.DARK }, // yellow
+	{ bg: colorList.green[500], text: textColors.LIGHT }, // green
+	{ bg: colorList.orange[500], text: textColors.LIGHT }, // orange
+	{ bg: colorList.pink[500], text: textColors.LIGHT }, // pink
+	{ bg: colorList.purple[500], text: textColors.LIGHT }, // purple
+	{ bg: colorList.cyan[500], text: textColors.DARK }, // cyan
 ];
 
 // ========= HELPERS =========
