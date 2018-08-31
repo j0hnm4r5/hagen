@@ -12,7 +12,7 @@
         "color",
         "colors"
     ],
-    "main": "index.js",
+    "main": "hagen.js",
     "repository": "https://github.com/github:j0hnm4r5/hagen",
     "author": "John Mars <john@M4R5.io> (http://M4R5.io)",
     "license": "MIT",
@@ -22,13 +22,9 @@
     },
     "dependencies": {
         "chalk": "^2.4.1",
-        "detect-node": "^2.0.3",
-        "esm": "^3.0.80"
+        "detect-node": "^2.0.3"
     },
     "devDependencies": {
-        "babel": "^6.23.0",
-        "babel-eslint": "^8.2.6",
-        "babel-preset-env": "^1.7.0",
         "eslint": "^5.3.0",
         "eslint-config-airbnb-base": "^13.1.0",
         "eslint-config-prettier": "^3.0.1",
