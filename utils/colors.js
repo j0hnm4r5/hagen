@@ -1,4 +1,4 @@
-const gColors = {
+const colors = {
 	blue: {
 		50: `#e8f0fe`,
 		100: `#d2e3fc`,
@@ -85,6 +85,6 @@ const gColors = {
 	},
 };
 
-gColors.gray = gColors.grey;
+colors.gray = colors.grey;
 
-module.exports = gColors;
+module.exports = colors;

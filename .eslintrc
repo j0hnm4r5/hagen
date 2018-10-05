@@ -12,6 +12,7 @@
 	"plugins": ["import", "promise", "unicorn"],
 	"rules": {
 		"prettier/prettier": "error",
+		"quotes": ["error", "backtick"],
 		"no-console": "off",
 		"no-plusplus": "off",
 		"prefer-const": "error",
