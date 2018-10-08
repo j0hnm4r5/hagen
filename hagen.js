@@ -8,8 +8,8 @@
 
 // ========= IMPORTS =========
 
-const isNode = require(`detect-node`);
-const chalk = require(`chalk`);
+const isNode = require("detect-node"); // eslint-disable-line quotes
+const chalk = require("chalk"); // eslint-disable-line quotes
 
 // ========= COLORS =========
 const colorList = require(`./utils/colors`);
