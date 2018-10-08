@@ -12,7 +12,7 @@ const isNode = require("detect-node"); // eslint-disable-line quotes
 const chalk = require("chalk"); // eslint-disable-line quotes
 
 // ========= COLORS =========
-const colorList = require(`./utils/colors`);
+const colorList = require("./utils/colors"); // eslint-disable-line quotes
 
 const textColors = Object.freeze({
 	LIGHT: colorList.gray[50],
