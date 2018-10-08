@@ -42,13 +42,36 @@ const colors = [
 function logg(logger, color, label, message) {
 	if (isNode) {
 		// if using node.js
-		logger(
-			chalk
-				.bgHex(color.bg)
-				.hex(color.text)
-				.bold(` ${label} `),
-			`${message}`
-		);
+		switch (typeof message) {
+			case `object`:
+				// if the message is an object
+				logger(
+					chalk
+						.bgHex(color.bg)
+						.hex(color.text)
+						.bold(` ${label} `),
+					`${JSON.stringify(message)}`
+				);
+				break;
+			case `undefined`:
+				// if there is no message
+				logger(
+					chalk
+						.bgHex(color.bg)
+						.hex(color.text)
+						.bold(` ${label} `)
+				);
+				break;
+			default:
+				logger(
+					chalk
+						.bgHex(color.bg)
+						.hex(color.text)
+						.bold(` ${label} `),
+					`${message}`
+				);
+				break;
+		}
 	} else {
 		// if using the browser
 		switch (typeof message) {
