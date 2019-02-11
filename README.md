@@ -2,7 +2,7 @@
 
 ![](https://github.com/j0hnm4r5/hagen/raw/master/assets/screenshot.png)
 
-A colorful logger for JS in Node and in the Browser (ES6 only). Named after Hagen, the colorful Lumberjack from [Synthie Forest](https://vimeo.com/90995716).
+A colorful logger for JS in Node, Electron, and in the Browser (ES6 only). Named after Hagen, the colorful Lumberjack from [Synthie Forest](https://vimeo.com/90995716).
 
 ## Getting Started
 

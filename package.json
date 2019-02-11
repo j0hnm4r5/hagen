@@ -18,13 +18,15 @@
 	"license": "MIT",
 	"scripts": {
 		"test:node": "node ./test/node.js",
-		"test:browser": "parcel ./test/browser.html"
+		"test:browser": "parcel ./test/browser.html",
+		"test:electron": "electron ./test/electron.js"
 	},
 	"dependencies": {
 		"chalk": "^2.4.1",
-		"detect-node": "^2.0.3"
+		"detect-browser": "^4.1.0"
 	},
 	"devDependencies": {
+		"electron": "^4.0.4",
 		"eslint": "^5.3.0",
 		"eslint-config-airbnb-base": "^13.1.0",
 		"eslint-config-prettier": "^3.0.1",
@@ -33,7 +35,7 @@
 		"eslint-plugin-prettier": "^2.6.2",
 		"eslint-plugin-promise": "^3.8.0",
 		"eslint-plugin-unicorn": "^5.0.0",
-		"parcel-bundler": "^1.9.7",
+		"parcel-bundler": "^1.11.0",
 		"prettier": "^1.14.2"
 	}
 }

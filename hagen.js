@@ -8,7 +8,7 @@
 
 // ========= IMPORTS =========
 
-const isNode = require("detect-node"); // eslint-disable-line quotes
+const isBrowser = require("detect-browser").detect(); // eslint-disable-line quotes
 const chalk = require("chalk"); // eslint-disable-line quotes
 
 // ========= COLORS =========
@@ -40,7 +40,7 @@ const colors = [
 
 // Writes to console colored text, from the passed-in logger
 function logg(logger, color, label, message) {
-	if (isNode) {
+	if (isBrowser.name === `node`) {
 		// if using node.js
 		switch (typeof message) {
 			case `object`:
