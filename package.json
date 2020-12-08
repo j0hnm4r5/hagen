@@ -1,6 +1,6 @@
 {
 	"name": "hagen",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"description": "A colorful logger for JS in Node and in the Browser",
 	"keywords": [
 		"log",
@@ -16,6 +16,7 @@
 	"repository": "https://github.com/github:j0hnm4r5/hagen",
 	"author": "John Mars <john@M4R5.io> (http://M4R5.io)",
 	"license": "MIT",
+	"types": "./types/hagen.d.ts",
 	"scripts": {
 		"generate-types": "npx -p typescript tsc hagen.js --declaration --allowJs --emitDeclarationOnly --outDir types",
 		"test:node": "node ./test/node.js",
