@@ -17,6 +17,7 @@
 	"author": "John Mars <john@M4R5.io> (http://M4R5.io)",
 	"license": "MIT",
 	"scripts": {
+		"generate-types": "npx -p typescript tsc hagen.js --declaration --allowJs --emitDeclarationOnly --outDir types",
 		"test:node": "node ./test/node.js",
 		"test:browser": "parcel ./test/browser.html",
 		"test:electron": "electron ./test/electron.js"
@@ -26,16 +27,9 @@
 		"detect-browser": "^4.1.0"
 	},
 	"devDependencies": {
+		"@j0hnm4r5/eslint-config": "^2.1.6",
 		"electron": "^4.0.4",
 		"eslint": "^5.3.0",
-		"eslint-config-airbnb-base": "^13.1.0",
-		"eslint-config-prettier": "^3.0.1",
-		"eslint-formatter-pretty": "^1.3.0",
-		"eslint-plugin-import": "^2.14.0",
-		"eslint-plugin-prettier": "^2.6.2",
-		"eslint-plugin-promise": "^3.8.0",
-		"eslint-plugin-unicorn": "^5.0.0",
-		"parcel-bundler": "^1.11.0",
-		"prettier": "^1.14.2"
+		"parcel-bundler": "^1.11.0"
 	}
 }

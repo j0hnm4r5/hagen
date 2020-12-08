@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require(`electron`);
+const {resolve} = require("path")
 
 function createWindow() {
 	// create browser window
@@ -11,7 +12,7 @@ function createWindow() {
 	});
 
 	// load the html file
-	win.loadFile(`/Users/jmars/Projects/Dev/hagen/test/electron.html`);
+	win.loadFile(resolve(__dirname, "electron.html"));
 
 	// open devtools
 	win.webContents.openDevTools();

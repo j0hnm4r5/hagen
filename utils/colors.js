@@ -35,7 +35,7 @@ const colors = {
 		800: `#137333`,
 		900: `#0d652d`,
 	},
-	grey: {
+	gray: {
 		50: `#f8f9fa`,
 		100: `#f1f3f4`,
 		200: `#e8eaed`,
@@ -84,7 +84,5 @@ const colors = {
 		900: `#007b83`,
 	},
 };
-
-colors.gray = colors.grey;
 
 module.exports = colors;

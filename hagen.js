@@ -8,11 +8,11 @@
 
 // ========= IMPORTS =========
 
-const isBrowser = require("detect-browser").detect(); // eslint-disable-line quotes
-const chalk = require("chalk"); // eslint-disable-line quotes
+const isBrowser = require("detect-browser").detect();
+const chalk = require("chalk");
 
 // ========= COLORS =========
-const colorList = require("./utils/colors"); // eslint-disable-line quotes
+const colorList = require("./utils/colors");
 
 const textColors = Object.freeze({
 	LIGHT: colorList.gray[50],
