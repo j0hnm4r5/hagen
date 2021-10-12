@@ -29,7 +29,7 @@
 	},
 	"devDependencies": {
 		"@j0hnm4r5/eslint-config": "^2.1.6",
-		"electron": "^4.0.4",
+		"electron": "^11.5.0",
 		"eslint": "^5.3.0",
 		"parcel-bundler": "^1.11.0"
 	}
