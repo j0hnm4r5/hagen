@@ -1,0 +1,10 @@
+[
+	{
+		"limit": "10 KB",
+		"path": "dist/hagen.cjs.production.min.js"
+	},
+	{
+		"limit": "10 KB",
+		"path": "dist/hagen.esm.js"
+	}
+]

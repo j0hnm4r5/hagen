@@ -1,36 +1,51 @@
 {
 	"name": "hagen",
-	"version": "1.5.1",
-	"description": "A colorful logger for JS in Node and in the Browser",
+	"version": "2.0.0",
+	"description": "A colorful logger for JS in Node and the Browser",
+	"author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
+	"repository": "https://github.com/github:j0hnm4r5/hagen",
+	"license": "MIT",
 	"keywords": [
-		"log",
 		"logger",
-		"logging",
 		"node",
 		"browser",
+		"console",
+		"reporter",
+		"print",
 		"colorful",
-		"color",
-		"colors"
+		"commonjs",
+		"elegant",
+		"beautiful"
 	],
-	"main": "hagen.js",
-	"repository": "https://github.com/github:j0hnm4r5/hagen",
-	"author": "John Mars <john@M4R5.io> (http://M4R5.io)",
-	"license": "MIT",
-	"types": "./types/hagen.d.ts",
+	"engines": {
+		"node": ">=10"
+	},
+	"files": [
+		"dist",
+		"src"
+	],
+	"main": "dist/index.js",
+	"module": "dist/hagen.esm.js",
+	"types": "dist/index.d.ts",
 	"scripts": {
-		"generate-types": "npx -p typescript tsc hagen.js --declaration --allowJs --emitDeclarationOnly --outDir types",
-		"test:node": "ts-node ./test/node.ts",
-		"test:browser": "parcel ./test/browser.html",
-		"test:electron": "electron ./test/electron.js"
+		"build": "tsdx build",
+		"lint": "eslint --fix src",
+		"prepare": "npm run build",
+		"size": "size-limit",
+		"analyze": "size-limit --why",
+		"start": "tsdx watch"
 	},
 	"dependencies": {
-		"chalk": "^4.1.2"
+		"chalk": "^4"
 	},
 	"devDependencies": {
+		"@size-limit/preset-small-lib": "^8.0.0",
+		"husky": "^8.0.1",
+		"size-limit": "^8.0.0",
+		"tsdx": "^0.14.1",
+		"tslib": "^2.4.0",
+		"typescript": "^4.7.4",
 		"@j0hnm4r5/eslint-config": "^2.1.8",
-		"@types/node": "^18.6.3",
-		"electron": "^19.0.10",
-		"parcel-bundler": "^1.11.0",
 		"@typescript-eslint/eslint-plugin": "^5.31.0",
 		"@typescript-eslint/parser": "^5.31.0",
 		"eslint": "^8.20.0",
@@ -39,9 +54,6 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-import": "^2.26.0",
 		"eslint-plugin-prettier": "^4.2.1",
-		"eslint-plugin-sort-keys-fix": "^1.1.2",
-		"prettier": "2.7.1",
-		"ts-node": "^10.9.1",
-		"typescript": "^4.7.4"
+		"prettier": "2.7.1"
 	}
 }
