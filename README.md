@@ -1,8 +1,8 @@
 # Hagen
 
-![](https://github.com/j0hnm4r5/hagen/raw/master/assets/screenshot.png)
+![](https://github.com/j0hnm4r5/hagen/raw/main/assets/screenshot.png)
 
-A colorful logger for JS/TS in Node and modern Browsers. Named after Hagen, the colorful Lumberjack from [Synthie Forest](https://vimeo.com/90995716).
+A colorful logger for JS/TS in Node and modern Browsers.
 
 ## Getting Started
 
@@ -20,7 +20,7 @@ The library is written in TypeScript, so types are available for autocomplete/In
 
 #### Importing
 
-`hagen` is exported as a CommonJS module. You can import it in your project like this:
+`hagen` is exported as both a CommonJS and ESM module. You can import it in your project like this:
 
 ##### Node (TypeScript via `ts-node` or `tsc`)
 
