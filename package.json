@@ -33,19 +33,15 @@
 		"prepare": "npm run build",
 		"size": "size-limit",
 		"analyze": "size-limit --why",
-		"start": "tsdx watch"
+		"start": "tsdx watch",
+		"release": "np"
 	},
 	"dependencies": {
 		"chalk": "^4"
 	},
 	"devDependencies": {
-		"@size-limit/preset-small-lib": "^8.0.0",
-		"husky": "^8.0.1",
-		"size-limit": "^8.0.0",
-		"tsdx": "^0.14.1",
-		"tslib": "^2.4.0",
-		"typescript": "^4.7.4",
 		"@j0hnm4r5/eslint-config": "^2.1.8",
+		"@size-limit/preset-small-lib": "^8.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.31.0",
 		"@typescript-eslint/parser": "^5.31.0",
 		"eslint": "^8.20.0",
@@ -54,6 +50,12 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-import": "^2.26.0",
 		"eslint-plugin-prettier": "^4.2.1",
-		"prettier": "2.7.1"
+		"husky": "^8.0.1",
+		"np": "^7.6.2",
+		"prettier": "2.7.1",
+		"size-limit": "^8.0.0",
+		"tsdx": "^0.14.1",
+		"tslib": "^2.4.0",
+		"typescript": "^4.7.4"
 	}
 }
