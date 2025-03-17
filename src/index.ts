@@ -5,7 +5,7 @@
  * https://vimeo.com/90995716
  */
 
-import chalk from "chalk";
+import { Chalk, ChalkInstance } from "chalk";
 import { isCI } from "std-env";
 
 // ========= TYPES =========
@@ -14,7 +14,7 @@ type Label =
 	| string
 	| {
 			label: string;
-			color: chalk.Chalk | number;
+			color: ChalkInstance | number;
 	  }
 	| {
 			label: string;
@@ -32,12 +32,12 @@ interface LoggerConfig {
 	showTimestamp: boolean;
 	colors: {
 		reserved: {
-			WARN: chalk.Chalk;
-			ERROR: chalk.Chalk;
-			INFO: chalk.Chalk;
-			SUCCESS: chalk.Chalk;
+			WARN: ChalkInstance;
+			ERROR: ChalkInstance;
+			INFO: ChalkInstance;
+			SUCCESS: ChalkInstance;
 		};
-		normal: chalk.Chalk[];
+		normal: ChalkInstance[];
 	};
 	fixedWidth?: {
 		width: number;
@@ -47,7 +47,7 @@ interface LoggerConfig {
 
 // ========= CONFIGURATION =========
 
-const customChalk = new chalk.Instance({ level: 3 });
+const customChalk = new Chalk({ level: 3 });
 
 // if the environment is CI, don't use color
 if (isCI) {
@@ -93,7 +93,7 @@ export function resetConfig(): void {
 /**
  * Returns a default color either based on a manual index or a hash of the label.
  */
-function calculateLabelColor(label: string): chalk.Chalk {
+function calculateLabelColor(label: string) {
 	const charSum = Array.from(label).reduce((sum, char) => sum + char.charCodeAt(0), 0);
 	return currentConfig.colors.normal[charSum % currentConfig.colors.normal.length];
 }
@@ -146,7 +146,7 @@ function fixedWidthFormat(
  */
 function print({ logger, label, message }: PrintParams): void {
 	// let labelString: string;
-	let color: chalk.Chalk;
+	let color: ChalkInstance;
 
 	let finalLabel: string = "•";
 

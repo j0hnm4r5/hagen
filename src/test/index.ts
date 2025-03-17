@@ -1,7 +1,7 @@
-import Chalk from "chalk";
+import { Chalk } from "chalk";
 import hagen, { resetConfig, setConfig } from "../index";
 
-const customChalk = new Chalk.Instance({ level: 3 });
+const customChalk = new Chalk({ level: 3 });
 
 export function test() {
 	hagen.log("Test", "This is a normal log message.");

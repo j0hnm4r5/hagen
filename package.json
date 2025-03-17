@@ -29,18 +29,18 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"visual:node": "tsx src/test/node.visualize.ts",
-		"visual:browser": "vite",
 		"visual:ci": "CI=true npm run visual:node",
+		"visual:browser": "vite",
 		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --minify",
 		"prepare": "npm run build",
-		"release": "np"
+		"release": "np --no-tests"
 	},
 	"dependencies": {
-		"chalk": "^5",
-		"std-env": "^3.8.1",
-		"vite": "^6.2.2"
+		"chalk": "^5.4.1",
+		"std-env": "^3.8.1"
 	},
 	"devDependencies": {
+		"vite": "^6.2.2",
 		"np": "^10.2.0",
 		"prettier": "3.5.3",
 		"tsup": "^8.4.0",
