@@ -1,6 +1,6 @@
 {
 	"name": "hagen",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"description": "A colorful logger for JS in Node and the Browser",
 	"author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
 	"repository": "github:j0hnm4r5/hagen",
