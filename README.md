@@ -2,93 +2,139 @@
 
 ![](https://github.com/j0hnm4r5/hagen/raw/main/assets/screenshot.png)
 
-A colorful logger for JS/TS in Node and modern Browsers.
+A colorful logger for JS/TS in Node and modern browsers.
 
-## Getting Started
+Hagen enhances your logging by extending `console.log`, `console.warn`, and `console.error` with colored labels that stay consistent between calls. It supports custom colors, fixed-width labels (with truncation/centering), timestamps, and automatic removal of colors in CI environments.
 
-### Installation
+## Features
 
-`npm i hagen` or `yarn add hagen`
+- **Consistent Coloring:**  
+  The label’s color is chosen from a list based on a hash of the label, so the same label always has the same color. You can also override this by passing a config object.
 
-### Usage
+- **Custom Colors:**  
+  Supply custom Chalk colors or manually define foreground/background colors.
 
-Hagen extends `console.log`, `console.warn`, and `console.error`. It takes two parameters: a string `label` and a `message`.
+- **Fixed-Width Labels:**  
+  Optionally specify a fixed width so that short labels are centered and long labels are truncated (with ellipses added).
 
-The label's color is chosen randomly from a list of terminal colors by analyzing the string. The color will remain the same every time you use the same label. You can additionally pass in an integer as a third parameter to manually select the color.
+- **Timestamping:**  
+  Optionally include a timestamp in your logs.
 
-The library is written in TypeScript, so types are available for autocomplete/Intellisense in both JS and TS.
+- **CI Support:**  
+  When running in CI environments (detected via [std-env](https://github.com/sindresorhus/std-env)), Hagen automatically disables colors and wraps labels in a border.
 
-#### Importing
+- **ESM & CommonJS:**  
+  Bundled with [tsup](https://github.com/egoist/tsup) to support both module systems along with TypeScript declarations and sourcemaps.
 
-`hagen` is exported as both a CommonJS and ESM module. You can import it in your project like this:
+## Installation
 
-##### Node (TypeScript via `ts-node` or `tsc`)
+Install via npm or yarn:
 
-```js
-import hagen from "hagen";
+```bash
+npm install hagen
+# or
+yarn add hagen
 ```
 
-##### Node (JavaScript)
+## Importing
+
+Hagen is exported as both ESM and CommonJS. Examples:
+
+### ESM
 
 ```js
-const hagen = require("hagen").default;
+import hagen, { setConfig } from "hagen";
+
+// or named imports if you prefer:
+import { log, info } from "hagen";
 ```
 
-##### Browser (Webpack/Parcel or frameworks like Next.js)
+### CommonJS
 
 ```js
-import hagen from "hagen";
+const hagen = require("hagen");
+
+// or destructuring:
+const { log, info } = require("hagen");
 ```
 
-##### Browser (Dev bundlers like Vite)
+## Usage Examples
+
+### Basic Logging
 
 ```js
-import hagen from "hagen";
+hagen.log("MY_LABEL", "Hello, World!"); // standard log
+hagen.info("MY_LABEL", "This is some unimportant info.");
+hagen.success("MY_LABEL", "You did it!");
+hagen.warn("MY_LABEL", "Something happened!");
+hagen.error("MY_LABEL", "This is bad.");
 ```
 
-Vite also needs to be configured with the following in `vite.config.js` to handle CommonJS modules:
+### Logging with Only a Label or Only a Message
 
 ```js
-import { defineConfig } from "vite";
-import { viteCommonjs } from "@originjs/vite-plugin-commonjs"; // <-- install this with `npm i @originjs/vite-plugin-commonjs`
+hagen.info("", "This is a blank label."); // no label, just message
+hagen.log("MY_LABEL"); // label only, no message
+```
 
-export default defineConfig({
-	plugins: [viteCommonjs()],
-	define: {
-		"process.env": process.env,
+### Logging Complex Objects
+
+```js
+hagen.log("DATA", { hello: "world", how: "are you?" });
+```
+
+### Using Custom Colors
+
+You can pass an object as the label to manually set colors. For example:
+
+```js
+// Using a custom chalk color index (from the default normal colors array)
+hagen.log({ label: "CUSTOM", color: 3 }, "Hello, custom color!");
+
+// Using a custom Chalk color directly:
+import chalk from "chalk";
+hagen.log(
+	{ label: "CUSTOM", color: chalk.bgHex("#ff00ff").hex("#000000") },
+	"Hello, custom color!"
+);
+
+// Using custom background and foreground colors:
+hagen.log({ label: "CUSTOM", bgColor: "#ff00ff", fgColor: "#000000" }, "Hello, custom color!");
+```
+
+### Configuring Hagen
+
+You can change settings (such as fixed label width and timestamp display) with the `setConfig` function.
+
+```js
+import { setConfig } from "hagen";
+
+// Enable timestamps and set a fixed width of 15 characters with middle truncation.
+setConfig({
+	showTimestamp: true,
+	fixedWidth: {
+		width: 15,
+		truncationMethod: "middle",
 	},
 });
 ```
 
-#### Commands
+### CI Environments and Color Removal
+
+Hagen uses [std-env](https://github.com/sindresorhus/std-env) to detect if it's running in a CI environment. In such cases, colors are disabled and labels are rendered in plain text wrapped in square brackets (e.g. `[ MY_LABEL ]`). This ensures that logs remain readable in environments where ANSI escape codes might not be supported.
+
+### Grouping Logs
+
+Hagen works seamlessly with `console.group`:
 
 ```js
-hagen.log("LABEL", "Hello, World!"); // normal log
-hagen.info("LABEL", "This is some unimportant info."); // info log
-hagen.success("LABEL", "You did it!"); // success log
-hagen.warn("LABEL", "Something happened!"); // warning log
-hagen.error("LABEL", "This is bad."); // error log
-
-hagen.info("", "This is a blank label."); // just the message, no label
-hagen.log("LABEL"); // just the label, no message
-
-hagen.log("LABEL", { hello: "world", how: "are you?" }); // object log
-hagen.log("LABEL", "Hello, World!", 3); // custom color
-
-// grouping
-console.group();
-hagen.log(`LEVEL 1`);
-console.group();
-hagen.log(`LEVEL 2`);
+console.group("Group Level 1");
+hagen.log("LEVEL 1", "This is level 1");
+console.group("Group Level 2");
+hagen.log("LEVEL 2", "This is level 2");
 console.groupEnd();
 console.groupEnd();
 ```
-
-#### VSCode
-
-In recent versions of VSCode the default minimum color-contrast ratio is set to 4.5; sometimes VSCode will automatically change the color of the label text to meet this requirement.
-
-To disable this, set `"terminal.integrated.minimumContrastRatio": 1,` in `settings.json`.
 
 ## Major Technologies
 

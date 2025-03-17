@@ -28,20 +28,21 @@
 	"module": "dist/hagen.esm.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "tsdx build",
+		"visual:node": "tsx src/test/node.visualize.ts",
+		"visual:browser": "vite",
+		"visual:ci": "CI=true npm run visual:node",
+		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --minify",
 		"lint": "eslint --fix src",
 		"prepare": "npm run build",
-		"size": "size-limit",
-		"analyze": "size-limit --why",
-		"start": "tsdx watch",
 		"release": "np"
 	},
 	"dependencies": {
-		"chalk": "^4"
+		"chalk": "^4",
+		"std-env": "^3.8.1",
+		"vite": "^6.2.2"
 	},
 	"devDependencies": {
 		"@j0hnm4r5/eslint-config": "^2.1.8",
-		"@size-limit/preset-small-lib": "^8.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.31.0",
 		"@typescript-eslint/parser": "^5.31.0",
 		"eslint": "^8.20.0",
@@ -53,9 +54,8 @@
 		"husky": "^8.0.1",
 		"np": "^7.6.2",
 		"prettier": "2.7.1",
-		"size-limit": "^8.0.0",
-		"tsdx": "^0.14.1",
-		"tslib": "^2.4.0",
+		"tsup": "^8.4.0",
+		"tsx": "^4.19.3",
 		"typescript": "^4.7.4"
 	}
 }
