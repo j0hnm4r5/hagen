@@ -33,6 +33,9 @@ export function test() {
 	hagen.log("Function", () => "This is a message from a function.");
 	hagen.log("Error", new Error("This is an error message."));
 
+	hagen.log("Multiple", "New error found:", new Error("Hello, world!"));
+	hagen.log("Multiple", 1, "TWO", { three: 4 }, [5, 6, 7], new Error("eight"));
+
 	setConfig({
 		showTimestamp: true,
 	});

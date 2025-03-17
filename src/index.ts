@@ -23,9 +23,9 @@ type Label =
 	  };
 
 interface PrintParams {
-	logger: (...params: any) => void;
+	logger: (...params: any[]) => void;
 	label: Label;
-	message?: any;
+	data: any[];
 }
 
 interface LoggerConfig {
@@ -142,12 +142,10 @@ function fixedWidthFormat(
 }
 
 /**
- * Prints the colored label and the message to the provided logger.
+ * Prints the colored label and the data to the provided logger.
  */
-function print({ logger, label, message }: PrintParams): void {
-	// let labelString: string;
+function print({ logger, label, data }: PrintParams): void {
 	let color: ChalkInstance;
-
 	let finalLabel: string = "•";
 
 	if (typeof label === "object") {
@@ -175,7 +173,7 @@ function print({ logger, label, message }: PrintParams): void {
 	}
 
 	// trim off extra spaces
-	finalLabel.trim();
+	finalLabel = finalLabel.trim();
 
 	// apply fixed width formatting if configured
 	if (currentConfig.fixedWidth !== undefined) {
@@ -201,8 +199,8 @@ function print({ logger, label, message }: PrintParams): void {
 		finalLabel = `${finalLabel} ${timestampLabel}`;
 	}
 
-	// log it
-	logger(finalLabel, message);
+	// log it with all data using spread operator
+	logger(finalLabel, ...data);
 }
 
 /**
@@ -214,55 +212,55 @@ function formatLabel(prefix: string, label: string): string {
 
 // ========= LOGGERS =========
 
-export function log(label: Label, message?: any): void {
+export function log(label: Label, ...data: any[]): void {
 	print({
 		logger: console.log,
 		label,
-		message,
+		data,
 	});
 }
 
-export function info(label: string, message?: any): void {
+export function info(label: string, ...data: any[]): void {
 	print({
 		logger: console.log,
 		label: {
 			label: formatLabel("i", label),
 			color: currentConfig.colors.reserved.INFO,
 		},
-		message,
+		data,
 	});
 }
 
-export function success(label: string, message?: any): void {
+export function success(label: string, ...data: any[]): void {
 	print({
 		logger: console.log,
 		label: {
 			label: formatLabel("✓", label),
 			color: currentConfig.colors.reserved.SUCCESS,
 		},
-		message,
+		data,
 	});
 }
 
-export function warn(label: string, message?: any): void {
+export function warn(label: string, ...data: any[]): void {
 	print({
 		logger: console.warn,
 		label: {
 			label: formatLabel("!", label),
 			color: currentConfig.colors.reserved.WARN,
 		},
-		message,
+		data,
 	});
 }
 
-export function error(label: string, message?: any): void {
+export function error(label: string, ...data: any[]): void {
 	print({
 		logger: console.error,
 		label: {
 			label: formatLabel("✕", label),
 			color: currentConfig.colors.reserved.ERROR,
 		},
-		message,
+		data,
 	});
 }
 
