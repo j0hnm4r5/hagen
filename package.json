@@ -1,50 +1,61 @@
 {
-	"name": "hagen",
-	"version": "3.0.1",
-	"description": "A colorful logger for JS in Node and the Browser",
-	"author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
-	"repository": "github:j0hnm4r5/hagen",
-	"license": "MIT",
-	"keywords": [
-		"logger",
-		"node",
-		"browser",
-		"console",
-		"reporter",
-		"print",
-		"colorful",
-		"commonjs",
-		"elegant",
-		"beautiful"
-	],
-	"engines": {
-		"node": ">=10"
-	},
-	"files": [
-		"dist",
-		"src"
-	],
-	"main": "dist/index.js",
-	"module": "dist/hagen.esm.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"visual:node": "tsx src/test/node.visualize.ts",
-		"visual:ci": "CI=true npm run visual:node",
-		"visual:browser": "vite",
-		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --minify",
-		"prepare": "npm run build",
-		"release": "np --no-tests"
-	},
-	"dependencies": {
-		"chalk": "^5.4.1",
-		"std-env": "^3.8.1"
-	},
-	"devDependencies": {
-		"vite": "^6.2.2",
-		"np": "^10.2.0",
-		"prettier": "3.5.3",
-		"tsup": "^8.4.0",
-		"tsx": "^4.19.3",
-		"typescript": "^5.8.2"
-	}
+  "name": "hagen",
+  "version": "3.0.1",
+  "description": "A colorful logger for JS in Node and the Browser",
+  "author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
+  "repository": "github:j0hnm4r5/hagen",
+  "license": "MIT",
+  "keywords": [
+    "logger",
+    "node",
+    "browser",
+    "console",
+    "reporter",
+    "print",
+    "colorful",
+    "commonjs",
+    "elegant",
+    "beautiful"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "main": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "visual:node": "tsx src/test/node.visualize.ts",
+    "visual:ci": "CI=true npm run visual:node",
+    "visual:browser": "vite",
+    "build": "tsup src/index.ts --format esm,cjs --dts --minify",
+		"check": "attw --pack .",
+    "prepare": "npm run build",
+    "release": "np --no-tests"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "std-env": "^3.8.1"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.4",
+    "np": "^10.2.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2"
+  }
 }
