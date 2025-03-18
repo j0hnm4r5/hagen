@@ -1,6 +1,6 @@
 {
   "name": "hagen",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "A colorful logger for JS in Node and the Browser",
   "author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
   "repository": "github:j0hnm4r5/hagen",
@@ -42,7 +42,7 @@
     "visual:ci": "CI=true npm run visual:node",
     "visual:browser": "vite",
     "build": "tsup src/index.ts --format esm,cjs --dts --minify",
-		"check": "attw --pack .",
+    "check": "attw --pack .",
     "prepare": "npm run build",
     "release": "np --no-tests"
   },
