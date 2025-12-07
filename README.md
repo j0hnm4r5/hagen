@@ -2,153 +2,324 @@
 
 ![](https://github.com/j0hnm4r5/hagen/raw/main/assets/screenshot.png)
 
-A colorful logger for JS/TS in Node and modern browsers.
+A colorful, instance-based logger for JavaScript and TypeScript in Node.js and modern browsers.
 
-Hagen enhances your logging by extending `console.log`, `console.warn`, and `console.error` with colored labels that stay consistent between calls. It supports custom colors, fixed-width labels (with truncation/centering), timestamps, and automatic removal of colors in CI environments.
+Hagen enhances your logging with beautifully colored labels that stay consistent between calls. Perfect for debugging, monitoring, and making your console output actually readable.
 
-## Features
+## ✨ Features
 
-- **Consistent Coloring:**  
-  The label’s color is chosen from a list based on a hash of the label, so the same label always has the same color. You can also override this by passing a config object.
+- **🎨 Consistent Coloring** - Same label = same color (automatic hash-based selection)
+- **🎯 Instance-Based Architecture** - Create multiple independent loggers with different configs
+- **📦 Zero Config** - Works immediately with sensible defaults
+- **🎭 Multiple Log Levels** - `log`, `info`, `success`, `warn`, `error` with distinct visual styles
+- **⚡ Lightweight** - ~4.4KB minified ESM bundle
+- **🔧 Highly Configurable** - Timestamps, custom colors, label prefixes/suffixes, and more
+- **🌈 Custom Colors** - Use color indexes, Chalk instances, or hex colors
+- **📏 Fixed-Width Labels** - Optional centering and truncation for aligned output
+- **🤖 CI Support** - Auto-detects CI environments and disables colors appropriately
+- **📘 TypeScript First** - Full type safety with comprehensive JSDoc
+- **🚀 Modern Stack** - ESM + CommonJS, Node 20+, tested on 20/22/24/25
+- **✅ Well Tested** - 77% code coverage with unit and browser tests
 
-- **Custom Colors:**  
-  Supply custom Chalk colors or manually define foreground/background colors.
-
-- **Fixed-Width Labels:**  
-  Optionally specify a fixed width so that short labels are centered and long labels are truncated (with ellipses added).
-
-- **Timestamping:**  
-  Optionally include a timestamp in your logs.
-
-- **CI Support:**  
-  When running in CI environments (detected via [std-env](https://github.com/sindresorhus/std-env)), Hagen automatically disables colors and wraps labels in a border.
-
-- **ESM & CommonJS:**  
-  Bundled with [tsup](https://github.com/egoist/tsup) to support both module systems along with TypeScript declarations and sourcemaps.
-
-## Installation
-
-Install via npm or yarn:
+## 📦 Installation
 
 ```bash
 npm install hagen
-# or
-yarn add hagen
 ```
 
-## Importing
+## 🚀 Quick Start
 
-Hagen is exported as both ESM and CommonJS. Examples:
+```typescript
+import hagen from "hagen";
 
-### ESM
-
-```js
-import hagen, { setConfig } from "hagen";
-
-// or named imports if you prefer:
-import { log, info } from "hagen";
+// Ready to use immediately!
+hagen.log("API", "Request received");
+hagen.info("AUTH", "User logged in");
+hagen.success("DB", "Connection established");
+hagen.warn("CACHE", "High memory usage");
+hagen.error("API", "Request failed", error);
 ```
 
-### CommonJS
+## 📖 Usage
 
-```js
-const hagen = require("hagen");
+### Three Ways to Import
 
-// or destructuring:
-const { log, info } = require("hagen");
+```typescript
+// 1. Default instance (quickest)
+import hagen from "hagen";
+hagen.log("API", "Hello");
+
+// 2. Named imports (convenient)
+import { log, info, success, warn, error } from "hagen";
+log("API", "Hello");
+
+// 3. Custom instance (recommended for apps)
+import { createHagen } from "hagen";
+const logger = createHagen({ showTimestamp: true });
+logger.log("API", "Hello");
 ```
 
-## Usage Examples
+### Log Levels
 
-### Basic Logging
+Each method produces distinct visual styles:
 
-```js
-hagen.log("MY_LABEL", "Hello, World!"); // standard log
-hagen.info("MY_LABEL", "This is some unimportant info.");
-hagen.success("MY_LABEL", "You did it!");
-hagen.warn("MY_LABEL", "Something happened!");
-hagen.error("MY_LABEL", "This is bad.");
+```typescript
+// General logging (auto-colored labels)
+hagen.log("API", "Request data:", requestData);
+
+// Info (blue, prefixed with 'i')
+hagen.info("SYSTEM", "Service started on port 3000");
+
+// Success (green, prefixed with '✓')
+hagen.success("DB", "Migration completed successfully");
+
+// Warning (yellow, prefixed with '!', uses console.warn)
+hagen.warn("MEMORY", "Heap usage at 85%");
+
+// Error (red, prefixed with '✕', uses console.error)
+hagen.error("API", "Failed to fetch user", error);
 ```
 
-### Logging with Only a Label or Only a Message
+### Label Formats
 
-```js
-hagen.info("", "This is a blank label."); // no label, just message
-hagen.log("MY_LABEL"); // label only, no message
-```
+Labels can be strings or objects with custom styling:
 
-### Logging Complex Objects
+```typescript
+// Simple string (auto-colored)
+hagen.log("API", "Hello");
 
-```js
-hagen.log("DATA", { hello: "world", how: "are you?" });
-```
+// With color index (0-5 from color palette)
+hagen.log({ label: "DB", color: 2 }, "Query executed");
 
-### Using Custom Colors
-
-You can pass an object as the label to manually set colors. For example:
-
-```js
-// Using a custom chalk color index (from the default normal colors array)
-hagen.log({ label: "CUSTOM", color: 3 }, "Hello, custom color!");
-
-// Using a custom Chalk color directly:
-import chalk from "chalk";
+// With custom hex colors
 hagen.log(
-	{ label: "CUSTOM", color: chalk.bgHex("#ff00ff").hex("#000000") },
-	"Hello, custom color!"
+  { label: "CUSTOM", bgColor: "#ff0000", fgColor: "#ffffff" },
+  "Red background, white text"
 );
 
-// Using custom background and foreground colors:
-hagen.log({ label: "CUSTOM", bgColor: "#ff00ff", fgColor: "#000000" }, "Hello, custom color!");
+// With custom prefix/suffix
+hagen.log(
+  { label: "WORKER", prefix: ">>", suffix: "<<" },
+  "Custom decorators"
+);
 ```
 
-### Configuring Hagen
+### Configuration
 
-You can change settings (such as fixed label width and timestamp display) with the `setConfig` function.
+Create configured instances for different parts of your app:
 
-```js
-import { setConfig } from "hagen";
+```typescript
+import { createHagen } from "hagen";
 
-// Enable timestamps and set a fixed width of 15 characters with middle truncation.
-setConfig({
-	showTimestamp: true,
-	fixedWidth: {
-		width: 15,
-		truncationMethod: "middle",
-	},
+// API logger with timestamps
+const apiLogger = createHagen({
+  showTimestamp: true,
+  dateFormat: "time",
+  timeFormat: "12h"
+});
+
+// Database logger with custom prefixes
+const dbLogger = createHagen({
+  labelPrefix: "[DB]",
+  labelSuffix: ""
+});
+
+// Test logger with colors disabled
+const testLogger = createHagen({
+  enableColor: false
 });
 ```
 
-### CI Environments and Color Removal
+### Available Configuration Options
 
-Hagen uses [std-env](https://github.com/sindresorhus/std-env) to detect if it's running in a CI environment. In such cases, colors are disabled and labels are rendered in plain text wrapped in square brackets (e.g. `[ MY_LABEL ]`). This ensures that logs remain readable in environments where ANSI escape codes might not be supported.
-
-### Grouping Logs
-
-Hagen works seamlessly with `console.group`:
-
-```js
-console.group("Group Level 1");
-hagen.log("LEVEL 1", "This is level 1");
-console.group("Group Level 2");
-hagen.log("LEVEL 2", "This is level 2");
-console.groupEnd();
-console.groupEnd();
+```typescript
+interface LoggerConfig {
+  // Timestamps
+  showTimestamp?: boolean;              // Default: false
+  dateFormat?: "iso" | "locale" | "time" | ((date: Date) => string); // Default: "iso"
+  timeFormat?: "12h" | "24h";           // Default: "24h"
+  
+  // Colors
+  enableColor?: boolean;                // Default: true (false in CI)
+  
+  // Label formatting
+  labelPrefix?: string;                 // Default: none
+  labelSuffix?: string;                 // Default: none
+  
+  // Advanced: Fixed-width labels
+  fixedWidth?: {
+    width: number;
+    truncationMethod?: "start" | "end" | "middle";
+  };
+}
 ```
 
-## Major Technologies
+### Multiple Independent Loggers
 
-- [Chalk](https://github.com/chalk/chalk)
+Perfect for large applications:
 
-## Inspirations
+```typescript
+// lib/logger.ts - Shared loggers for your app
+import { createHagen } from "hagen";
 
-- [xa](https://github.com/xxczaki/xa)
-- [consola](https://github.com/unjs/consola/)
+export const apiLogger = createHagen({
+  showTimestamp: true,
+  labelPrefix: "[API]"
+});
 
-## Authors
+export const dbLogger = createHagen({
+  showTimestamp: true,
+  labelPrefix: "[DB]"
+});
 
-- [John Mars](http://m4r5.io)
+export const cacheLogger = createHagen({
+  labelPrefix: "[CACHE]"
+});
+```
 
-## License
+```typescript
+// services/api.ts
+import { apiLogger } from "./lib/logger";
 
-MIT © John Mars
+export async function fetchUser(id: string) {
+  apiLogger.info("FETCH", `Fetching user ${id}`);
+  // ...
+  apiLogger.success("FETCH", "User retrieved");
+}
+```
+
+### Advanced: Color Cache Management
+
+Hagen caches label→color mappings for performance. Clear if needed:
+
+```typescript
+import { clearColorCache } from "hagen";
+
+// After processing a batch of unique labels
+clearColorCache();
+```
+
+## 🔄 Migration from v3
+
+v4.0.0 introduces **breaking changes** for a better, more modern API:
+
+### Breaking Changes
+
+1. **Minimum Node.js version**: Now requires Node 20+ (was 10+)
+2. **Removed global config methods**: `setConfig()`, `getConfig()`, `resetConfig()` are gone
+3. **Instance-based architecture**: Use `createHagen()` instead
+
+### Migration Guide
+
+**v3.x (Old)**
+```typescript
+import hagen, { setConfig } from "hagen";
+
+// Global configuration
+setConfig({ showTimestamp: true });
+
+hagen.log("API", "Hello");
+```
+
+**v4.x (New)**
+```typescript
+import { createHagen } from "hagen";
+
+// Instance configuration
+const logger = createHagen({ showTimestamp: true });
+
+logger.log("API", "Hello");
+```
+
+**For quick migration with minimal changes:**
+```typescript
+// Create a configured instance once
+import { createHagen } from "hagen";
+const hagen = createHagen({ showTimestamp: true });
+
+// Export and use everywhere
+export default hagen;
+```
+
+See [MIGRATION.md](./MIGRATION.md) for detailed migration instructions.
+
+## 🤖 CI Environments
+
+Hagen automatically detects CI environments using [std-env](https://github.com/unjs/std-env) and:
+- Disables colored output
+- Renders labels in plain text: `[ LABEL ] message`
+
+Works with GitHub Actions, GitLab CI, CircleCI, Travis CI, and more.
+
+## 📚 API Documentation
+
+Full API documentation is available at [https://j0hnm4r5.github.io/hagen](https://j0hnm4r5.github.io/hagen) (generated with TypeDoc).
+
+## 🧪 Browser Support
+
+Hagen works in all modern browsers with ES2022 support:
+- Chrome 102+
+- Firefox 115+
+- Safari 15.4+
+- Edge 102+
+
+```html
+<script type="module">
+  import hagen from "https://cdn.skypack.dev/hagen";
+  hagen.log("BROWSER", "Hello from the browser!");
+</script>
+```
+
+## 🛠️ Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run browser tests
+npm run test:browser
+
+# Build
+npm run build
+
+# Lint
+npm run lint
+
+# Type check
+npm run type-check
+
+# Generate docs
+npm run docs:generate
+```
+
+## 🧰 Tech Stack
+
+- **Runtime**: Node.js 20+
+- **Colors**: [Chalk](https://github.com/chalk/chalk) 5.x
+- **Environment Detection**: [std-env](https://github.com/unjs/std-env)
+- **Build**: [tsup](https://github.com/egoist/tsup)
+- **Testing**: [Vitest](https://vitest.dev) + [Playwright](https://playwright.dev)
+- **CI/CD**: GitHub Actions + [semantic-release](https://github.com/semantic-release/semantic-release)
+
+## 💡 Inspiration
+
+- [xa](https://github.com/xxczaki/xa) - Colorful terminal logs
+- [consola](https://github.com/unjs/consola/) - Elegant console wrapper
+
+## 👥 Contributors
+
+- [John Mars](http://hellomars.dev) - Creator & Maintainer
+
+## 📄 License
+
+MIT © [John Mars](http://hellomars.dev)
+
+---
+
+**Hagen** is named after Hagen, the colorful lumberjack from [Synthie Forest](https://vimeo.com/90995716).

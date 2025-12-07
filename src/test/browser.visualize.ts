@@ -66,7 +66,8 @@ function renderLogsToDOM() {
 	outputElement.innerHTML = html;
 
 	// Store logs count for testing
-	(window as never).hagenTestData = {
+
+	(window as any).hagenTestData = {
 		totalLogs: capturedLogs.length,
 		logTypes: capturedLogs.map((l) => l.type),
 		hasColoredOutput: capturedLogs.some((l) => l.hasAnsi),

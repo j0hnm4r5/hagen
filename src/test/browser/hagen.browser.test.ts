@@ -1,5 +1,25 @@
 import { test, expect } from "@playwright/test";
 
+interface LogEntry {
+	type: string;
+	rawText: string;
+	hasAnsi: boolean;
+}
+
+interface HagenTestData {
+	totalLogs: number;
+	logTypes: string[];
+	hasColoredOutput: boolean;
+	logs: LogEntry[];
+}
+
+declare global {
+	interface Window {
+		hagenTestData: HagenTestData;
+		runHagenTest?: () => void;
+	}
+}
+
 test.describe("Hagen Browser Tests", () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto("/");
@@ -29,7 +49,7 @@ test.describe("Hagen Browser Tests", () => {
 
 		// Get test data from window
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		expect(testData).toBeDefined();
@@ -44,37 +64,37 @@ test.describe("Hagen Browser Tests", () => {
 
 	test("should produce colored output with ANSI codes", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Should have colored output (ANSI escape codes)
 		expect(testData.hasColoredOutput).toBe(true);
 
 		// Check that logs contain ANSI color codes
-		const logsWithAnsi = testData.logs.filter((log: never) => log.hasAnsi);
+		const logsWithAnsi = testData.logs.filter((log) => log.hasAnsi);
 		expect(logsWithAnsi.length).toBeGreaterThan(10);
 	});
 
 	test("should log standard messages correctly", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Find the "Test" log
-		const testLog = testData.logs.find((log: never) =>
+		const testLog = testData.logs.find((log) =>
 			log.rawText.includes("This is a normal log message")
 		);
 		expect(testLog).toBeDefined();
-		expect(testLog.type).toBe("log");
+		if (testLog) {
+			expect(testLog.type).toBe("log");
+		}
 
 		// Find the info log
-		const infoLog = testData.logs.find((log: never) =>
-			log.rawText.includes("This is an info message")
-		);
+		const infoLog = testData.logs.find((log) => log.rawText.includes("This is an info message"));
 		expect(infoLog).toBeDefined();
 
 		// Find the success log
-		const successLog = testData.logs.find((log: never) =>
+		const successLog = testData.logs.find((log) =>
 			log.rawText.includes("This is a success message")
 		);
 		expect(successLog).toBeDefined();
@@ -82,129 +102,135 @@ test.describe("Hagen Browser Tests", () => {
 
 	test("should handle warn and error log levels with correct console methods", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Warning should use console.warn
-		const warnLog = testData.logs.find((log: never) =>
-			log.rawText.includes("This is a warning message")
-		);
+		const warnLog = testData.logs.find((log) => log.rawText.includes("This is a warning message"));
 		expect(warnLog).toBeDefined();
-		expect(warnLog.type).toBe("warn");
+		if (warnLog) {
+			expect(warnLog.type).toBe("warn");
+		}
 
 		// Error should use console.error
-		const errorLog = testData.logs.find((log: never) =>
-			log.rawText.includes("This is an error message")
-		);
+		const errorLog = testData.logs.find((log) => log.rawText.includes("This is an error message"));
 		expect(errorLog).toBeDefined();
-		expect(errorLog.type).toBe("error");
+		if (errorLog) {
+			expect(errorLog.type).toBe("error");
+		}
 	});
 
 	test("should support custom colors with hex values", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Custom color log should exist
-		const customColorLog = testData.logs.find((log: never) =>
+		const customColorLog = testData.logs.find((log) =>
 			log.rawText.includes("This message has a custom color")
 		);
 		expect(customColorLog).toBeDefined();
-		expect(customColorLog.hasAnsi).toBe(true);
+		if (customColorLog) {
+			expect(customColorLog.hasAnsi).toBe(true);
+		}
 	});
 
 	test("should handle multi-line messages", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Multi-line log should exist
 		const multilineLog = testData.logs.find(
-			(log: never) => log.rawText.includes("This is a message") && log.rawText.includes("with")
+			(log) => log.rawText.includes("This is a message") && log.rawText.includes("with")
 		);
 		expect(multilineLog).toBeDefined();
-		expect(multilineLog.rawText).toContain("\n");
+		if (multilineLog) {
+			expect(multilineLog.rawText).toContain("\n");
+		}
 	});
 
 	test("should handle empty labels", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Empty label log should exist
-		const emptyLabelLog = testData.logs.find((log: never) => log.rawText.includes("Empty Label"));
+		const emptyLabelLog = testData.logs.find((log) => log.rawText.includes("Empty Label"));
 		expect(emptyLabelLog).toBeDefined();
 	});
 
 	test("should log objects and arrays", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Object log should exist
-		const objectLogs = testData.logs.filter((log: never) => log.rawText.includes("Object"));
+		const objectLogs = testData.logs.filter((log) => log.rawText.includes("Object"));
 		expect(objectLogs.length).toBeGreaterThan(0);
 
 		// Array log should exist
-		const arrayLogs = testData.logs.filter((log: never) => log.rawText.includes("Array"));
+		const arrayLogs = testData.logs.filter((log) => log.rawText.includes("Array"));
 		expect(arrayLogs.length).toBeGreaterThan(0);
 	});
 
 	test("should support timestamps when configured", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Timestamp log should exist
-		const timestampLog = testData.logs.find((log: never) =>
+		const timestampLog = testData.logs.find((log) =>
 			log.rawText.includes("This message includes a timestamp")
 		);
 		expect(timestampLog).toBeDefined();
 
 		// Timestamp log should have timestamp indicators (brackets with colons for time)
-		expect(timestampLog.rawText).toMatch(/\[.*:.*\]/);
+		if (timestampLog) {
+			expect(timestampLog.rawText).toMatch(/\[.*:.*\]/);
+		}
 	});
 
 	test("should support fixed-width labels with truncation", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Fixed width logs should exist
-		const fixedWidthLogs = testData.logs.filter((log: never) =>
+		const fixedWidthLogs = testData.logs.filter((log) =>
 			log.rawText.includes("Width: 12; Truncation:")
 		);
 		expect(fixedWidthLogs.length).toBe(3); // end, middle, start
 
 		// Check for ellipsis character (truncation indicator)
-		const hasEllipsis = fixedWidthLogs.some((log: never) => log.rawText.includes("…"));
+		const hasEllipsis = fixedWidthLogs.some((log) => log.rawText.includes("…"));
 		expect(hasEllipsis).toBe(true);
 	});
 
 	test("should handle grouped console output", async ({ page }) => {
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Level logs should exist
-		const levelLogs = testData.logs.filter((log: never) => log.rawText.includes("LEVEL"));
+		const levelLogs = testData.logs.filter((log) => log.rawText.includes("LEVEL"));
 		expect(levelLogs.length).toBeGreaterThan(0);
 	});
 
 	test("should maintain consistent colors for same labels", async ({ page }) => {
 		// Trigger test multiple times
 		await page.evaluate(() => {
-			(window as any).runHagenTest?.();
+			window.runHagenTest?.();
 		});
 
 		await page.waitForTimeout(100);
 
 		const testData = await page.evaluate(() => {
-			return (window as never).hagenTestData;
+			return window.hagenTestData;
 		});
 
 		// Find all "Test" logs
-		const testLogs = testData.logs.filter((log: never) =>
+		const testLogs = testData.logs.filter((log) =>
 			log.rawText.includes("This is a normal log message")
 		);
 
@@ -212,8 +238,8 @@ test.describe("Hagen Browser Tests", () => {
 		// (indicating same color)
 		if (testLogs.length > 1) {
 			const ansiPattern = /\u001B\[\d+m/g;
-			const firstLogAnsi = testLogs[0].rawText.match(ansiPattern);
-			const secondLogAnsi = testLogs[1].rawText.match(ansiPattern);
+			const firstLogAnsi = testLogs[0]?.rawText.match(ansiPattern);
+			const secondLogAnsi = testLogs[1]?.rawText.match(ansiPattern);
 
 			// Both should have ANSI codes
 			expect(firstLogAnsi).toBeDefined();
@@ -230,6 +256,8 @@ test.describe("Hagen Browser Tests", () => {
 		expect(content).not.toContain("<iframe>");
 
 		// Should have proper HTML entities for special chars
-		expect(content.includes("&lt;") || content.includes("&gt;") || content.includes("&amp;"));
+		expect(content.includes("&lt;") || content.includes("&gt;") || content.includes("&amp;")).toBe(
+			true
+		);
 	});
 });
