@@ -1,5 +1,5 @@
 import { Chalk } from "chalk";
-import hagen, { resetConfig, setConfig } from "../index";
+import hagen, { createHagen } from "../index";
 
 const customChalk = new Chalk({ level: 3 });
 
@@ -36,42 +36,38 @@ export function test() {
 	hagen.log("Multiple", "New error found:", new Error("Hello, world!"));
 	hagen.log("Multiple", 1, "TWO", { three: 4 }, [5, 6, 7], new Error("eight"));
 
-	setConfig({
+	// Test with timestamp instance
+	const timestampLogger = createHagen({
 		showTimestamp: true,
 	});
+	timestampLogger.log("Timestamp", "This message includes a timestamp.");
 
-	hagen.log("Timestamp", "This message includes a timestamp.");
-
-	resetConfig();
-
-	setConfig({
+	// Test fixed width - end truncation
+	const fixedWidthEnd = createHagen({
 		fixedWidth: {
 			width: 12,
 			truncationMethod: "end",
 		},
 	});
+	fixedWidthEnd.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: end");
 
-	hagen.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: end");
-
-	setConfig({
+	// Test fixed width - middle truncation
+	const fixedWidthMiddle = createHagen({
 		fixedWidth: {
 			width: 12,
 			truncationMethod: "middle",
 		},
 	});
+	fixedWidthMiddle.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: middle");
 
-	hagen.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: middle");
-
-	setConfig({
+	// Test fixed width - start truncation
+	const fixedWidthStart = createHagen({
 		fixedWidth: {
 			width: 12,
 			truncationMethod: "start",
 		},
 	});
-
-	hagen.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: start");
-
-	resetConfig();
+	fixedWidthStart.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: start");
 
 	console.group();
 	hagen.log(`LEVEL 1`);

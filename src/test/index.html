@@ -3,10 +3,46 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Hagen Visual Test - Browser</title>
+		<style>
+			body {
+				font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+				background: #1e1e1e;
+				color: #d4d4d4;
+				padding: 20px;
+				margin: 0;
+			}
+			h1 {
+				color: #4ec9b0;
+			}
+			#output {
+				background: #252526;
+				border: 1px solid #3e3e42;
+				border-radius: 4px;
+				padding: 15px;
+				margin-top: 20px;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+			}
+			.log-entry {
+				margin: 4px 0;
+				font-size: 13px;
+				line-height: 1.5;
+			}
+			.log-label {
+				font-weight: bold;
+				padding: 2px 8px;
+				border-radius: 3px;
+				margin-right: 8px;
+			}
+			.info {
+				color: #d4d4d4;
+			}
+		</style>
 	</head>
 	<body>
 		<h1>Hagen Visual Test</h1>
-		<p>Open your browser console to view the logger output.</p>
+		<p class="info">Open your browser console to view the logger output, and check the output below.</p>
+		<div id="output"></div>
 		<script type="module" src="/browser.visualize.ts"></script>
 	</body>
 </html>
