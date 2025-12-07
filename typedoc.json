@@ -1,0 +1,23 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src/index.ts"],
+	"out": "docs",
+	"name": "Hagen",
+	"includeVersion": true,
+	"readme": "README.md",
+	"navigationLinks": {
+		"GitHub": "https://github.com/j0hnm4r5/hagen",
+		"NPM": "https://www.npmjs.com/package/hagen"
+	},
+	"plugin": [],
+	"excludePrivate": true,
+	"excludeProtected": true,
+	"excludeInternal": true,
+	"categorizeByGroup": true,
+	"sort": ["source-order"],
+	"validation": {
+		"notExported": true,
+		"invalidLink": true,
+		"notDocumented": false
+	}
+}

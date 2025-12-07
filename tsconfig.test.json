@@ -1,0 +1,9 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ES2022", "DOM"],
+		"types": ["vitest/globals", "@playwright/test"]
+	},
+	"include": ["src/test/**/*"],
+	"exclude": ["node_modules", "dist", "src/test/coverage/**/*"]
+}

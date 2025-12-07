@@ -1,8 +1,40 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es6",
+		// Module & Target
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2022", "DOM"],
+		"moduleResolution": "bundler",
+		"types": ["vitest/globals", "@playwright/test"],
+
+		// Emit
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"removeComments": false,
+
+		// Interop
 		"esModuleInterop": true,
-		"strict": true
-	}
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+
+		// Type Checking - FULL STRICT MODE
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"exactOptionalPropertyTypes": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+
+		// Other
+		"skipLibCheck": true,
+		"resolveJsonModule": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "src/test/coverage/**/*"]
 }

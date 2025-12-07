@@ -1,0 +1,59 @@
+# Source files (only dist/ is needed)
+src/
+
+# Tests
+src/test/
+test-results/
+playwright-report/
+coverage/
+.vitest/
+
+# Config files
+*.config.ts
+*.config.js
+tsconfig*.json
+.prettierrc
+.prettierignore
+.editorconfig
+.releaserc.json
+commitlint.config.js
+
+# Documentation source
+typedoc.json
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Husky
+.husky/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.npmrc
+.nvmrc
+assets/
+MIGRATION.md
+
+# Keep these
+!dist/
+!README.md
+!LICENSE
+!package.json

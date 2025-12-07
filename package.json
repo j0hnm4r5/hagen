@@ -1,61 +1,110 @@
 {
-  "name": "hagen",
-  "version": "3.1.0",
-  "description": "A colorful logger for JS in Node and the Browser",
-  "author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
-  "repository": "github:j0hnm4r5/hagen",
-  "license": "MIT",
-  "keywords": [
-    "logger",
-    "node",
-    "browser",
-    "console",
-    "reporter",
-    "print",
-    "colorful",
-    "commonjs",
-    "elegant",
-    "beautiful"
-  ],
-  "engines": {
-    "node": ">=10"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "main": "./dist/index.mjs",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
-  "scripts": {
-    "visual:node": "tsx src/test/node.visualize.ts",
-    "visual:ci": "CI=true npm run visual:node",
-    "visual:browser": "vite",
-    "build": "tsup src/index.ts --format esm,cjs --dts --minify",
-    "check": "attw --pack .",
-    "prepare": "npm run build",
-    "release": "np --no-tests"
-  },
-  "dependencies": {
-    "chalk": "^5.4.1",
-    "std-env": "^3.8.1"
-  },
-  "devDependencies": {
-    "@arethetypeswrong/cli": "^0.17.4",
-    "np": "^10.2.0",
-    "tsup": "^8.4.0",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.2"
-  }
+	"name": "hagen",
+	"version": "3.1.0",
+	"description": "A colorful logger for JS in Node and the Browser",
+	"author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
+	"repository": "github:j0hnm4r5/hagen",
+	"license": "MIT",
+	"keywords": [
+		"logger",
+		"node",
+		"browser",
+		"console",
+		"reporter",
+		"print",
+		"colorful",
+		"commonjs",
+		"elegant",
+		"beautiful"
+	],
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"files": [
+		"dist",
+		"src"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.mts",
+				"default": "./dist/index.mjs"
+			},
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		}
+	},
+	"scripts": {
+		"dev": "tsup src/index.ts --watch",
+		"build": "tsup src/index.ts --format esm,cjs --dts --minify --sourcemap --clean",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:ui": "vitest --ui",
+		"test:coverage": "vitest run --coverage",
+		"test:browser": "playwright test",
+		"test:browser:ui": "playwright test --ui",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
+		"format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
+		"type-check": "tsc --noEmit",
+		"check": "attw --pack .",
+		"clean": "rm -rf dist coverage playwright-report .vitest",
+		"prepare": "husky",
+		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
+		"docs:generate": "typedoc",
+		"visual:node": "tsx src/test/node.visualize.ts",
+		"visual:ci": "CI=true npm run visual:node",
+		"visual:browser": "vite"
+	},
+	"dependencies": {
+		"chalk": "^5.4.1",
+		"std-env": "^3.8.1"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.17.4",
+		"@commitlint/cli": "^20.1.0",
+		"@commitlint/config-conventional": "^20.0.0",
+		"@eslint/js": "^9.39.1",
+		"@playwright/test": "^1.57.0",
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^12.0.2",
+		"@types/eslint__js": "^8.42.3",
+		"@vitest/coverage-v8": "^4.0.15",
+		"@vitest/ui": "^4.0.15",
+		"eslint": "^9.39.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
+		"eslint-plugin-unicorn": "^62.0.0",
+		"happy-dom": "^20.0.11",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.7",
+		"np": "^10.2.0",
+		"prettier": "^3.7.4",
+		"semantic-release": "^25.0.2",
+		"strip-ansi": "^7.1.2",
+		"tsup": "^8.4.0",
+		"tsx": "^4.19.3",
+		"typedoc": "^0.28.15",
+		"typescript": "^5.8.2",
+		"typescript-eslint": "^8.48.1",
+		"vite": "^6.2.2",
+		"vitest": "^4.0.15"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"*.{json,md}": [
+			"prettier --write"
+		]
+	}
 }
