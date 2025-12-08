@@ -1,6 +1,9 @@
 <template>
 	<div class="terminal-container">
 		<div ref="terminalRef" class="terminal-body"></div>
+		<div class="terminal-hint" v-if="props.editable">
+			💡 Interactive REPL: Type commands and press Enter to execute
+		</div>
 	</div>
 </template>
 
@@ -19,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 	exampleId: "repl",
 	code: "",
 	title: "Node.js REPL",
-	editable: true,
+	editable: false,
 });
 
 const terminalRef = ref<HTMLElement | null>(null);
@@ -27,6 +30,9 @@ const terminalRef = ref<HTMLElement | null>(null);
 let terminal: any = null;
 let fitAddon: any = null;
 let currentCode = "";
+let currentLine = "";
+let commandHistory: string[] = [];
+let historyIndex = -1;
 
 // Initialize terminal with Catppuccin Mocha theme
 async function initTerminal() {
@@ -38,7 +44,7 @@ async function initTerminal() {
 	await import("xterm/css/xterm.css");
 
 	terminal = new Terminal({
-		cursorBlink: false,
+		cursorBlink: !props.editable,
 		fontSize: 14,
 		fontFamily: 'Menlo, Monaco, "Courier New", monospace',
 		theme: {
@@ -67,13 +73,216 @@ async function initTerminal() {
 		},
 		allowTransparency: false,
 		scrollback: 1000,
-		disableStdin: true,
+		disableStdin: !props.editable,
 		rows: 1, // Start with 1 row, will auto-resize
+		rightClickSelectsWord: props.editable,
 	});
 
 	fitAddon = new FitAddon();
 	terminal.loadAddon(fitAddon);
 	terminal.open(terminalRef.value);
+
+	// Setup REPL input handling if editable
+	if (props.editable) {
+		// Set initial height for REPL
+		terminal.resize(terminal.cols, 10); // Start with 10 rows for REPL
+		if (terminalRef.value) {
+			const height = 10 * 17 + 32; // 10 rows
+			terminalRef.value.style.height = `${height}px`;
+			terminalRef.value.style.minHeight = `${height}px`;
+			terminalRef.value.style.maxHeight = `${height}px`;
+		}
+		setupREPL();
+
+		// Enable paste by attaching to textarea element xterm creates
+		setTimeout(() => {
+			const textarea = terminalRef.value?.querySelector("textarea");
+			if (textarea) {
+				textarea.addEventListener("paste", (e: ClipboardEvent) => {
+					e.preventDefault();
+					e.stopPropagation();
+					const text = e.clipboardData?.getData("text");
+					if (text) {
+						// Handle multi-line paste by splitting and executing each line
+						const lines = text.split(/\r?\n/);
+						for (let i = 0; i < lines.length; i++) {
+							const line = lines[i];
+							if (line.trim()) {
+								// Write the line
+								for (const char of line) {
+									currentLine += char;
+									terminal.write(char);
+								}
+								// Execute immediately and move to next line (except for last line)
+								if (i < lines.length - 1) {
+									terminal.write("\r\n");
+									if (currentLine.trim()) {
+										commandHistory.push(currentLine);
+										historyIndex = commandHistory.length;
+										executeREPLCommand(currentLine);
+									}
+									currentLine = "";
+									writePrompt();
+									resizeToContent();
+								}
+							}
+						}
+					}
+				});
+
+				// Also handle keydown to capture Ctrl+V and Ctrl+Shift+V
+				textarea.addEventListener("keydown", (e: KeyboardEvent) => {
+					if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) {
+						// Allow default paste behavior
+						e.stopPropagation();
+					}
+				});
+			}
+		}, 100);
+	}
+}
+
+// Setup REPL functionality
+function setupREPL() {
+	if (!terminal) return;
+
+	// Write welcome prompt
+	writePrompt();
+
+	// Handle keyboard input
+	terminal.onKey(({ key, domEvent }: any) => {
+		const char = key;
+		const ev = domEvent;
+		const code = ev.keyCode;
+
+		// Enter key - execute command
+		if (code === 13) {
+			terminal.write("\r\n");
+			if (currentLine.trim()) {
+				commandHistory.push(currentLine);
+				historyIndex = commandHistory.length;
+				executeREPLCommand(currentLine);
+			}
+			currentLine = "";
+			writePrompt();
+			resizeToContent();
+		}
+		// Backspace
+		else if (code === 8) {
+			if (currentLine.length > 0) {
+				currentLine = currentLine.slice(0, -1);
+				terminal.write("\b \b");
+			}
+		}
+		// Up arrow - history
+		else if (code === 38) {
+			if (historyIndex > 0) {
+				// Clear current line
+				terminal.write("\r\x1b[K");
+				writePrompt();
+				historyIndex--;
+				currentLine = commandHistory[historyIndex] || "";
+				terminal.write(currentLine);
+			}
+		}
+		// Down arrow - history
+		else if (code === 40) {
+			if (historyIndex < commandHistory.length) {
+				// Clear current line
+				terminal.write("\r\x1b[K");
+				writePrompt();
+				historyIndex++;
+				currentLine = commandHistory[historyIndex] || "";
+				terminal.write(currentLine);
+			}
+		}
+		// Regular characters
+		else if (!ev.ctrlKey && !ev.altKey && !ev.metaKey) {
+			currentLine += char;
+			terminal.write(char);
+		}
+	});
+}
+
+// Write the REPL prompt
+function writePrompt() {
+	terminal?.write("\r\x1b[36m>\x1b[0m ");
+}
+
+// Execute a REPL command
+function executeREPLCommand(command: string) {
+	const trimmed = command.trim();
+
+	// Clear command
+	if (trimmed === "clear") {
+		terminal?.clear();
+		writePrompt();
+		return;
+	}
+
+	// Help command
+	if (trimmed === "help") {
+		terminal?.writeln("\x1b[36mAvailable commands:\x1b[0m");
+		terminal?.writeln("  clear           - Clear the terminal");
+		terminal?.writeln("  help            - Show this help message");
+		terminal?.writeln("  hagen.log()     - Log with custom label");
+		terminal?.writeln("  hagen.info()    - Info level message");
+		terminal?.writeln("  hagen.success() - Success level message");
+		terminal?.writeln("  hagen.warn()    - Warning level message");
+		terminal?.writeln("  hagen.error()   - Error level message");
+		terminal?.writeln("");
+		terminal?.writeln("\x1b[2mExample: hagen.log('API', 'Request received')\x1b[0m");
+		return;
+	}
+
+	// Try to execute as Hagen command
+	try {
+		// Parse the command to extract method and arguments
+		const hagenMatch = trimmed.match(/hagen\.(log|info|success|warn|error)\s*\((.*)\)/);
+
+		if (hagenMatch) {
+			const method = hagenMatch[1];
+			const argsStr = hagenMatch[2];
+
+			// Simple argument parsing (handles strings in quotes)
+			const args = argsStr
+				.split(/,(?=(?:[^"']*["'][^"']*["'])*[^"']*$)/)
+				.map((arg) => arg.trim().replace(/^["']|["']$/g, ""));
+
+			// Simulate the output based on method
+			simulateHagenOutput(method, args);
+		} else {
+			terminal?.writeln(`\x1b[31m✕ Invalid command\x1b[0m Type 'help' for available commands`);
+		}
+	} catch (err) {
+		terminal?.writeln(
+			`\x1b[31m✕ Error:\x1b[0m ${err instanceof Error ? err.message : "Unknown error"}`
+		);
+	}
+}
+
+// Simulate Hagen output for REPL commands
+function simulateHagenOutput(method: string, args: string[]) {
+	const label = args[0] || "LABEL";
+	const message = args.slice(1).join(" ") || "Message";
+
+	switch (method) {
+		case "log":
+			terminal?.writeln(`\x1b[46m\x1b[30m ${label} \x1b[0m ${message}`);
+			break;
+		case "info":
+			terminal?.writeln(`\x1b[34mi\x1b[0m \x1b[44m\x1b[37m ${label} \x1b[0m ${message}`);
+			break;
+		case "success":
+			terminal?.writeln(`\x1b[32m✓\x1b[0m \x1b[42m\x1b[37m ${label} \x1b[0m ${message}`);
+			break;
+		case "warn":
+			terminal?.writeln(`\x1b[33m!\x1b[0m \x1b[43m\x1b[30m ${label} \x1b[0m ${message}`);
+			break;
+		case "error":
+			terminal?.writeln(`\x1b[31m✕\x1b[0m \x1b[41m\x1b[37m ${label} \x1b[0m ${message}`);
+			break;
+	}
 }
 
 // Get code to execute
@@ -117,7 +326,6 @@ function resizeToContent() {
 	if (!terminal || !terminalRef.value) return;
 
 	const buffer = terminal.buffer.active;
-	const lineCount = buffer.length;
 
 	// Count lines with actual content (non-empty lines)
 	let contentLines = 0;
@@ -128,16 +336,20 @@ function resizeToContent() {
 		}
 	}
 
-	// Add 1 line of padding at bottom
-	const targetRows = Math.max(contentLines + 1, 3); // Min 3 rows
+	// For editable terminals, ensure minimum height and allow growth
+	const targetRows = props.editable
+		? Math.max(contentLines + 1, 10) // Min 10 rows for REPL, +1 for current input line
+		: Math.max(contentLines, 1); // Non-editable: exact fit
 
 	terminal.resize(terminal.cols, targetRows);
 
-	// Update container height
-	const lineHeight = 20; // ~14px font + 6px line spacing
+	// Update container height - exact calculation to prevent scrollbars
+	const lineHeight = 17; // xterm.js default line height
 	const padding = 32; // 16px top + 16px bottom
 	const height = targetRows * lineHeight + padding;
 	terminalRef.value.style.height = `${height}px`;
+	terminalRef.value.style.minHeight = `${height}px`;
+	terminalRef.value.style.maxHeight = `${height}px`;
 }
 
 // Simulate output for different examples
@@ -331,10 +543,12 @@ function resetTerminal() {
 // Lifecycle hooks
 onMounted(async () => {
 	await initTerminal();
-	// Auto-run code after terminal is initialized
-	setTimeout(() => {
-		runCode();
-	}, 100);
+	// Auto-run code after terminal is initialized (only for non-editable terminals)
+	if (!props.editable) {
+		setTimeout(() => {
+			runCode();
+		}, 100);
+	}
 });
 
 onBeforeUnmount(() => {
@@ -365,6 +579,28 @@ watch(
 	min-height: 60px;
 	padding: 16px;
 	overflow: hidden;
+}
+
+.terminal-body :deep(.xterm) {
+	padding: 0;
+}
+
+.terminal-body :deep(.xterm-viewport) {
+	overflow-y: hidden !important;
+	overflow-x: hidden !important;
+}
+
+.terminal-body :deep(.xterm-screen) {
+	overflow: hidden;
+}
+
+.terminal-hint {
+	padding: 8px 16px;
+	background: #181825;
+	border-top: 1px solid #313244;
+	color: #a6adc8;
+	font-size: 12px;
+	text-align: center;
 }
 
 /* Dark mode adjustments for VitePress */
