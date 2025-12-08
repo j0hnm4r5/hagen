@@ -140,30 +140,28 @@ async function initTerminal() {
 				terminal.write(char);
 			}
 		} else {
-			// Multi-line: display all lines and execute them all
+			// Multi-line: display all lines at once, then execute all at once
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 
 				// Write the line to terminal
-				for (const char of line) {
-					currentLine += char;
-					terminal.write(char);
-				}
+				terminal.write(line);
 
-				// Execute and move to next line
+				// Add newline after each line
 				terminal.write("\r\n");
-				if (currentLine.trim()) {
-					commandHistory.push(currentLine);
-					historyIndex = commandHistory.length;
-					executeREPLCommand(currentLine);
-				}
-				currentLine = "";
+			}
 
-				// Write prompt for next line (if not the last line)
-				if (i < lines.length - 1) {
-					writePrompt();
+			// Now execute all lines together
+			terminal.write("\r\n");
+			for (const line of lines) {
+				if (line.trim()) {
+					executeREPLCommand(line.trim());
 				}
 			}
+
+			// Add to history as a block
+			commandHistory.push(lines.join("\n"));
+			historyIndex = commandHistory.length;
 
 			// Write final prompt after all lines executed
 			writePrompt();
