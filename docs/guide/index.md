@@ -12,7 +12,7 @@ Hagen is a colorful, instance-based logger designed for JavaScript and TypeScrip
 
 When building applications, especially larger ones with multiple modules or services, console logs quickly become difficult to read and distinguish:
 
-```javascript
+```typescript
 console.log("Fetching user data...");
 console.log("Cache miss");
 console.log("Database query executed");

@@ -63,7 +63,7 @@ bun add hagen
 
 After installation, verify Hagen is working:
 
-```javascript
+```typescript
 // test-hagen.js
 import hagen from "hagen";
 
@@ -107,7 +107,7 @@ Hagen supports both ESM and CommonJS:
 
 ### ESM (Recommended)
 
-```javascript
+```typescript
 // ESM (package.json with "type": "module" or .mjs files)
 import hagen from "hagen";
 import { createHagen, log, info, success } from "hagen";
@@ -115,7 +115,7 @@ import { createHagen, log, info, success } from "hagen";
 
 ### CommonJS
 
-```javascript
+```typescript
 // CommonJS (.cjs files or default Node.js)
 const hagen = require("hagen").default;
 const { createHagen, log, info } = require("hagen");

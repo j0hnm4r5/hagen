@@ -77,7 +77,7 @@ hagen.log("APP", "Application starting");
 // Your app code
 ```
 
-```javascript
+```typescript
 // vite.config.js
 import { defineConfig } from "vite";
 
@@ -95,7 +95,7 @@ import hagen from "hagen";
 hagen.log("APP", "Webpack bundle loaded");
 ```
 
-```javascript
+```typescript
 // webpack.config.js
 module.exports = {
   // Hagen works out of the box with Webpack 5+
@@ -115,7 +115,7 @@ import hagen from "hagen";
 hagen.log("APP", "Rollup bundle loaded");
 ```
 
-```javascript
+```typescript
 // rollup.config.js
 export default {
   input: "src/main.ts",

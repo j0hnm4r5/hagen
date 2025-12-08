@@ -1,9 +1,6 @@
 <template>
-	<div class="terminal-container">
-		<div ref="terminalRef" class="terminal-body"></div>
-		<div class="terminal-hint" v-if="props.editable">
-			💡 Interactive REPL: Type commands and press Enter to execute
-		</div>
+	<div class="terminal-container" :class="{ 'is-editable': props.editable }">
+		<div ref="terminalRef" class="terminal-body" :class="{ editable: props.editable }"></div>
 	</div>
 </template>
 
@@ -34,6 +31,47 @@ let currentLine = "";
 let commandHistory: string[] = [];
 let historyIndex = -1;
 
+// Expose method to run commands from parent
+const runCommand = (command: string) => {
+	if (!terminal || !props.editable) return;
+
+	// Normalize line endings
+	const normalizedCommand = command.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+	// Set currentLine but don't display it character by character
+	// Just add it to the command so it can be executed
+	currentLine = normalizedCommand;
+
+	// Trigger execution immediately
+	setTimeout(() => {
+		if (currentLine.trim()) {
+			commandHistory.push(currentLine);
+			historyIndex = commandHistory.length;
+
+			// Check if it's a multi-line command
+			const lines = currentLine.split(/\r?\n/).filter((line: string) => line.trim());
+
+			if (lines.length > 1) {
+				// Multi-line: execute each line with spacing
+				terminal.write("\r\n");
+				for (let i = 0; i < lines.length; i++) {
+					const line = lines[i];
+					const isLastLine = i === lines.length - 1;
+					executeREPLCommand(line.trim(), isLastLine);
+				}
+			} else if (lines.length === 1) {
+				// Single line: execute normally
+				executeREPLCommand(currentLine.trim());
+			}
+		}
+		currentLine = "";
+		writePrompt();
+		resizeToContent();
+	}, 10);
+};
+
+defineExpose({ runCommand });
+
 // Initialize terminal with Catppuccin Mocha theme
 async function initTerminal() {
 	if (!terminalRef.value) return;
@@ -44,7 +82,8 @@ async function initTerminal() {
 	await import("xterm/css/xterm.css");
 
 	terminal = new Terminal({
-		cursorBlink: !props.editable,
+		cursorBlink: true,
+		cursorStyle: "block",
 		fontSize: 14,
 		lineHeight: 1.2, // Normal line height for character rendering
 		fontFamily: 'Menlo, Monaco, "Courier New", monospace',
@@ -85,14 +124,8 @@ async function initTerminal() {
 
 	// Setup REPL input handling if editable
 	if (props.editable) {
-		// Set initial height for REPL
-		terminal.resize(terminal.cols, 10); // Start with 10 rows for REPL
-		if (terminalRef.value) {
-			const height = 10 * 17 + 32; // 10 rows with lineHeight 1.2 (14px * 1.2 = 17px)
-			terminalRef.value.style.height = `${height}px`;
-			terminalRef.value.style.minHeight = `${height}px`;
-			terminalRef.value.style.maxHeight = `${height}px`;
-		}
+		// Set fixed height for REPL - rows will stay constant, scrollback handles overflow
+		terminal.resize(terminal.cols, 18); // Fixed 18 rows to fit in 400px container
 		setupREPL();
 
 		// Enable paste by attaching to textarea element xterm creates
@@ -355,6 +388,18 @@ async function runCode() {
 function resizeToContent() {
 	if (!terminal || !terminalRef.value) return;
 
+	// For editable terminals (REPL), don't resize rows - keep fixed size and scroll
+	if (props.editable) {
+		// Auto-scroll to bottom to show latest content
+		setTimeout(() => {
+			if (terminal) {
+				terminal.scrollToBottom();
+			}
+		}, 0);
+		return;
+	}
+
+	// For non-editable terminals, resize to fit content exactly
 	const buffer = terminal.buffer.active;
 
 	// Count lines with actual content (non-empty lines)
@@ -366,22 +411,16 @@ function resizeToContent() {
 		}
 	}
 
-	// For editable terminals, ensure minimum height and allow growth
-	// Note: contentLines already includes the current prompt line with cursor
-	const targetRows = props.editable
-		? Math.max(contentLines, 10) // Min 10 rows for REPL
-		: Math.max(contentLines, 1); // Non-editable: exact fit
-
+	// Add 1 for cursor line to ensure all content is visible
+	const targetRows = Math.max(contentLines + 1, 1);
 	terminal.resize(terminal.cols, targetRows);
 
-	// Update container height - exact calculation to prevent scrollbars
-	// lineHeight 1.2 means 14px font * 1.2 = 17px per line
-	const lineHeight = 17;
-	const padding = 32; // 16px top + 16px bottom
-	const height = targetRows * lineHeight + padding;
-	terminalRef.value.style.height = `${height}px`;
-	terminalRef.value.style.minHeight = `${height}px`;
-	terminalRef.value.style.maxHeight = `${height}px`;
+	// Auto-scroll to bottom after resize
+	setTimeout(() => {
+		if (terminal) {
+			terminal.scrollToBottom();
+		}
+	}, 0);
 }
 
 // Simulate output for different examples
@@ -581,6 +620,22 @@ onMounted(async () => {
 			runCode();
 		}, 100);
 	}
+
+	// Listen for custom events from TryItOut buttons
+	if (props.editable) {
+		const handleRunCommand = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			if (customEvent.detail?.command) {
+				runCommand(customEvent.detail.command);
+			}
+		};
+		document.addEventListener("run-terminal-command", handleRunCommand);
+
+		// Cleanup
+		onBeforeUnmount(() => {
+			document.removeEventListener("run-terminal-command", handleRunCommand);
+		});
+	}
 });
 
 onBeforeUnmount(() => {
@@ -606,11 +661,20 @@ watch(
 	font-family: "Menlo", "Monaco", "Courier New", monospace;
 }
 
+/* Extra vertical margin for non-editable terminals */
+.terminal-container:not(.is-editable) {
+	margin: 2rem 0;
+}
+
 .terminal-body {
 	height: auto;
-	min-height: 60px;
 	padding: 16px;
 	overflow: hidden;
+}
+
+/* Fixed height only for editable/REPL terminals */
+.terminal-body.editable {
+	height: 400px;
 }
 
 .terminal-body :deep(.xterm) {
@@ -627,22 +691,20 @@ watch(
 	padding-bottom: 3px;
 }
 
-.terminal-body :deep(.xterm-viewport) {
+/* Scrolling only for editable terminals */
+.terminal-body.editable :deep(.xterm-viewport) {
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+}
+
+/* Non-editable terminals should not scroll */
+.terminal-body:not(.editable) :deep(.xterm-viewport) {
 	overflow-y: hidden !important;
 	overflow-x: hidden !important;
 }
 
 .terminal-body :deep(.xterm-screen) {
 	overflow: hidden;
-}
-
-.terminal-hint {
-	padding: 8px 16px;
-	background: #181825;
-	border-top: 1px solid #313244;
-	color: #a6adc8;
-	font-size: 12px;
-	text-align: center;
 }
 
 /* Dark mode adjustments for VitePress */

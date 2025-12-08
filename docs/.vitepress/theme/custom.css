@@ -1,0 +1,77 @@
+/* Add run button to code blocks */
+.vp-code-group,
+div[class*="language-"] {
+	position: relative;
+	margin-bottom: 26px !important;
+}
+
+/* Ensure overflow doesn't clip the button */
+div[class*="language-"] {
+	overflow: visible !important;
+}
+
+/* But keep the inner code scrollable */
+div[class*="language-"] > .vp-code,
+div[class*="language-"] > pre {
+	overflow: auto;
+}
+
+/* Run button - styled like inverted terminal tab */
+.code-run-button {
+	position: absolute;
+	bottom: -26px;
+	right: 2rem;
+	z-index: 10;
+	padding: 0.25rem 1rem;
+	background: #282c34;
+	color: #89b4fa;
+	border: none;
+	border-radius: 0 0 8px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	height: 26px;
+	display: flex;
+	align-items: center;
+}
+
+/* Curved edges for folder tab effect (inverted) */
+.code-run-button::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -12px;
+	width: 12px;
+	height: 12px;
+	background: radial-gradient(circle at 0 100%, transparent 12px, #282c34 12px);
+}
+
+.code-run-button::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: -12px;
+	width: 12px;
+	height: 12px;
+	background: radial-gradient(circle at 100% 100%, transparent 12px, #282c34 12px);
+}
+
+.code-run-button:hover {
+	background: #31363f;
+	color: #a6c8ff;
+	transform: translateY(1px);
+}
+
+.code-run-button:hover::before {
+	background: radial-gradient(circle at 0 100%, transparent 12px, #31363f 12px);
+}
+
+.code-run-button:hover::after {
+	background: radial-gradient(circle at 100% 100%, transparent 12px, #31363f 12px);
+}
+
+.code-run-button:active {
+	transform: translateY(2px);
+}

@@ -473,7 +473,7 @@ This means all types are fully validated and safe to use in strict TypeScript pr
 
 Even in JavaScript files, you get full IDE support thanks to JSDoc:
 
-```javascript
+```typescript
 // @ts-check
 const { createHagen } = require("hagen");
 
