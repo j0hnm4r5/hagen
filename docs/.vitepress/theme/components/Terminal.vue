@@ -46,7 +46,7 @@ async function initTerminal() {
 	terminal = new Terminal({
 		cursorBlink: !props.editable,
 		fontSize: 14,
-		lineHeight: 1.2, // Tighter spacing between lines (14px * 1.2 = ~17px = 3px gap)
+		lineHeight: 1.2, // Normal line height for character rendering
 		fontFamily: 'Menlo, Monaco, "Courier New", monospace',
 		theme: {
 			// Catppuccin Mocha theme
@@ -88,7 +88,7 @@ async function initTerminal() {
 		// Set initial height for REPL
 		terminal.resize(terminal.cols, 10); // Start with 10 rows for REPL
 		if (terminalRef.value) {
-			const height = 10 * 17 + 32; // 10 rows with lineHeight 1.2 (14px * 1.2 ≈ 17px)
+			const height = 10 * 17 + 32; // 10 rows with lineHeight 1.2 (14px * 1.2 = 17px)
 			terminalRef.value.style.height = `${height}px`;
 			terminalRef.value.style.minHeight = `${height}px`;
 			terminalRef.value.style.maxHeight = `${height}px`;
@@ -129,45 +129,19 @@ async function initTerminal() {
 	function handlePaste(text: string) {
 		if (!text) return;
 
-		// Split into lines
-		const lines = text.split(/\r?\n/).filter((line) => line.trim());
+		// Normalize line endings and append to current line
+		const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-		if (lines.length === 0) return;
-
-		// If single line, just add to current line
-		if (lines.length === 1) {
-			for (const char of lines[0]) {
-				currentLine += char;
+		for (const char of normalizedText) {
+			currentLine += char;
+			if (char === "\n") {
+				terminal.write("\r\n"); // Move to next line
+			} else {
 				terminal.write(char);
 			}
-		} else {
-			// Multi-line: display all lines at once, then execute all at once
-			for (let i = 0; i < lines.length; i++) {
-				const line = lines[i];
-
-				// Write the line to terminal
-				terminal.write(line);
-
-				// Add newline after each line
-				terminal.write("\r\n");
-			}
-
-			// Now execute all lines together
-			terminal.write("\r\n");
-			for (const line of lines) {
-				if (line.trim()) {
-					executeREPLCommand(line.trim());
-				}
-			}
-
-			// Add to history as a block
-			commandHistory.push(lines.join("\n"));
-			historyIndex = commandHistory.length;
-
-			// Write final prompt after all lines executed
-			writePrompt();
-			resizeToContent();
 		}
+
+		resizeToContent();
 	}
 }
 
@@ -190,7 +164,22 @@ function setupREPL() {
 			if (currentLine.trim()) {
 				commandHistory.push(currentLine);
 				historyIndex = commandHistory.length;
-				executeREPLCommand(currentLine);
+
+				// Check if it's a multi-line command (contains newlines)
+				const lines = currentLine.split(/\r?\n/).filter((line) => line.trim());
+
+				if (lines.length > 1) {
+					// Multi-line: execute each line with spacing
+					terminal.write("\r\n");
+					for (let i = 0; i < lines.length; i++) {
+						const line = lines[i];
+						const isLastLine = i === lines.length - 1;
+						executeREPLCommand(line.trim(), isLastLine);
+					}
+				} else {
+					// Single line: execute normally
+					executeREPLCommand(currentLine);
+				}
 			}
 			currentLine = "";
 			writePrompt();
@@ -239,7 +228,7 @@ function writePrompt() {
 }
 
 // Execute a REPL command
-function executeREPLCommand(command: string) {
+function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 	const trimmed = command.trim();
 
 	// Clear command
@@ -261,7 +250,9 @@ function executeREPLCommand(command: string) {
 		terminal?.writeln("  hagen.error()   - Error level message");
 		terminal?.writeln("");
 		terminal?.writeln("\x1b[2mExample: hagen.log('API', 'Request received')\x1b[0m");
-		terminal?.writeln(""); // Add blank line after help output
+		if (addBlankLine) {
+			terminal?.writeln(""); // Add blank line after help output
+		}
 		return;
 	}
 
@@ -281,16 +272,22 @@ function executeREPLCommand(command: string) {
 
 			// Simulate the output based on method
 			simulateHagenOutput(method, args);
-			terminal?.writeln(""); // Add blank line after output
+			if (addBlankLine) {
+				terminal?.writeln(""); // Add blank line after output
+			}
 		} else {
 			terminal?.writeln(`\x1b[31m✕ Invalid command\x1b[0m Type 'help' for available commands`);
-			terminal?.writeln(""); // Add blank line after error
+			if (addBlankLine) {
+				terminal?.writeln(""); // Add blank line after error
+			}
 		}
 	} catch (err) {
 		terminal?.writeln(
 			`\x1b[31m✕ Error:\x1b[0m ${err instanceof Error ? err.message : "Unknown error"}`
 		);
-		terminal?.writeln(""); // Add blank line after error
+		if (addBlankLine) {
+			terminal?.writeln(""); // Add blank line after error
+		}
 	}
 }
 
@@ -370,14 +367,15 @@ function resizeToContent() {
 	}
 
 	// For editable terminals, ensure minimum height and allow growth
+	// Note: contentLines already includes the current prompt line with cursor
 	const targetRows = props.editable
-		? Math.max(contentLines + 1, 10) // Min 10 rows for REPL, +1 for current input line
+		? Math.max(contentLines, 10) // Min 10 rows for REPL
 		: Math.max(contentLines, 1); // Non-editable: exact fit
 
 	terminal.resize(terminal.cols, targetRows);
 
 	// Update container height - exact calculation to prevent scrollbars
-	// lineHeight 1.2 means 14px font * 1.2 ≈ 17px per line (tight spacing)
+	// lineHeight 1.2 means 14px font * 1.2 = 17px per line
 	const lineHeight = 17;
 	const padding = 32; // 16px top + 16px bottom
 	const height = targetRows * lineHeight + padding;
@@ -617,11 +615,16 @@ watch(
 
 .terminal-body :deep(.xterm) {
 	padding: 0;
-	line-height: 1.4;
+	line-height: 1.2;
 }
 
 .terminal-body :deep(.xterm-rows) {
-	line-height: 1.4;
+	line-height: 1.2;
+}
+
+/* Add vertical spacing between lines (leading) */
+.terminal-body :deep(.xterm-rows > div) {
+	padding-bottom: 3px;
 }
 
 .terminal-body :deep(.xterm-viewport) {
