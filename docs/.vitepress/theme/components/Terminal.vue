@@ -46,7 +46,7 @@ async function initTerminal() {
 	terminal = new Terminal({
 		cursorBlink: !props.editable,
 		fontSize: 14,
-		lineHeight: 1.5, // Increase line height for better spacing
+		lineHeight: 1.2, // Tighter spacing between lines (14px * 1.2 = ~17px = 3px gap)
 		fontFamily: 'Menlo, Monaco, "Courier New", monospace',
 		theme: {
 			// Catppuccin Mocha theme
@@ -88,7 +88,7 @@ async function initTerminal() {
 		// Set initial height for REPL
 		terminal.resize(terminal.cols, 10); // Start with 10 rows for REPL
 		if (terminalRef.value) {
-			const height = 10 * 21 + 32; // 10 rows with lineHeight 1.5 (14px * 1.5 = 21px)
+			const height = 10 * 17 + 32; // 10 rows with lineHeight 1.2 (14px * 1.2 ≈ 17px)
 			terminalRef.value.style.height = `${height}px`;
 			terminalRef.value.style.minHeight = `${height}px`;
 			terminalRef.value.style.maxHeight = `${height}px`;
@@ -377,8 +377,8 @@ function resizeToContent() {
 	terminal.resize(terminal.cols, targetRows);
 
 	// Update container height - exact calculation to prevent scrollbars
-	// lineHeight 1.5 means 14px font * 1.5 = 21px per line
-	const lineHeight = 21;
+	// lineHeight 1.2 means 14px font * 1.2 ≈ 17px per line (tight spacing)
+	const lineHeight = 17;
 	const padding = 32; // 16px top + 16px bottom
 	const height = targetRows * lineHeight + padding;
 	terminalRef.value.style.height = `${height}px`;
