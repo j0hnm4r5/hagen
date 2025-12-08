@@ -4,6 +4,12 @@
 
 A colorful, instance-based logger for JavaScript and TypeScript in Node.js and modern browsers.
 
+## 📚 Documentation
+
+**[View Full Documentation →](https://j0hnm4r5.github.io/hagen/)**
+
+Complete guides, examples, and API reference available at the documentation site.
+
 Hagen enhances your logging with beautifully colored labels that stay consistent between calls. Perfect for debugging, monitoring, and making your console output actually readable.
 
 ## ✨ Features
@@ -19,7 +25,7 @@ Hagen enhances your logging with beautifully colored labels that stay consistent
 - **🤖 CI Support** - Auto-detects CI environments and disables colors appropriately
 - **📘 TypeScript First** - Full type safety with comprehensive JSDoc
 - **🚀 Modern Stack** - ESM + CommonJS, Node 20+, tested on 20/22/24/25
-- **✅ Well Tested** - 77% code coverage with unit and browser tests
+- **✅ Well Tested** - 96.55% code coverage with unit and browser tests
 
 ## 📦 Installation
 
@@ -251,9 +257,11 @@ Hagen automatically detects CI environments using [std-env](https://github.com/u
 
 Works with GitHub Actions, GitLab CI, CircleCI, Travis CI, and more.
 
-## 📚 API Documentation
+## 📚 Full Documentation
 
-Full API documentation is available at [https://j0hnm4r5.github.io/hagen](https://j0hnm4r5.github.io/hagen) (generated with TypeDoc).
+For comprehensive documentation including detailed guides, examples, and complete API reference:
+
+**[https://j0hnm4r5.github.io/hagen](https://j0hnm4r5.github.io/hagen)**
 
 ## 🧪 Browser Support
 

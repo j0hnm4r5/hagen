@@ -1,15 +1,12 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
 	"entryPoints": ["src/index.ts"],
-	"out": "docs",
-	"name": "Hagen",
+	"out": "docs/api",
+	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+	"name": "Hagen API",
 	"includeVersion": true,
-	"readme": "README.md",
-	"navigationLinks": {
-		"GitHub": "https://github.com/j0hnm4r5/hagen",
-		"NPM": "https://www.npmjs.com/package/hagen"
-	},
-	"plugin": [],
+	"readme": "none",
+	"hideGenerator": true,
 	"excludePrivate": true,
 	"excludeProtected": true,
 	"excludeInternal": true,

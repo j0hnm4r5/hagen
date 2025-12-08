@@ -5,6 +5,7 @@
 	"author": "John Mars <john@hellomars.dev> (http://hellomars.dev)",
 	"repository": "github:j0hnm4r5/hagen",
 	"license": "MIT",
+	"type": "module",
 	"keywords": [
 		"logger",
 		"node",
@@ -13,7 +14,7 @@
 		"reporter",
 		"print",
 		"colorful",
-		"commonjs",
+		"esm",
 		"elegant",
 		"beautiful"
 	],
@@ -25,24 +26,18 @@
 		"src"
 	],
 	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
+	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"sideEffects": false,
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/index.d.mts",
-				"default": "./dist/index.mjs"
-			},
-			"require": {
-				"types": "./dist/index.d.ts",
-				"default": "./dist/index.js"
-			}
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"scripts": {
 		"dev": "tsup src/index.ts --watch",
-		"build": "tsup src/index.ts --format esm,cjs --dts --minify --sourcemap --clean",
+		"build": "tsup src/index.ts --format esm --dts --minify --sourcemap --clean",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
@@ -58,7 +53,10 @@
 		"clean": "rm -rf dist coverage playwright-report .vitest",
 		"prepare": "husky",
 		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
-		"docs:generate": "typedoc",
+		"docs:dev": "vitepress dev docs",
+		"docs:build": "npm run docs:typedoc && vitepress build docs",
+		"docs:preview": "vitepress preview docs",
+		"docs:typedoc": "typedoc",
 		"visual:node": "tsx src/test/node.visualize.ts",
 		"visual:ci": "CI=true npm run visual:node",
 		"visual:browser": "vite"
@@ -79,6 +77,8 @@
 		"@types/eslint__js": "^8.42.3",
 		"@vitest/coverage-v8": "^4.0.15",
 		"@vitest/ui": "^4.0.15",
+		"@wasmer/sdk": "^0.7.0",
+		"coi-serviceworker": "^0.1.7",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",
@@ -93,10 +93,15 @@
 		"tsup": "^8.4.0",
 		"tsx": "^4.19.3",
 		"typedoc": "^0.28.15",
+		"typedoc-plugin-markdown": "^4.9.0",
+		"typedoc-vitepress-theme": "^1.1.2",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.48.1",
 		"vite": "^6.2.2",
-		"vitest": "^4.0.15"
+		"vitepress": "^1.6.4",
+		"vitest": "^4.0.15",
+		"xterm": "^5.3.0",
+		"xterm-addon-fit": "^0.8.0"
 	},
 	"lint-staged": {
 		"*.ts": [
