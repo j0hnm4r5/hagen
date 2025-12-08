@@ -98,47 +98,77 @@ async function initTerminal() {
 		setTimeout(() => {
 			const textarea = terminalRef.value?.querySelector("textarea");
 			if (textarea) {
+				// Handle keydown to intercept Ctrl+V before xterm does
+				textarea.addEventListener("keydown", (e: KeyboardEvent) => {
+					// Check for Ctrl+V or Cmd+V (but not Ctrl+Shift+V)
+					if ((e.ctrlKey || e.metaKey) && e.key === "v" && !e.shiftKey) {
+						e.preventDefault();
+						e.stopPropagation();
+						// Trigger paste manually
+						navigator.clipboard.readText().then((text) => {
+							handlePaste(text);
+						});
+					}
+				});
+
+				// Handle paste event (for Ctrl+Shift+V and right-click paste)
 				textarea.addEventListener("paste", (e: ClipboardEvent) => {
 					e.preventDefault();
 					e.stopPropagation();
 					const text = e.clipboardData?.getData("text");
 					if (text) {
-						// Handle multi-line paste by splitting and executing each line
-						const lines = text.split(/\r?\n/);
-						for (let i = 0; i < lines.length; i++) {
-							const line = lines[i];
-							if (line.trim()) {
-								// Write the line
-								for (const char of line) {
-									currentLine += char;
-									terminal.write(char);
-								}
-								// Execute immediately and move to next line (except for last line)
-								if (i < lines.length - 1) {
-									terminal.write("\r\n");
-									if (currentLine.trim()) {
-										commandHistory.push(currentLine);
-										historyIndex = commandHistory.length;
-										executeREPLCommand(currentLine);
-									}
-									currentLine = "";
-									writePrompt();
-									resizeToContent();
-								}
-							}
-						}
-					}
-				});
-
-				// Also handle keydown to capture Ctrl+V and Ctrl+Shift+V
-				textarea.addEventListener("keydown", (e: KeyboardEvent) => {
-					if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) {
-						// Allow default paste behavior
-						e.stopPropagation();
+						handlePaste(text);
 					}
 				});
 			}
 		}, 100);
+	}
+
+	// Handle pasted text
+	function handlePaste(text: string) {
+		if (!text) return;
+
+		// Split into lines
+		const lines = text.split(/\r?\n/).filter((line) => line.trim());
+
+		if (lines.length === 0) return;
+
+		// If single line, just add to current line
+		if (lines.length === 1) {
+			for (const char of lines[0]) {
+				currentLine += char;
+				terminal.write(char);
+			}
+		} else {
+			// Multi-line: display all lines and execute them all
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i];
+
+				// Write the line to terminal
+				for (const char of line) {
+					currentLine += char;
+					terminal.write(char);
+				}
+
+				// Execute and move to next line
+				terminal.write("\r\n");
+				if (currentLine.trim()) {
+					commandHistory.push(currentLine);
+					historyIndex = commandHistory.length;
+					executeREPLCommand(currentLine);
+				}
+				currentLine = "";
+
+				// Write prompt for next line (if not the last line)
+				if (i < lines.length - 1) {
+					writePrompt();
+				}
+			}
+
+			// Write final prompt after all lines executed
+			writePrompt();
+			resizeToContent();
+		}
 	}
 }
 
