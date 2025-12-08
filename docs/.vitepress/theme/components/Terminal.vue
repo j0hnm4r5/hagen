@@ -46,6 +46,7 @@ async function initTerminal() {
 	terminal = new Terminal({
 		cursorBlink: !props.editable,
 		fontSize: 14,
+		lineHeight: 1.5, // Increase line height for better spacing
 		fontFamily: 'Menlo, Monaco, "Courier New", monospace',
 		theme: {
 			// Catppuccin Mocha theme
@@ -87,7 +88,7 @@ async function initTerminal() {
 		// Set initial height for REPL
 		terminal.resize(terminal.cols, 10); // Start with 10 rows for REPL
 		if (terminalRef.value) {
-			const height = 10 * 17 + 32; // 10 rows
+			const height = 10 * 21 + 32; // 10 rows with lineHeight 1.5 (14px * 1.5 = 21px)
 			terminalRef.value.style.height = `${height}px`;
 			terminalRef.value.style.minHeight = `${height}px`;
 			terminalRef.value.style.maxHeight = `${height}px`;
@@ -260,6 +261,7 @@ function executeREPLCommand(command: string) {
 		terminal?.writeln("  hagen.error()   - Error level message");
 		terminal?.writeln("");
 		terminal?.writeln("\x1b[2mExample: hagen.log('API', 'Request received')\x1b[0m");
+		terminal?.writeln(""); // Add blank line after help output
 		return;
 	}
 
@@ -279,13 +281,16 @@ function executeREPLCommand(command: string) {
 
 			// Simulate the output based on method
 			simulateHagenOutput(method, args);
+			terminal?.writeln(""); // Add blank line after output
 		} else {
 			terminal?.writeln(`\x1b[31m✕ Invalid command\x1b[0m Type 'help' for available commands`);
+			terminal?.writeln(""); // Add blank line after error
 		}
 	} catch (err) {
 		terminal?.writeln(
 			`\x1b[31m✕ Error:\x1b[0m ${err instanceof Error ? err.message : "Unknown error"}`
 		);
+		terminal?.writeln(""); // Add blank line after error
 	}
 }
 
@@ -372,7 +377,8 @@ function resizeToContent() {
 	terminal.resize(terminal.cols, targetRows);
 
 	// Update container height - exact calculation to prevent scrollbars
-	const lineHeight = 17; // xterm.js default line height
+	// lineHeight 1.5 means 14px font * 1.5 = 21px per line
+	const lineHeight = 21;
 	const padding = 32; // 16px top + 16px bottom
 	const height = targetRows * lineHeight + padding;
 	terminalRef.value.style.height = `${height}px`;
@@ -611,6 +617,11 @@ watch(
 
 .terminal-body :deep(.xterm) {
 	padding: 0;
+	line-height: 1.4;
+}
+
+.terminal-body :deep(.xterm-rows) {
+	line-height: 1.4;
 }
 
 .terminal-body :deep(.xterm-viewport) {
