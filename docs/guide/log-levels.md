@@ -4,7 +4,7 @@ Hagen provides five distinct log levels, each with unique visual styling and use
 
 ## Overview
 
-```typescript
+```typescript {output=true}
 import hagen from "hagen";
 
 hagen.log("LABEL", "General logging");      // Auto-colored
@@ -13,10 +13,6 @@ hagen.success("LABEL", "Success message");  // Green with '✓'
 hagen.warn("LABEL", "Warning message");     // Yellow with '!'
 hagen.error("LABEL", "Error message");      // Red with '✕'
 ```
-
-**Output:**
-
-<Terminal exampleId="log-levels-all" title="All Log Levels" />
 
 Each log level has distinct visual styling:
 - `log()` - Colored background (cyan in this case), black text
@@ -29,13 +25,11 @@ Each log level has distinct visual styling:
 
 The standard log method for general-purpose messages.
 
-```typescript
+```typescript {output=true}
 hagen.log("API", "Request received");
 hagen.log("CACHE", "Cache hit for key: user_123");
-hagen.log("WORKER", "Processing job", jobId);
+hagen.log("WORKER", "Processing job");
 ```
-
-<Terminal exampleId="log-levels-log" title="log() Method" />
 
 **Characteristics:**
 - Uses `console.log` internally
@@ -53,13 +47,11 @@ hagen.log("WORKER", "Processing job", jobId);
 
 Blue-styled informational messages with an 'i' prefix.
 
-```typescript
+```typescript {output=true}
 hagen.info("CONFIG", "Loaded configuration from env");
 hagen.info("AUTH", "User authentication required");
 hagen.info("SYSTEM", "Service started on port 3000");
 ```
-
-<Terminal exampleId="log-levels-info" title="info() Method" />
 
 **Characteristics:**
 - Uses `console.log` internally
@@ -77,13 +69,11 @@ hagen.info("SYSTEM", "Service started on port 3000");
 
 Green-styled success messages with a checkmark prefix.
 
-```typescript
+```typescript {output=true}
 hagen.success("DB", "Database connection established");
 hagen.success("API", "Request completed successfully");
 hagen.success("AUTH", "User logged in");
 ```
-
-<Terminal exampleId="log-levels-success" title="success() Method" />
 
 **Characteristics:**
 - Uses `console.log` internally
@@ -101,13 +91,11 @@ hagen.success("AUTH", "User logged in");
 
 Yellow-styled warning messages with an exclamation mark prefix.
 
-```typescript
+```typescript {output=true}
 hagen.warn("CACHE", "Cache size exceeding 80% capacity");
 hagen.warn("API", "Rate limit approaching");
 hagen.warn("MEMORY", "High memory usage detected");
 ```
-
-<Terminal exampleId="log-levels-warn" title="warn() Method" />
 
 **Characteristics:**
 - Uses `console.warn` internally
@@ -127,13 +115,11 @@ hagen.warn("MEMORY", "High memory usage detected");
 
 Red-styled error messages with an X prefix.
 
-```typescript
-hagen.error("API", "Request failed", new Error("Timeout"));
-hagen.error("DB", "Connection lost", dbError);
+```typescript {output=true}
+hagen.error("API", "Request failed");
+hagen.error("DB", "Connection lost");
 hagen.error("AUTH", "Invalid credentials");
 ```
-
-<Terminal exampleId="log-levels-error" title="error() Method" />
 
 **Characteristics:**
 - Uses `console.error` internally

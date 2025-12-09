@@ -6,15 +6,13 @@ Learn the fundamentals of logging with Hagen through simple, practical examples.
 
 The quickest way to get started:
 
-```typescript
+```typescript {output=true}
 import hagen from "hagen";
 
 hagen.log("APP", "Application starting");
 hagen.info("CONFIG", "Configuration loaded");
 hagen.success("INIT", "Initialization complete");
 ```
-
-<Terminal exampleId="basic-usage" title="Basic Usage Example" />
 
 ## All Log Levels
 

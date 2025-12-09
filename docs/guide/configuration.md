@@ -185,7 +185,9 @@ Make all labels a fixed width for aligned output.
 
 #### Basic Fixed Width
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 const logger = createHagen({
   fixedWidth: { width: 10 }
 });
@@ -198,8 +200,6 @@ logger.log("X", "Tiny");
 //   DATABASE   Longer label
 //   X          Tiny
 ```
-
-<Terminal exampleId="config-fixed-width" title="Fixed-Width Labels" />
 
 #### Truncation Methods
 

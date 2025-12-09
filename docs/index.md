@@ -44,17 +44,15 @@ features:
 
 ## Quick Example
 
-```typescript
+```typescript {output=true}
 import hagen from "hagen";
 
 hagen.log("API", "Request received");
 hagen.info("AUTH", "User logged in");
 hagen.success("DB", "Connection established");
 hagen.warn("CACHE", "High memory usage");
-hagen.error("API", "Request failed", error);
+hagen.error("API", "Request failed");
 ```
-
-<Terminal exampleId="log-levels-all" title="All Log Levels" />
 
 ## Installation
 

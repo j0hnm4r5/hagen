@@ -4,7 +4,7 @@ Learn how to customize colors in Hagen for complete control over your logging ae
 
 ## Automatic Coloring
 
-By default, Hagen automatically assigns colors to labels using a hash-based algorithm:
+By default, Hagen automatically assigns colors to labels using a deterministic hash-based algorithm:
 
 ```typescript
 hagen.log("API", "Message");  // Always gets the same color
@@ -21,7 +21,9 @@ This ensures:
 
 Hagen has a built-in palette of 6 colors (indexes 0-5):
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 hagen.log({ label: "API", color: 0 }, "Cyan");
 hagen.log({ label: "API", color: 1 }, "Magenta");
 hagen.log({ label: "API", color: 2 }, "Blue");
@@ -29,8 +31,6 @@ hagen.log({ label: "API", color: 3 }, "Yellow");
 hagen.log({ label: "API", color: 4 }, "Green");
 hagen.log({ label: "API", color: 5 }, "Red");
 ```
-
-<Terminal exampleId="custom-colors-palette" title="Built-in Color Palette" />
 
 The palette (using Chalk):
 - **0**: Cyan (`chalk.cyan`)
@@ -48,7 +48,7 @@ Each color index produces a distinct background color for the label, making it e
 
 For full control, use hex colors:
 
-```typescript
+```typescript {output=true}
 hagen.log(
   {
     label: "CUSTOM",
@@ -58,8 +58,6 @@ hagen.log(
   "Red background, white text"
 );
 ```
-
-<Terminal exampleId="custom-colors-hex" title="Custom Hex Colors" />
 
 ### Background Color Only
 

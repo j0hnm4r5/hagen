@@ -68,7 +68,7 @@ logger.success("API", "Request completed");
 
 Let's explore the five log levels:
 
-```typescript
+```typescript {output=true}
 import hagen from "hagen";
 
 // General logging (auto-colored label)
@@ -84,12 +84,8 @@ hagen.success("DB", "Database connection established");
 hagen.warn("CACHE", "Cache size exceeding threshold");
 
 // Error (red with '✕' prefix, uses console.error)
-hagen.error("API", "Request failed", new Error("Timeout"));
+hagen.error("API", "Request failed");
 ```
-
-**What you'll see in your terminal:**
-
-<Terminal exampleId="quick-start-basic" title="Five Log Levels" />
 
 - **log()**: Colored background with label (color chosen automatically)
 - **info()**: Blue "i" icon before the label

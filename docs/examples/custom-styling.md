@@ -21,7 +21,9 @@ hagen.log({ label: "RED", color: 5 }, "Red background");
 
 Use any hex color for complete control:
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 // Brand colors
 const BRAND = {
   primary: { label: "PRIMARY", bgColor: "#3B82F6", fgColor: "#FFFFFF" },
@@ -37,21 +39,17 @@ hagen.log(BRAND.warning, "Warning state");
 hagen.log(BRAND.danger, "Danger state");
 ```
 
-<Terminal exampleId="custom-styling" title="Brand Colors" />
-
 ## Prefix and Suffix
 
 Add custom decorators around labels:
 
-```typescript
+```typescript {output=true}
 // Arrow prefix
 hagen.log({ label: "API", prefix: "→" }, "Arrow before label");
 
 // Double arrows
 hagen.log({ label: "WORKER", prefix: ">>", suffix: "<<" }, "Brackets");
 ```
-
-<Terminal exampleId="config-prefix-suffix" title="Prefixes and Suffixes" />
 
 ## Prefix and Suffix
 
@@ -245,7 +243,9 @@ hagen.log(levels.fatal, "Critical failure");
 
 Different colors for different services:
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 const services = {
   api: { label: "API", color: 2, prefix: "🌐" },
   db: { label: "DB", color: 4, prefix: "💾" },
@@ -260,8 +260,6 @@ hagen.log(services.cache, "Cache hit");
 hagen.log(services.auth, "User authenticated");
 hagen.log(services.queue, "Job enqueued");
 ```
-
-<Terminal exampleId="custom-styling-brands" title="Service Categories with Icons" />
 
 ## Dynamic Styling
 

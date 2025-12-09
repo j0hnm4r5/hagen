@@ -58,7 +58,9 @@ Create different loggers for different subsystems:
 
 ### Basic Multi-Logger Setup
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 // lib/loggers.ts
 import { createHagen } from "hagen";
 
@@ -81,8 +83,6 @@ export const cacheLogger = createHagen({
   labelPrefix: "[CACHE]"
 });
 ```
-
-<Terminal exampleId="multiple-loggers" title="Multiple Logger Instances" />
 
 ### Using Specialized Loggers
 

@@ -12,7 +12,7 @@ Hagen is a colorful, instance-based logger designed for JavaScript and TypeScrip
 
 When building applications, especially larger ones with multiple modules or services, console logs quickly become difficult to read and distinguish:
 
-```typescript
+```typescript {output=true}
 console.log("Fetching user data...");
 console.log("Cache miss");
 console.log("Database query executed");
@@ -25,7 +25,7 @@ Without visual distinction, it's hard to tell which log comes from which part of
 
 Hagen automatically assigns consistent colors to labels, making logs instantly recognizable:
 
-```typescript
+```typescript {output=true}
 import hagen from "hagen";
 
 hagen.log("API", "Fetching user data...");
@@ -33,8 +33,6 @@ hagen.log("CACHE", "Cache miss");
 hagen.log("DB", "Database query executed");
 hagen.success("API", "User data retrieved");
 ```
-
-<Terminal exampleId="basic-usage" title="Visual Distinction with Hagen" />
 
 Each label gets a consistent color based on its text, so "API" is always the same color, "CACHE" is always another color, etc. The colors are chosen automatically using a hash-based algorithm, ensuring consistency without any configuration.
 

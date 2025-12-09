@@ -127,7 +127,9 @@ When using `dateFormat: "time"`, choose between 12-hour and 24-hour format:
 
 ### 24-Hour Format (Default)
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 const logger = createHagen({
   showTimestamp: true,
   dateFormat: "time",
@@ -138,11 +140,11 @@ logger.log("API", "Message");
 // Output: 14:30:45 [ API ] Message
 ```
 
-<Terminal exampleId="timestamps-time-24h" title="24-Hour Time Format" />
-
 ### 12-Hour Format
 
-```typescript
+```typescript {output=true}
+import { createHagen } from "hagen";
+
 const logger = createHagen({
   showTimestamp: true,
   dateFormat: "time",
@@ -152,8 +154,6 @@ const logger = createHagen({
 logger.log("API", "Message");
 // Output: 2:30:45 PM [ API ] Message
 ```
-
-<Terminal exampleId="timestamps-time-12h" title="12-Hour Time Format" />
 
 **Note**: `timeFormat` only applies when `dateFormat` is set to `"time"`.
 
