@@ -176,6 +176,42 @@ logger.log("API", "Request sent");
 // Output: [ API ] → Request sent
 ```
 
+### `defaultLabel`
+
+- **Type**: `string`
+- **Default**: `"■"` (black square)
+
+Customize the fallback symbol used when labels are empty, undefined, or null:
+
+```typescript
+const logger = createHagen({ defaultLabel: "•" });
+
+logger.log("", "Empty label uses default");
+logger.log(undefined, "Undefined label uses default");
+logger.log(null, "Null label uses default");
+// Output: [ • ] Empty label uses default
+// Output: [ • ] Undefined label uses default
+// Output: [ • ] Null label uses default
+```
+
+You can use any symbol, including emojis:
+
+```typescript {output=true}
+import { createHagen } from "hagen";
+
+const logger = createHagen({ defaultLabel: "🔹" });
+
+logger.log("", "Message with fallback");
+logger.log("API", "Normal label");
+```
+
+This is useful for:
+- **Defensive coding**: Handle cases where labels might be empty or undefined
+- **Consistent styling**: Use a default symbol that matches your log format
+- **Visual distinction**: Make empty labels visually distinct from regular ones
+
+**Note**: Non-empty string labels always take precedence over the default.
+
 ### `fixedWidth`
 
 - **Type**: `{ width: number; truncationMethod?: "start" | "end" | "middle" }`
@@ -254,6 +290,7 @@ const logger = createHagen({
   // Label formatting
   labelPrefix: "[APP]",
   labelSuffix: "→",
+  defaultLabel: "◆",
   
   // Fixed width
   fixedWidth: {
@@ -395,6 +432,7 @@ The default instance exported by Hagen uses these defaults:
   enableColor: true, // false in CI
   labelPrefix: "",
   labelSuffix: "",
+  defaultLabel: "■",
   fixedWidth: undefined
 }
 ```

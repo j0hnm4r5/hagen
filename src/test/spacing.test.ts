@@ -194,8 +194,8 @@ describe("Spacing and Margins", () => {
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
 
-			// Empty label gets replaced with '•' (bullet)
-			expect(stripped).toBe(" • ");
+			// Empty label gets replaced with '■' (black square)
+			expect(stripped).toBe(" ■ ");
 		});
 
 		it("should handle label with internal spaces", async () => {

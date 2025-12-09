@@ -50,6 +50,61 @@ describe("Content Validation", () => {
 			expect(label).toBeDefined();
 		});
 
+		it("should handle undefined label with default fallback", async () => {
+			const { createHagen } = await import("../index.js");
+			const logger = createHagen({ enableColor: true });
+
+			logger.log(undefined as unknown as Label, "msg");
+
+			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const stripped = stripAnsi(label);
+			expect(stripped).toBe(" ■ "); // Default fallback symbol
+		});
+
+		it("should handle null label with default fallback", async () => {
+			const { createHagen } = await import("../index.js");
+			const logger = createHagen({ enableColor: true });
+
+			logger.log(null as unknown as Label, "msg");
+
+			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const stripped = stripAnsi(label);
+			expect(stripped).toBe(" ■ "); // Default fallback symbol
+		});
+
+		it("should handle object with empty label", async () => {
+			const { createHagen } = await import("../index.js");
+			const logger = createHagen({ enableColor: true });
+
+			logger.log({ label: "" }, "msg");
+
+			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const stripped = stripAnsi(label);
+			expect(stripped).toBe(" ■ "); // Default fallback symbol
+		});
+
+		it("should handle object with undefined label", async () => {
+			const { createHagen } = await import("../index.js");
+			const logger = createHagen({ enableColor: true });
+
+			logger.log({ label: undefined as unknown as string }, "msg");
+
+			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const stripped = stripAnsi(label);
+			expect(stripped).toBe(" ■ "); // Default fallback symbol
+		});
+
+		it("should use custom default label when configured", async () => {
+			const { createHagen } = await import("../index.js");
+			const logger = createHagen({ enableColor: true, defaultLabel: "◆" });
+
+			logger.log("", "msg");
+
+			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const stripped = stripAnsi(label);
+			expect(stripped).toBe(" ◆ "); // Custom default label
+		});
+
 		it("should handle very long labels", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });

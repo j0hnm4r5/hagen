@@ -83,6 +83,46 @@ hagen.log(styles.outgoing, "Sent response");
 hagen.log(styles.error, "Something went wrong");
 ```
 
+## Default Label Fallback
+
+When labels are empty, undefined, or null, Hagen uses a default fallback symbol (default: `"■"`):
+
+```typescript {output=true}
+import { createHagen } from "hagen";
+
+// Custom default label
+const logger = createHagen({ defaultLabel: "◆" });
+
+logger.log("", "Empty label uses fallback");
+logger.log("API", "Normal label works fine");
+logger.log({ label: "" }, "Empty object label also uses fallback");
+```
+
+This is useful for defensive coding or when labels come from dynamic sources:
+
+```typescript {output=true}
+import { createHagen } from "hagen";
+
+// Use emoji as default
+const logger = createHagen({ defaultLabel: "🔹" });
+
+// Simulating dynamic labels that might be empty
+const labels = ["USER", "", "API", undefined, "DB"];
+
+labels.forEach(label => {
+  logger.log(label, `Processing with label: ${label || "(empty)"}`);
+});
+```
+
+Common fallback symbols:
+- `"■"` - Black square (default)
+- `"•"` - Bullet point
+- `"◆"` - Diamond
+- `"▪"` - Small square
+- `"○"` - Circle
+- `"🔹"` - Blue diamond emoji
+- `"⚫"` - Black circle emoji
+
 ## Fixed-Width Labels
 
 Align output with fixed-width labels:

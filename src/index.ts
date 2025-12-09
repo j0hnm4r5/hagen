@@ -43,6 +43,8 @@ import { isCI } from "std-env";
  */
 export type Label =
 	| string
+	| undefined
+	| null
 	| {
 			/** The text content of the label */
 			label: string;
@@ -153,6 +155,12 @@ export interface LoggerConfig {
 	 * Default: none
 	 */
 	labelSuffix?: string;
+
+	/**
+	 * Default label to use when label is empty, undefined, or null.
+	 * Default: "■" (black square)
+	 */
+	defaultLabel?: string;
 }
 
 /**
@@ -267,6 +275,7 @@ export const defaultConfig: LoggerConfig = {
 	},
 	dateFormat: "iso",
 	timeFormat: "24h",
+	defaultLabel: "■",
 };
 
 // ========= HELPERS =========
@@ -419,12 +428,20 @@ function formatLabel(
  */
 function print({ logger, label, data, config }: PrintParams): void {
 	let color: ChalkInstance;
-	let finalLabel = "•";
+	let finalLabel = config.defaultLabel ?? "■";
 	let customPrefix: string | undefined;
 	let customSuffix: string | undefined;
 
-	if (typeof label === "object") {
-		finalLabel = label.label || finalLabel;
+	// Handle undefined, null, or non-object labels
+	if (label === undefined || label === null || typeof label !== "object") {
+		// For string labels, use them if non-empty, otherwise use default
+		const labelText = typeof label === "string" ? label : "";
+		finalLabel = labelText.trim() || finalLabel;
+		color = calculateLabelColor(finalLabel, config.colors.normal);
+	} else {
+		// Object label
+		const labelText = typeof label.label === "string" ? label.label : "";
+		finalLabel = labelText.trim() || finalLabel;
 		customPrefix = label.prefix;
 		customSuffix = label.suffix;
 
@@ -439,13 +456,10 @@ function print({ logger, label, data, config }: PrintParams): void {
 		} else {
 			color = calculateLabelColor(finalLabel, config.colors.normal);
 		}
-	} else {
-		finalLabel = label || finalLabel;
-		color = calculateLabelColor(label, config.colors.normal);
 	}
 
 	// Apply formatting
-	finalLabel = formatLabel(finalLabel.trim(), customPrefix, customSuffix, config);
+	finalLabel = formatLabel(finalLabel, customPrefix, customSuffix, config);
 
 	// Apply fixed width if configured
 	if (config.fixedWidth) {
@@ -548,9 +562,10 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const info = (label: Label, ...data: unknown[]): void => {
 		let processedLabel: Label;
 
-		if (typeof label === "string") {
+		if (label === undefined || label === null || typeof label === "string") {
+			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
-				label: formatLabel(label, "i", undefined, instanceConfig),
+				label: formatLabel(labelText, "i", undefined, instanceConfig),
 				color: instanceConfig.colors.reserved.INFO,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -581,9 +596,10 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const success = (label: Label, ...data: unknown[]): void => {
 		let processedLabel: Label;
 
-		if (typeof label === "string") {
+		if (label === undefined || label === null || typeof label === "string") {
+			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
-				label: formatLabel(label, "✓", undefined, instanceConfig),
+				label: formatLabel(labelText, "✓", undefined, instanceConfig),
 				color: instanceConfig.colors.reserved.SUCCESS,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -614,9 +630,10 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const warn = (label: Label, ...data: unknown[]): void => {
 		let processedLabel: Label;
 
-		if (typeof label === "string") {
+		if (label === undefined || label === null || typeof label === "string") {
+			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
-				label: formatLabel(label, "!", undefined, instanceConfig),
+				label: formatLabel(labelText, "!", undefined, instanceConfig),
 				color: instanceConfig.colors.reserved.WARN,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -647,9 +664,10 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const error = (label: Label, ...data: unknown[]): void => {
 		let processedLabel: Label;
 
-		if (typeof label === "string") {
+		if (label === undefined || label === null || typeof label === "string") {
+			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
-				label: formatLabel(label, "✕", undefined, instanceConfig),
+				label: formatLabel(labelText, "✕", undefined, instanceConfig),
 				color: instanceConfig.colors.reserved.ERROR,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
