@@ -19,6 +19,9 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 docs/.vitepress/.temp/
 
+# Generated documentation (created at build time from docs/)
+docs-generated/
+
 # TypeDoc generated API docs (auto-generated)
 docs/api/
 
