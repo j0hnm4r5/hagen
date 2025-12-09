@@ -3,7 +3,7 @@
 		<div class="terminal-header-wrapper">
 			<div class="terminal-header" :class="{ 'has-shadow': isCollapsed }" @click="toggleCollapse">
 				<div class="terminal-title">
-					<span>Interactive Terminal</span>
+					<span>Node REPL</span>
 				</div>
 			</div>
 		</div>
