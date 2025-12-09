@@ -34,6 +34,9 @@ let currentLine = "";
 let commandHistory: string[] = [];
 let historyIndex = -1;
 
+// Persistent REPL context to maintain state between commands
+const replContext: Record<string, any> = {};
+
 // Expose method to run commands from parent
 const runCommand = (command: string) => {
 	if (!terminal || !props.editable) return;
@@ -270,6 +273,8 @@ function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 	// Clear command
 	if (trimmed === "clear") {
 		terminal?.clear();
+		// Clear the REPL context
+		Object.keys(replContext).forEach(key => delete replContext[key]);
 		writePrompt();
 		return;
 	}
@@ -316,14 +321,97 @@ function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 		console.error = console.log;
 
 		try {
-			// Execute the code and capture the result
-			const result = new Function(
-				"hagen",
-				`
+			// Execute code in context with persistent variables
+			// Build a function that has access to all previous variables
+			const contextKeys = Object.keys(replContext);
+			const contextValues = contextKeys.map(key => replContext[key]);
+
+			// Create function with context variables as parameters
+			const func = new Function('hagen', ...contextKeys, `
 				"use strict";
 				${trimmed}
-			`
-			)(window.hagen);
+			`);
+
+			const result = func(window.hagen, ...contextValues);
+
+			// Parse variable declarations and add to context
+			// Match: const/let/var identifier = value
+			const declMatch = trimmed.match(/^\s*(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/);
+			if (declMatch) {
+				const varName = declMatch[2];
+				// Re-evaluate to get the value
+				try {
+					const evalFunc = new Function('hagen', ...contextKeys, `
+						"use strict";
+						${trimmed}
+						return ${varName};
+					`);
+					replContext[varName] = evalFunc(window.hagen, ...contextValues);
+				} catch (e) {
+					// Variable might not be accessible, skip
+				}
+			}
+
+			// Restore console methods
+			console.log = originalConsoleLog;
+			console.info = originalConsoleInfo;
+			console.warn = originalConsoleWarn;
+			console.error = originalConsoleError;
+
+			// Show the return value if it's not undefined
+			if (result !== undefined) {
+				const resultStr =
+					typeof result === "object" ? JSON.stringify(result, null, 2) : String(result);
+				terminal?.writeln(`\x1b[90m${resultStr}\x1b[0m`);
+			}
+
+			if (addBlankLine) {
+				terminal?.writeln(""); // Add blank line after output
+			}
+		} catch (execError) {
+			// Restore console methods
+			console.log = originalConsoleLog;
+			console.info = originalConsoleInfo;
+			console.warn = originalConsoleWarn;
+			console.error = originalConsoleError;
+
+			terminal?.writeln(
+				`\x1b[31m✕ ${execError instanceof Error ? execError.message : "Execution error"}\x1b[0m`
+			);
+			if (addBlankLine) {
+				terminal?.writeln("");
+			}
+		}
+	} catch (err) {
+		terminal?.writeln(
+			`\x1b[31m✕ Error:\x1b[0m ${err instanceof Error ? err.message : "Unknown error"}`
+		);
+		if (addBlankLine) {
+			terminal?.writeln(""); // Add blank line after error
+		}
+	}
+				`
+				);
+
+				const declaredVars = func(window.hagen, ...contextValues);
+
+				// Add declared variables to context
+				Object.assign(replContext, declaredVars);
+
+				result = undefined; // Declarations don't return values
+			} else {
+				// For expressions/statements, execute with access to context
+				const func = new Function(
+					"hagen",
+					...contextKeys,
+					`
+					"use strict";
+					return (${code});
+				`
+				);
+
+				result = func(window.hagen, ...contextValues);
+			}
 
 			// Restore console methods
 			console.log = originalConsoleLog;
