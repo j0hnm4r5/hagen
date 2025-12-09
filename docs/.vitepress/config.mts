@@ -5,11 +5,6 @@ export default defineConfig({
 	description: "A colorful, instance-based logger for JavaScript and TypeScript",
 	base: "/hagen/",
 
-	head: [
-		// Service worker for Cross-Origin-Isolation (required for SharedArrayBuffer/Wasmer.js)
-		["script", { src: "/hagen/coi-serviceworker.js" }],
-	],
-
 	themeConfig: {
 		logo: "/screenshot.png",
 
