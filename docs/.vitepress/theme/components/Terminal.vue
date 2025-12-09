@@ -7,6 +7,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import examples from "../../examples";
+// Import hagen - using relative path to built dist
+import hagenModule from "../../../../dist/index.js";
+const hagen = hagenModule.default || hagenModule;
 
 interface Props {
 	exampleId?: string;
@@ -273,6 +276,91 @@ function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 
 	// Help command
 	if (trimmed === "help") {
+		terminal?.writeln("\x1b[36mAvailable JavaScript REPL:\x1b[0m");
+		terminal?.writeln("  Type any JavaScript code to execute");
+		terminal?.writeln("  clear           - Clear the terminal");
+		terminal?.writeln("  help            - Show this help message");
+		terminal?.writeln("");
+		terminal?.writeln("\x1b[36mHagen is available globally:\x1b[0m");
+		terminal?.writeln("  hagen.log()     - Log with custom label");
+		terminal?.writeln("  hagen.info()    - Info level message");
+		terminal?.writeln("  hagen.success() - Success level message");
+		terminal?.writeln("  hagen.warn()    - Warning level message");
+		terminal?.writeln("  hagen.error()   - Error level message");
+		terminal?.writeln("");
+		terminal?.writeln("\x1b[2mExample: hagen.log('API', 'Request received')\x1b[0m");
+		terminal?.writeln("\x1b[2mExample: const x = 5; hagen.log('VALUE', `x = ${x}`)\x1b[0m");
+		if (addBlankLine) {
+			terminal?.writeln(""); // Add blank line after help output
+		}
+		return;
+	}
+
+	// Execute as JavaScript code
+	try {
+		// Intercept console.log to capture output in terminal
+		const originalConsoleLog = console.log;
+		const originalConsoleInfo = console.info;
+		const originalConsoleWarn = console.warn;
+		const originalConsoleError = console.error;
+
+		console.log = (...args: any[]) => {
+			// Write directly to terminal
+			const output = args.map(arg =>
+				typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+			).join(' ');
+			terminal?.writeln(output);
+		};
+		console.info = console.log;
+		console.warn = console.log;
+		console.error = console.log;
+
+		try {
+			// Execute the code and capture the result
+			const result = new Function('hagen', `
+				"use strict";
+				${trimmed}
+			`)(window.hagen);
+
+			// Restore console methods
+			console.log = originalConsoleLog;
+			console.info = originalConsoleInfo;
+			console.warn = originalConsoleWarn;
+			console.error = originalConsoleError;
+
+			// Show the return value if it's not undefined
+			if (result !== undefined) {
+				const resultStr = typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result);
+				terminal?.writeln(`\x1b[90m${resultStr}\x1b[0m`);
+			}
+
+			if (addBlankLine) {
+				terminal?.writeln(""); // Add blank line after output
+			}
+		} catch (execError) {
+			// Restore console methods
+			console.log = originalConsoleLog;
+			console.info = originalConsoleInfo;
+			console.warn = originalConsoleWarn;
+			console.error = originalConsoleError;
+
+			terminal?.writeln(`\x1b[31m✕ ${execError instanceof Error ? execError.message : "Execution error"}\x1b[0m`);
+			if (addBlankLine) {
+				terminal?.writeln("");
+			}
+		}
+	} catch (err) {
+		terminal?.writeln(
+			`\x1b[31m✕ Error:\x1b[0m ${err instanceof Error ? err.message : "Unknown error"}`
+		);
+		if (addBlankLine) {
+			terminal?.writeln(""); // Add blank line after error
+		}
+	}
+}
+
+	// Help command
+	if (trimmed === "help") {
 		terminal?.writeln("\x1b[36mAvailable commands:\x1b[0m");
 		terminal?.writeln("  clear           - Clear the terminal");
 		terminal?.writeln("  help            - Show this help message");
@@ -292,16 +380,27 @@ function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 	// Try to execute as Hagen command
 	try {
 		// Parse the command to extract method and arguments
-		const hagenMatch = trimmed.match(/hagen\.(log|info|success|warn|error)\s*\((.*)\)/);
+		const hagenMatch = trimmed.match(/hagen\.(log|info|success|warn|error)\s*\(([\s\S]*)\)$/);
 
 		if (hagenMatch) {
 			const method = hagenMatch[1];
-			const argsStr = hagenMatch[2];
+			const argsStr = hagenMatch[2].trim();
 
-			// Simple argument parsing (handles strings in quotes)
-			const args = argsStr
-				.split(/,(?=(?:[^"']*["'][^"']*["'])*[^"']*$)/)
-				.map((arg) => arg.trim().replace(/^["']|["']$/g, ""));
+			// Evaluate arguments using eval (safe in browser REPL context)
+			// Wrap in array to properly evaluate all arguments
+			let args: any[];
+			try {
+				// Use Function constructor to safely evaluate the arguments
+				args = new Function(`return [${argsStr}]`)();
+			} catch (evalError) {
+				terminal?.writeln(
+					`\x1b[31m✕ Invalid syntax\x1b[0m ${evalError instanceof Error ? evalError.message : "Unknown error"}`
+				);
+				if (addBlankLine) {
+					terminal?.writeln("");
+				}
+				return;
+			}
 
 			// Simulate the output based on method
 			simulateHagenOutput(method, args);
@@ -324,10 +423,72 @@ function executeREPLCommand(command: string, addBlankLine: boolean = true) {
 	}
 }
 
-// Simulate Hagen output for REPL commands
-function simulateHagenOutput(method: string, args: string[]) {
-	const label = args[0] || "LABEL";
-	const message = args.slice(1).join(" ") || "Message";
+
+
+	const labelArg = args[0];
+	const restArgs = args.slice(1);
+	const message =
+		restArgs.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ") || "";
+
+	// Handle object labels with custom colors
+	if (typeof labelArg === "object" && labelArg !== null) {
+		const labelText = labelArg.label || "LABEL";
+		const bgColor = labelArg.bgColor || labelArg.color;
+		const fgColor = labelArg.fgColor;
+		const prefix = labelArg.prefix || "";
+		const suffix = labelArg.suffix || "";
+
+		// Convert color codes or hex to ANSI
+		let bgAnsi = "";
+		let fgAnsi = "\x1b[37m"; // Default white text
+
+		if (bgColor !== undefined) {
+			if (typeof bgColor === "number") {
+				// ANSI color code (0-15)
+				bgAnsi = `\x1b[${bgColor < 8 ? 40 + bgColor : 100 + (bgColor - 8)}m`;
+			} else if (typeof bgColor === "string" && bgColor.startsWith("#")) {
+				// Hex color - convert to RGB ANSI
+				const r = parseInt(bgColor.slice(1, 3), 16);
+				const g = parseInt(bgColor.slice(3, 5), 16);
+				const b = parseInt(bgColor.slice(5, 7), 16);
+				bgAnsi = `\x1b[48;2;${r};${g};${b}m`;
+			}
+		}
+
+		if (fgColor !== undefined) {
+			if (typeof fgColor === "number") {
+				// ANSI color code (0-15)
+				fgAnsi = `\x1b[${fgColor < 8 ? 30 + fgColor : 90 + (fgColor - 8)}m`;
+			} else if (typeof fgColor === "string" && fgColor.startsWith("#")) {
+				// Hex color - convert to RGB ANSI
+				const r = parseInt(fgColor.slice(1, 3), 16);
+				const g = parseInt(fgColor.slice(3, 5), 16);
+				const b = parseInt(fgColor.slice(5, 7), 16);
+				fgAnsi = `\x1b[38;2;${r};${g};${b}m`;
+			}
+		}
+
+		// Build output with custom colors
+		const icon =
+			method === "info"
+				? "\x1b[34mi\x1b[0m "
+				: method === "success"
+					? "\x1b[32m✓\x1b[0m "
+					: method === "warn"
+						? "\x1b[33m!\x1b[0m "
+						: method === "error"
+							? "\x1b[31m✕\x1b[0m "
+							: "";
+
+		const labelOutput = bgAnsi
+			? `${bgAnsi}${fgAnsi} ${prefix}${labelText}${suffix} \x1b[0m`
+			: `\x1b[46m\x1b[30m ${prefix}${labelText}${suffix} \x1b[0m`;
+		terminal?.writeln(`${icon}${labelOutput} ${message}`);
+		return;
+	}
+
+	// Handle string labels (original behavior)
+	const label = String(labelArg);
 
 	switch (method) {
 		case "log":
@@ -613,6 +774,11 @@ function resetTerminal() {
 
 // Lifecycle hooks
 onMounted(async () => {
+	// Make hagen available globally for REPL
+	if (typeof window !== 'undefined') {
+		(window as any).hagen = hagen;
+	}
+
 	await initTerminal();
 	// Auto-run code after terminal is initialized (only for non-editable terminals)
 	if (!props.editable) {
