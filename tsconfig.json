@@ -35,6 +35,6 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "scripts/**/*", "tools/**/*"],
 	"exclude": ["node_modules", "dist", "src/test/coverage/**/*"]
 }

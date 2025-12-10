@@ -156,7 +156,7 @@ describe("Integration Tests", () => {
 			},
 		});
 
-		logger.log("VERYLONGLABEL", "message");
+		logger.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "message");
 
 		const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 

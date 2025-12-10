@@ -123,17 +123,17 @@ function runHagenTests(logger: ReturnType<typeof createHagen>) {
 		labelWidth: 12,
 		labelTruncation: "end",
 	});
-	loggerWithFixedWidth.log("VeryLongLabel", "Width: 12; Truncation: end");
+	loggerWithFixedWidth.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: end");
 	const loggerWithMiddleTrunc = createHagen({
 		labelWidth: 12,
 		labelTruncation: "middle",
 	});
-	loggerWithMiddleTrunc.log("VeryLongLabel", "Width: 12; Truncation: middle");
+	loggerWithMiddleTrunc.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: middle");
 	const loggerWithStartTrunc = createHagen({
 		labelWidth: 12,
 		labelTruncation: "start",
 	});
-	loggerWithStartTrunc.log("VeryLongLabel", "Width: 12; Truncation: start");
+	loggerWithStartTrunc.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: start");
 
 	// Color index
 	logger.log({ label: "Indexed", color: 0 }, "Using color index 0");

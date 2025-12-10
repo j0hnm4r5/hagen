@@ -1,5 +1,5 @@
-import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	test: {
@@ -28,8 +28,10 @@ export default defineConfig({
 			provider: playwright({
 				launchOptions: {
 					headless: true,
+					args: ["--headless=new", "--disable-gpu", "--no-sandbox"],
 				},
 			}),
+			ui: false,
 		},
 	},
 });

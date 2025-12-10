@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
-import { spawnSync } from "child_process";
 import { glob } from "glob";
-import { fileURLToPath } from "url";
+import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
@@ -83,7 +83,7 @@ await new Promise(resolve => setTimeout(resolve, 500));
 
 		fs.writeFileSync(tempFile, wrappedCode);
 
-		let output;
+		let output: string;
 		try {
 			// Execute with node and redirect stderr to stdout to maintain output order
 			const result = spawnSync("sh", ["-c", `node ${tempFile} 2>&1`], {
@@ -97,7 +97,10 @@ await new Promise(resolve => setTimeout(resolve, 500));
 			}
 
 			if (result.status !== 0) {
-				const error = new Error(`Process exited with code ${result.status}`);
+				const error = new Error(`Process exited with code ${result.status}`) as Error & {
+					stderr?: string;
+					stdout?: string;
+				};
 				error.stderr = result.stderr;
 				error.stdout = result.stdout;
 				throw error;
@@ -109,18 +112,18 @@ await new Promise(resolve => setTimeout(resolve, 500));
 			// Cleanup and fail
 			try {
 				fs.unlinkSync(tempFile);
-			} catch (e) {
+			} catch {
 				// Ignore
 			}
 
 			console.error(`\n❌ Failed to execute code in ${relativePath}:`);
 			console.error(`Code block #${blockCount} (hash: ${hash})`);
-			console.error(error.message);
-			if (error.stderr) {
-				console.error("\nStderr:", error.stderr.toString());
+			console.error((error as Error).message);
+			if ((error as { stderr?: string }).stderr) {
+				console.error("\nStderr:", (error as { stderr: string }).stderr);
 			}
-			if (error.stdout) {
-				console.error("\nStdout:", error.stdout.toString());
+			if ((error as { stdout?: string }).stdout) {
+				console.error("\nStdout:", (error as { stdout: string }).stdout);
 			}
 			process.exit(1);
 		}
@@ -128,7 +131,7 @@ await new Promise(resolve => setTimeout(resolve, 500));
 		// Cleanup temp file
 		try {
 			fs.unlinkSync(tempFile);
-		} catch (e) {
+		} catch {
 			// Ignore
 		}
 

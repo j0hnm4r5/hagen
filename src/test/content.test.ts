@@ -58,7 +58,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" ■ "); // Default fallback symbol
+			expect(stripped).toBe(" · "); // Default fallback symbol
 		});
 
 		it("should handle null label with default fallback", async () => {
@@ -69,10 +69,10 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" ■ "); // Default fallback symbol
+			expect(stripped).toBe(" · "); // Default fallback symbol
 		});
 
-		it("should handle object with empty label", async () => {
+		it("should handle array with empty label", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
@@ -80,7 +80,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" ■ "); // Default fallback symbol
+			expect(stripped).toBe(" · "); // Default fallback symbol
 		});
 
 		it("should handle object with undefined label", async () => {
@@ -91,7 +91,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" ■ "); // Default fallback symbol
+			expect(stripped).toBe(" · "); // Default fallback symbol
 		});
 
 		it("should use custom default label when configured", async () => {

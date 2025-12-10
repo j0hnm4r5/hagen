@@ -1,5 +1,5 @@
-import repl from "repl";
-import util from "util";
+import repl from "node:repl";
+import util from "node:util";
 
 const { default: hagen } = await import("hagen");
 global.hagen = hagen;

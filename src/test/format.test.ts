@@ -98,25 +98,9 @@ describe("Output Format", () => {
 
 			// Long label
 			consoleLogSpy.mockClear();
-			logger.log("VERYLONGLABEL", "msg3");
+			logger.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "msg3");
 			const long = stripAnsi(consoleLogSpy.mock.calls[0]?.[0] as string);
-			expect(long).toBe(" VERYLONGLABEL ");
-		});
-	});
-
-	describe("CI Mode (Colors ON, isCI=true)", () => {
-		// Note: CI mode is determined at module load time by std-env
-		// It checks for CI environment variables at import time
-		// These tests are skipped because mocking environment variables
-		// before module load is complex in the test environment
-		// CI mode should be tested in actual CI environments
-		it.skip("should format with brackets around colored label in CI", async () => {
-			// This test requires running in actual CI environment
-			// Or setting environment variables before any imports
-		});
-
-		it.skip("should still have colored and bold label in CI mode", async () => {
-			// This test requires running in actual CI environment
+			expect(long).toBe(" ABCDEFGHIJKLMNOPQRSTUVWXYZ ");
 		});
 	});
 

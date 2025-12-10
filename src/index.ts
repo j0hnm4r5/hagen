@@ -659,7 +659,7 @@ export const defaultConfig: LoggerConfig = {
 	theme: "default",
 	dateFormat: "iso",
 	timeFormat: "24h",
-	defaultLabel: "■",
+	defaultLabel: "·",
 };
 
 // ========= HELPERS =========
@@ -887,7 +887,7 @@ function formatLabel(
  */
 function print({ logger, label, data, config }: PrintParams): void {
 	let color: ChalkInstance;
-	let finalLabel = config.defaultLabel ?? "■";
+	let finalLabel = config.defaultLabel ?? "·";
 	let customPrefix: string | undefined;
 	let customSuffix: string | undefined;
 

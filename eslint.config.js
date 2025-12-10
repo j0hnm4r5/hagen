@@ -1,7 +1,7 @@
 import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
 import prettier from "eslint-plugin-prettier";
 import unicorn from "eslint-plugin-unicorn";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
 	eslint.configs.recommended,
@@ -68,6 +68,9 @@ export default tseslint.config(
 		ignores: [
 			"dist/",
 			"docs/",
+			"docs-generated/",
+			"scripts/",
+			"tools/",
 			"node_modules/",
 			"coverage/",
 			"src/test/coverage/",

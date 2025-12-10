@@ -75,7 +75,7 @@ describe("Spacing and Margins", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			const longLabel = "VERYLONGLABEL";
+			const longLabel = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			logger.log(longLabel, "msg");
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -120,8 +120,8 @@ describe("Spacing and Margins", () => {
 
 			// Long
 			consoleLogSpy.mockClear();
-			logger.log("VERYLONGLABEL", "msg");
-			expect(consoleLogSpy.mock.calls[0]?.[0]).toBe("[ VERYLONGLABEL ]");
+			logger.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "msg");
+			expect(consoleLogSpy.mock.calls[0]?.[0]).toBe("[ ABCDEFGHIJKLMNOPQRSTUVWXYZ ]");
 		});
 	});
 
@@ -194,8 +194,8 @@ describe("Spacing and Margins", () => {
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
 
-			// Empty label gets replaced with '■' (black square)
-			expect(stripped).toBe(" ■ ");
+			// Empty label gets replaced with '·' (middle dot)
+			expect(stripped).toBe(" · ");
 		});
 
 		it("should handle label with internal spaces", async () => {
