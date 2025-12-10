@@ -28,7 +28,7 @@ describe("ANSI Color Codes", () => {
 	});
 
 	describe("Normal Color Palette (0-5)", () => {
-		it("should use ANSI codes for color 0 (yellow background)", async () => {
+		it("should use ANSI codes for color 0 (Royal Blue)", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
@@ -41,10 +41,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasBold(output)).toBe(true);
 			expect(hasBackgroundColor(output)).toBe(true);
 
-			// Should have yellow background (43)
-			expect(output).toContain("\u001B[43m");
+			// Should have Royal Blue background (#4169E1 = RGB 65,105,225)
+			expect(output).toContain("\u001B[48;2;65;105;225m");
 			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use ANSI codes for color 1 (green background)", async () => {
@@ -59,10 +59,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have green background (42)
-			expect(output).toContain("\u001B[42m");
-			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			// Should have Emerald Green background (#2ECC71 = RGB 46,204,113)
+			expect(output).toContain("\u001B[48;2;46;204;113m");
+			// Should have black foreground (#000000 = RGB 0,0,0)
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 
 		it("should use ANSI codes for color 2 (cyan background)", async () => {
@@ -77,10 +77,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have cyan background (46)
-			expect(output).toContain("\u001B[46m");
+			// Should have Turquoise background (#1ABC9C = RGB 26,188,156)
+			expect(output).toContain("\u001B[48;2;26;188;156m");
 			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 
 		it("should use ANSI codes for color 3 (red background)", async () => {
@@ -95,10 +95,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have red background (41)
-			expect(output).toContain("\u001B[41m");
+			// Should have Alizarin Red background (#E74C3C = RGB 231,76,60)
+			expect(output).toContain("\u001B[48;2;231;76;60m");
 			// Should have white foreground (37)
-			expect(output).toContain("\u001B[37m");
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use ANSI codes for color 4 (magenta background)", async () => {
@@ -113,10 +113,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have magenta background (45)
-			expect(output).toContain("\u001B[45m");
+			// Should have Amethyst background (#9B59B6 = RGB 155,89,182)
+			expect(output).toContain("\u001B[48;2;155;89;182m");
 			// Should have white foreground (37)
-			expect(output).toContain("\u001B[37m");
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use ANSI codes for color 5 (yellow background)", async () => {
@@ -131,10 +131,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have yellow background (43)
-			expect(output).toContain("\u001B[43m");
+			// Should have Orange background (#F39C12 = RGB 243,156,18)
+			expect(output).toContain("\u001B[48;2;243;156;18m");
 			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 
 		it("should apply bold to all colored labels", async () => {
@@ -165,10 +165,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have bright yellow background (103)
-			expect(output).toContain("\u001B[103m");
+			// Should have Orange background (#FFA500 = RGB 255,165,0)
+			expect(output).toContain("\u001B[48;2;255;165;0m");
 			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 
 		it("should use correct ANSI codes for ERROR (bgRedBright + black)", async () => {
@@ -182,10 +182,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have bright red background (101)
-			expect(output).toContain("\u001B[101m");
-			// Should have black foreground (30)
-			expect(output).toContain("\u001B[30m");
+			// Should have Crimson background (#DC143C = RGB 220,20,60)
+			expect(output).toContain("\u001B[48;2;220;20;60m");
+			// Should have white foreground (#FFFFFF = RGB 255,255,255)
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use correct ANSI codes for INFO (bgBlack + white)", async () => {
@@ -199,10 +199,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have black background (40)
-			expect(output).toContain("\u001B[40m");
+			// Should have Dodger Blue background (#1E90FF = RGB 30,144,255)
+			expect(output).toContain("\u001B[48;2;30;144;255m");
 			// Should have white foreground (37)
-			expect(output).toContain("\u001B[37m");
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use correct ANSI codes for SUCCESS (bgBlack + greenBright)", async () => {
@@ -216,10 +216,10 @@ describe("ANSI Color Codes", () => {
 			expect(hasAnsiCodes(output)).toBe(true);
 			expect(hasBold(output)).toBe(true);
 
-			// Should have black background (40)
-			expect(output).toContain("\u001B[40m");
-			// Should have bright green foreground (92)
-			expect(output).toContain("\u001B[92m");
+			// Should have Lime Green background (#32CD32 = RGB 50,205,50)
+			expect(output).toContain("\u001B[48;2;50;205;50m");
+			// Should have black foreground (#000000 = RGB 0,0,0)
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 	});
 

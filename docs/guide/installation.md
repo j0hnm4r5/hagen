@@ -15,11 +15,6 @@ node --version
 # Should output v20.x.x or higher
 ```
 
-If you need to upgrade Node.js:
-- Use [nvm](https://github.com/nvm-sh/nvm) (recommended): `nvm install --lts`
-- Download from [nodejs.org](https://nodejs.org/)
-- Use your system package manager
-
 ### Browsers
 
 For browser usage, Hagen requires ES2022 support:

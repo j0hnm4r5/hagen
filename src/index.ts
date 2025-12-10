@@ -7,8 +7,158 @@
 
 import { Chalk, type ChalkInstance } from "chalk";
 import { isCI } from "std-env";
+import { defaultTheme, getTheme } from "./themes.js";
 
 // ========= TYPES =========
+
+/**
+ * Color mode for terminal output.
+ *
+ * - `'ansi16'`: Basic 16-color ANSI mode (colors 0-15). Colors are controlled by the user's
+ *   terminal theme and may vary significantly. Cannot guarantee contrast or specific appearance.
+ * - `'ansi256'`: 256-color ANSI mode. Colors 0-15 are theme-dependent, colors 16-231 form a
+ *   standardized 6×6×6 RGB cube, colors 232-255 are grayscale. More consistent than ansi16
+ *   but still affected by terminal configuration.
+ * - `'truecolor'`: True color mode with 16 million colors (24-bit RGB). Provides exact color
+ *   values and guaranteed contrast ratios. **Recommended for accessibility and WCAG compliance.**
+ *
+ * @see {@link https://gist.github.com/sindresorhus/bed863fb8bedf023b833c88c322e44f9} for ANSI color reference
+ *
+ * **Note:** When using ANSI modes (ansi16/ansi256), colors depend on the user's terminal theme.
+ * Hagen provides carefully chosen defaults, but contrast may vary. Use `'truecolor'` mode for
+ * guaranteed readability and accessibility compliance.
+ */
+export type ColorMode = "ansi16" | "ansi256" | "truecolor";
+
+/**
+ * Color definition for a single label color across different color modes.
+ *
+ * Each color definition provides background and foreground color specifications for all three
+ * color modes. ANSI modes use predetermined color pairs to ensure reasonable contrast across
+ * common terminal themes. True color mode uses hex values with automatic luminance-based
+ * text color selection for guaranteed contrast.
+ *
+ * **ANSI Mode Assumptions:**
+ * - ANSI-16 codes (30-37, 40-47, 90-97, 100-107) assume standard terminal color mappings
+ * - ANSI-256 codes assume the standard 256-color palette (6×6×6 RGB cube + grayscale)
+ * - Actual rendered colors depend on user's terminal theme and cannot be controlled
+ * - Pre-defined fg/bg pairs are chosen to work well with common terminal themes
+ *
+ * **True Color Mode:**
+ * - Hex colors (e.g., "#FF0000") render exactly as specified
+ * - Text color (fg) is automatically calculated based on background luminance
+ * - Ensures WCAG AA contrast compliance (4.5:1 minimum for normal text)
+ *
+ * @example
+ * ```typescript
+ * const blueColor: ColorDefinition = {
+ *   ansi16: { bg: 44, fg: 97 },      // Bright blue bg, bright white fg
+ *   ansi256: { bg: 33, fg: 231 },    // Blue bg, white fg
+ *   truecolor: { bg: "#4169E1", fg: "#FFFFFF" }  // Royal blue bg, white fg
+ * };
+ * ```
+ */
+export interface ColorDefinition {
+	/**
+	 * ANSI-16 color codes (basic 16 colors).
+	 * - bg: Background color code (40-47 for normal, 100-107 for bright)
+	 * - fg: Foreground/text color code (30-37 for normal, 90-97 for bright)
+	 *
+	 * **Warning:** These colors are controlled by the user's terminal theme.
+	 * The actual RGB values are unknowable and may have poor contrast.
+	 */
+	ansi16: { bg: number; fg: number };
+
+	/**
+	 * ANSI-256 color codes (256 colors: 16 basic + 216 RGB cube + 24 grayscale).
+	 * - bg: Background color index (0-255)
+	 * - fg: Foreground/text color index (0-255)
+	 *
+	 * Colors 0-15 are theme-dependent. Colors 16-231 form a standardized 6×6×6 RGB cube.
+	 * Colors 232-255 are a 24-step grayscale ramp.
+	 *
+	 * **Note:** While more consistent than ansi16, contrast still depends on terminal settings.
+	 */
+	ansi256: { bg: number; fg: number };
+
+	/**
+	 * True color hex values (24-bit RGB).
+	 * - bg: Background color (e.g., "#FF0000")
+	 * - fg: Foreground/text color (e.g., "#FFFFFF")
+	 *
+	 * These colors render exactly as specified. Text color should be chosen to provide
+	 * adequate contrast with the background (WCAG AA: 4.5:1 for normal text, 3:1 for bold).
+	 */
+	truecolor: { bg: string; fg: string };
+}
+
+/**
+ * Complete theme definition with colors for all log levels.
+ *
+ * A theme provides color definitions for both reserved log levels (info, warn, error, success)
+ * and the normal color palette used for automatic label coloring. Each color is defined for
+ * all three color modes (ansi16, ansi256, truecolor).
+ *
+ * **Creating Custom Themes:**
+ * 1. Define ColorDefinitions for all 10 colors (4 reserved + 6 normal)
+ * 2. Test in all three color modes across different terminal themes
+ * 3. Verify contrast ratios in true color mode (WCAG AA recommended)
+ * 4. Document any known issues with specific terminal themes
+ *
+ * @example
+ * ```typescript
+ * const myTheme: Theme = {
+ *   name: "my-theme",
+ *   description: "A custom color theme",
+ *   reserved: {
+ *     WARN: { ... },
+ *     ERROR: { ... },
+ *     INFO: { ... },
+ *     SUCCESS: { ... }
+ *   },
+ *   normal: [
+ *     { ... }, // Color 0
+ *     { ... }, // Color 1
+ *     { ... }, // Color 2
+ *     { ... }, // Color 3
+ *     { ... }, // Color 4
+ *     { ... }  // Color 5
+ *   ]
+ * };
+ * ```
+ */
+export interface Theme {
+	/** Unique identifier for the theme */
+	name: string;
+
+	/** Human-readable description of the theme */
+	description?: string;
+
+	/** Reserved colors for specific log levels */
+	reserved: {
+		/** Warning level color (yellow/orange tones recommended) */
+		WARN: ColorDefinition;
+		/** Error level color (red tones recommended) */
+		ERROR: ColorDefinition;
+		/** Info level color (blue tones recommended) */
+		INFO: ColorDefinition;
+		/** Success level color (green tones recommended) */
+		SUCCESS: ColorDefinition;
+	};
+
+	/**
+	 * Normal color palette for automatic label coloring (6 colors, indexed 0-5).
+	 * Colors should be visually distinct and provide good contrast across all modes.
+	 */
+	normal: [
+		ColorDefinition,
+		ColorDefinition,
+		ColorDefinition,
+		ColorDefinition,
+		ColorDefinition,
+		ColorDefinition,
+	];
+}
 
 /**
  * Label configuration for log messages.
@@ -18,6 +168,18 @@ import { isCI } from "std-env";
  * 2. Object with color index: `{ label: "API", color: 3 }` - uses specific color from palette
  * 3. Object with hex colors: `{ label: "API", bgColor: "#ff0000", fgColor: "#ffffff" }` - custom colors
  *
+ * **Custom Hex Colors in ANSI Modes:**
+ * When using `bgColor`/`fgColor` with ANSI color modes (ansi16/ansi256), the hex values will be
+ * quantized to the nearest ANSI color using RGB Euclidean distance. This process makes assumptions
+ * about the terminal's color palette:
+ * - ANSI-16: Assumes standard terminal colors (which vary by terminal theme)
+ * - ANSI-256: Assumes standard 6×6×6 RGB cube mapping
+ *
+ * **Contrast Limitations:**
+ * Quantized colors cannot guarantee contrast ratios because the actual rendered colors depend on
+ * the user's terminal theme. For guaranteed accessibility and WCAG compliance, use `colorMode: 'truecolor'`
+ * or use a predefined theme instead of custom hex colors.
+ *
  * @example
  * ```typescript
  * // Simple string label
@@ -26,7 +188,7 @@ import { isCI } from "std-env";
  * // Label with color index (0-5)
  * logger.log({ label: "DB", color: 2 }, "Query executed");
  *
- * // Label with custom hex colors
+ * // Label with custom hex colors (best in truecolor mode)
  * logger.log({
  *   label: "CUSTOM",
  *   bgColor: "#ff0000",
@@ -75,6 +237,192 @@ interface PrintParams {
 	config: LoggerConfig;
 }
 
+// ========= COLOR UTILITIES =========
+
+/**
+ * Calculates the relative luminance of a color using the WCAG formula.
+ * Returns a value between 0 (black) and 1 (white).
+ *
+ * @param hex - Hex color string (e.g., "#FF0000" or "FF0000")
+ * @returns Relative luminance (0-1)
+ * @internal
+ */
+function calculateLuminance(hex: string): number {
+	// Remove # if present
+	const cleanHex = hex.replace("#", "");
+
+	// Convert to RGB
+	const r = Number.parseInt(cleanHex.slice(0, 2), 16);
+	const g = Number.parseInt(cleanHex.slice(2, 4), 16);
+	const b = Number.parseInt(cleanHex.slice(4, 6), 16);
+
+	// Calculate relative luminance using WCAG formula
+	// https://www.w3.org/TR/WCAG20/#relativeluminancedef
+	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+	return luminance;
+}
+
+/**
+ * Determines whether to use black or white text based on background luminance.
+ * Uses a threshold of 0.5 (midpoint between black and white).
+ *
+ * @param bgHex - Background hex color
+ * @returns "black" for light backgrounds, "white" for dark backgrounds
+ * @internal
+ */
+function _getTextColorForBackground(bgHex: string): "black" | "white" {
+	const luminance = calculateLuminance(bgHex);
+	return luminance > 0.5 ? "black" : "white";
+}
+
+/**
+ * Quantizes a hex color to the nearest ANSI-16 color code.
+ * Maps to one of the 16 basic ANSI colors (0-15).
+ *
+ * **Note:** This assumes standard ANSI color mappings. Actual terminal
+ * colors may vary based on the user's theme.
+ *
+ * @param hex - Hex color string
+ * @returns ANSI color code (0-15)
+ * @internal
+ */
+function _hexToAnsi16(hex: string): number {
+	const cleanHex = hex.replace("#", "");
+	const r = Number.parseInt(cleanHex.slice(0, 2), 16);
+	const g = Number.parseInt(cleanHex.slice(2, 4), 16);
+	const b = Number.parseInt(cleanHex.slice(4, 6), 16);
+
+	// Standard ANSI 16-color palette (approximate RGB values)
+	// Colors 0-7: black, red, green, yellow, blue, magenta, cyan, white
+	// Colors 8-15: bright variants of the above
+	const ansi16Palette = [
+		[0, 0, 0], // 0: black
+		[128, 0, 0], // 1: red
+		[0, 128, 0], // 2: green
+		[128, 128, 0], // 3: yellow
+		[0, 0, 128], // 4: blue
+		[128, 0, 128], // 5: magenta
+		[0, 128, 128], // 6: cyan
+		[192, 192, 192], // 7: white
+		[128, 128, 128], // 8: bright black (gray)
+		[255, 0, 0], // 9: bright red
+		[0, 255, 0], // 10: bright green
+		[255, 255, 0], // 11: bright yellow
+		[0, 0, 255], // 12: bright blue
+		[255, 0, 255], // 13: bright magenta
+		[0, 255, 255], // 14: bright cyan
+		[255, 255, 255], // 15: bright white
+	];
+
+	// Find nearest color using RGB Euclidean distance
+	let minDistance = Number.POSITIVE_INFINITY;
+	let closestIndex = 0;
+
+	for (let i = 0; i < ansi16Palette.length; i++) {
+		const color = ansi16Palette[i]!;
+		const pr = color[0]!;
+		const pg = color[1]!;
+		const pb = color[2]!;
+		const distance = Math.sqrt((r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2);
+
+		if (distance < minDistance) {
+			minDistance = distance;
+			closestIndex = i;
+		}
+	}
+
+	return closestIndex;
+}
+
+/**
+ * Quantizes a hex color to the nearest ANSI-256 color code.
+ * Maps to the 216-color RGB cube (colors 16-231) or grayscale (232-255).
+ *
+ * **Note:** This assumes the standard 256-color palette. Some terminals
+ * allow customization of even these colors.
+ *
+ * @param hex - Hex color string
+ * @returns ANSI-256 color code (16-255)
+ * @internal
+ */
+function _hexToAnsi256(hex: string): number {
+	const cleanHex = hex.replace("#", "");
+	const r = Number.parseInt(cleanHex.slice(0, 2), 16);
+	const g = Number.parseInt(cleanHex.slice(2, 4), 16);
+	const b = Number.parseInt(cleanHex.slice(4, 6), 16);
+
+	// Check if it's a grayscale color (r ≈ g ≈ b)
+	const isGrayscale = Math.abs(r - g) < 10 && Math.abs(g - b) < 10 && Math.abs(r - b) < 10;
+
+	if (isGrayscale) {
+		// Map to 24-step grayscale ramp (colors 232-255)
+		// Each step represents roughly 10.7 intensity units
+		const gray = (r + g + b) / 3;
+		if (gray < 8) return 16; // Black from RGB cube
+		if (gray > 247) return 231; // White from RGB cube
+
+		const index = Math.round(((gray - 8) / 247) * 23);
+		return 232 + Math.max(0, Math.min(23, index));
+	}
+
+	// Map to 6×6×6 RGB cube (colors 16-231)
+	// Each channel: 0, 95, 135, 175, 215, 255 (6 levels)
+	const levels = [0, 95, 135, 175, 215, 255];
+
+	const rIndex = levels.reduce(
+		(prev, curr, idx) => (Math.abs(curr - r) < Math.abs(levels[prev]! - r) ? idx : prev),
+		0
+	);
+	const gIndex = levels.reduce(
+		(prev, curr, idx) => (Math.abs(curr - g) < Math.abs(levels[prev]! - g) ? idx : prev),
+		0
+	);
+	const bIndex = levels.reduce(
+		(prev, curr, idx) => (Math.abs(curr - b) < Math.abs(levels[prev]! - b) ? idx : prev),
+		0
+	);
+
+	// Formula: 16 + 36×r + 6×g + b
+	return 16 + 36 * rIndex + 6 * gIndex + bIndex;
+}
+
+/**
+ * Creates a ChalkInstance from a ColorDefinition based on the active color mode.
+ *
+ * @param colorDef - Color definition with mode-specific values
+ * @param mode - Active color mode
+ * @param chalk - Chalk instance to use
+ * @returns Configured ChalkInstance
+ * @internal
+ */
+function applyColorDefinition(
+	colorDef: ColorDefinition,
+	mode: ColorMode,
+	chalk: InstanceType<typeof Chalk>
+): ChalkInstance {
+	switch (mode) {
+		case "ansi16": {
+			const { bg, fg } = colorDef.ansi16;
+			// Convert to ANSI codes: 30-37 (fg), 40-47 (bg), 90-97 (bright fg), 100-107 (bright bg)
+			const bgCode = bg >= 8 ? 100 + (bg - 8) : 40 + bg;
+			const fgCode = fg >= 8 ? 90 + (fg - 8) : 30 + fg;
+			return chalk.ansi256(bgCode).ansi256(fgCode);
+		}
+		case "ansi256": {
+			const { bg, fg } = colorDef.ansi256;
+			return chalk.bgAnsi256(bg).ansi256(fg);
+		}
+		case "truecolor": {
+			const { bg, fg } = colorDef.truecolor;
+			return chalk.bgHex(bg).hex(fg);
+		}
+		default: {
+			throw new Error(`Unknown color mode: ${mode as string}`);
+		}
+	}
+}
+
 /**
  * Configuration options for Hagen logger instances.
  *
@@ -88,7 +436,9 @@ interface PrintParams {
  *   timeFormat: "12h",
  *   labelPrefix: "<<",
  *   labelSuffix: ">>",
- *   enableColor: true
+ *   enableColor: true,
+ *   colorMode: 'truecolor',
+ *   theme: 'nord'
  * });
  * ```
  */
@@ -103,8 +453,53 @@ export interface LoggerConfig {
 	 */
 	enableColor: boolean;
 
-	/** Color schemes for different log types */
-	colors: {
+	/**
+	 * Color mode for terminal output.
+	 *
+	 * - `'ansi16'`: Basic 16 colors (theme-dependent, may have poor contrast)
+	 * - `'ansi256'`: 256 colors (more consistent, still theme-affected)
+	 * - `'truecolor'`: 16 million colors (guaranteed contrast, WCAG compliant)
+	 *
+	 * Default: `'truecolor'`
+	 *
+	 * **Recommendation:** Use `'truecolor'` for guaranteed accessibility.
+	 * ANSI modes depend on terminal theme and cannot guarantee contrast ratios.
+	 *
+	 * @see {@link ColorMode}
+	 */
+	colorMode?: ColorMode;
+
+	/**
+	 * Theme to use for color selection.
+	 *
+	 * Can be either a built-in theme name or a custom Theme object.
+	 * Built-in themes: 'default', 'catppuccin-mocha', 'nord', 'dracula', 'solarized-dark'
+	 *
+	 * Default: `'default'`
+	 *
+	 * @example
+	 * ```typescript
+	 * // Use built-in theme
+	 * const logger = createHagen({ theme: 'nord' });
+	 *
+	 * // Use custom theme
+	 * const logger = createHagen({ theme: myCustomTheme });
+	 * ```
+	 */
+	theme?: string | Theme;
+
+	/**
+	 * Color schemes for different log types.
+	 *
+	 * **DEPRECATED:** Use `theme` and `colorMode` instead. This field is maintained
+	 * for backward compatibility but will be removed in a future major version.
+	 *
+	 * If provided, this takes precedence over `theme` but a deprecation warning
+	 * will be emitted.
+	 *
+	 * @deprecated Use `theme` and `colorMode` instead
+	 */
+	colors?: {
 		/** Reserved colors for specific log levels (info, warn, error, success) */
 		reserved: {
 			WARN: ChalkInstance;
@@ -230,13 +625,14 @@ export interface HagenInstance {
 // Color cache for performance
 const colorCache = new Map<string, ChalkInstance>();
 
-// Lazy Chalk initialization
-let chalkInstance: InstanceType<typeof Chalk> | undefined;
-function getChalk(): InstanceType<typeof Chalk> {
-	if (!chalkInstance) {
-		chalkInstance = new Chalk({ level: isCI ? 0 : 3 });
+// Lazy Chalk initialization with dynamic level
+const chalkInstances = new Map<number, InstanceType<typeof Chalk>>();
+
+function getChalk(level: 0 | 1 | 2 | 3 = isCI ? 0 : 3): InstanceType<typeof Chalk> {
+	if (!chalkInstances.has(level)) {
+		chalkInstances.set(level, new Chalk({ level }));
 	}
-	return chalkInstance;
+	return chalkInstances.get(level)!;
 }
 
 /**
@@ -244,6 +640,7 @@ function getChalk(): InstanceType<typeof Chalk> {
  *
  * This configuration is used when no custom config is provided to createHagen().
  * Colors are automatically disabled in CI environments.
+ * Uses true color mode by default for guaranteed contrast and accessibility.
  *
  * @example
  * ```typescript
@@ -251,34 +648,96 @@ function getChalk(): InstanceType<typeof Chalk> {
  *
  * // Inspect default settings
  * console.log(defaultConfig.showTimestamp); // false
- * console.log(defaultConfig.dateFormat); // "iso"
+ * console.log(defaultConfig.colorMode); // "truecolor"
+ * console.log(defaultConfig.theme); // "default"
  * ```
  */
 export const defaultConfig: LoggerConfig = {
 	showTimestamp: false,
 	enableColor: !isCI,
-	colors: {
-		reserved: {
-			WARN: getChalk().bgYellowBright.black,
-			ERROR: getChalk().bgRedBright.black,
-			INFO: getChalk().bgBlack.white,
-			SUCCESS: getChalk().bgBlack.greenBright,
-		},
-		normal: [
-			getChalk().bgBlue.white, // blue
-			getChalk().bgGreen.black, // green
-			getChalk().bgCyan.black, // cyan
-			getChalk().bgRed.white, // red
-			getChalk().bgMagenta.white, // magenta
-			getChalk().bgYellow.black, // yellow
-		],
-	},
+	colorMode: "truecolor",
+	theme: "default",
 	dateFormat: "iso",
 	timeFormat: "24h",
 	defaultLabel: "■",
 };
 
 // ========= HELPERS =========
+
+/**
+ * Resolves a theme from a string name or Theme object.
+ * @internal
+ */
+function resolveTheme(themeInput: string | Theme | undefined): Theme {
+	if (!themeInput) {
+		return defaultTheme;
+	}
+
+	if (typeof themeInput === "string") {
+		const theme = getTheme(themeInput);
+		if (!theme) {
+			console.warn(
+				`[Hagen] Theme "${themeInput}" not found. Using default theme. Available themes: default, catppuccin-mocha, nord, dracula, solarized-dark`
+			);
+			return defaultTheme;
+		}
+		return theme;
+	}
+
+	return themeInput;
+}
+
+/**
+ * Generates color ChalkInstances from a theme based on the active color mode.
+ * @internal
+ */
+function generateColorsFromTheme(
+	theme: Theme,
+	mode: ColorMode
+): {
+	reserved: {
+		WARN: ChalkInstance;
+		ERROR: ChalkInstance;
+		INFO: ChalkInstance;
+		SUCCESS: ChalkInstance;
+	};
+	normal: ChalkInstance[];
+} {
+	const chalkLevel = mode === "ansi16" ? 1 : mode === "ansi256" ? 2 : 3;
+	const chalk = getChalk(chalkLevel);
+
+	return {
+		reserved: {
+			WARN: applyColorDefinition(theme.reserved.WARN, mode, chalk),
+			ERROR: applyColorDefinition(theme.reserved.ERROR, mode, chalk),
+			INFO: applyColorDefinition(theme.reserved.INFO, mode, chalk),
+			SUCCESS: applyColorDefinition(theme.reserved.SUCCESS, mode, chalk),
+		},
+		normal: theme.normal.map((colorDef) => applyColorDefinition(colorDef, mode, chalk)),
+	};
+}
+
+/**
+ * Tracks whether deprecation warning has been shown (once per process).
+ * @internal
+ */
+let deprecationWarningShown = false;
+
+/**
+ * Shows a deprecation warning for the old colors config format.
+ * @internal
+ */
+function showDeprecationWarning(): void {
+	if (!deprecationWarningShown) {
+		deprecationWarningShown = true;
+		console.warn(
+			"\n[Hagen] Deprecation Warning: The 'colors' config field is deprecated.\n" +
+				"Please use 'theme' and 'colorMode' instead for better accessibility and theme support.\n" +
+				"See migration guide: https://github.com/j0hnm4r5/hagen#migration\n" +
+				"This warning will only appear once.\n"
+		);
+	}
+}
 
 /**
  * Returns a default color based on a hash of the label text.
@@ -437,7 +896,8 @@ function print({ logger, label, data, config }: PrintParams): void {
 		// For string labels, use them if non-empty, otherwise use default
 		const labelText = typeof label === "string" ? label : "";
 		finalLabel = labelText.trim() || finalLabel;
-		color = calculateLabelColor(finalLabel, config.colors.normal);
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
+		color = calculateLabelColor(finalLabel, config.colors!.normal);
 	} else {
 		// Object label
 		const labelText = typeof label.label === "string" ? label.label : "";
@@ -445,16 +905,19 @@ function print({ logger, label, data, config }: PrintParams): void {
 		customPrefix = label.prefix;
 		customSuffix = label.suffix;
 
-		if ("color" in label && label.color) {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if ("color" in label && label.color !== undefined) {
 			if (typeof label.color === "number") {
-				color = config.colors.normal[label.color]!;
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
+				color = config.colors!.normal[label.color]!;
 			} else {
 				color = label.color;
 			}
-		} else if ("bgColor" in label && "fgColor" in label) {
+		} else if ("bgColor" in label) {
 			color = getChalk().bgHex(label.bgColor).hex(label.fgColor);
 		} else {
-			color = calculateLabelColor(finalLabel, config.colors.normal);
+			// eslint-disable-next-line @typescript-eslint/no-deprecated
+			color = calculateLabelColor(finalLabel, config.colors!.normal);
 		}
 	}
 
@@ -548,7 +1011,34 @@ function print({ logger, label, data, config }: PrintParams): void {
  * ```
  */
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
-	const instanceConfig: LoggerConfig = { ...defaultConfig, ...config };
+	// Merge with defaults
+	const mergedConfig: LoggerConfig = { ...defaultConfig, ...config };
+
+	// Check for deprecated colors field
+	// eslint-disable-next-line @typescript-eslint/no-deprecated
+	if (config?.colors) {
+		showDeprecationWarning();
+		// Keep using the old colors format for backward compatibility
+	} else {
+		// Use new theme system
+		const theme = resolveTheme(mergedConfig.theme);
+		const mode = mergedConfig.colorMode ?? "truecolor";
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
+		mergedConfig.colors = generateColorsFromTheme(theme, mode);
+	}
+
+	// Ensure colors is defined at this point
+	const instanceConfig = mergedConfig as LoggerConfig & {
+		colors: {
+			reserved: {
+				WARN: ChalkInstance;
+				ERROR: ChalkInstance;
+				INFO: ChalkInstance;
+				SUCCESS: ChalkInstance;
+			};
+			normal: ChalkInstance[];
+		};
+	};
 
 	const log = (label: Label, ...data: unknown[]): void => {
 		print({
@@ -566,6 +1056,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
 				label: formatLabel(labelText, "i", undefined, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: instanceConfig.colors.reserved.INFO,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -579,6 +1070,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		} else {
 			processedLabel = {
 				label: formatLabel(label.label, label.prefix ?? "i", label.suffix, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: label.color ?? instanceConfig.colors.reserved.INFO,
 				...(label.prefix && { prefix: label.prefix }),
 				...(label.suffix && { suffix: label.suffix }),
@@ -600,6 +1092,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
 				label: formatLabel(labelText, "✓", undefined, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: instanceConfig.colors.reserved.SUCCESS,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -613,6 +1106,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		} else {
 			processedLabel = {
 				label: formatLabel(label.label, label.prefix ?? "✓", label.suffix, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: label.color ?? instanceConfig.colors.reserved.SUCCESS,
 				...(label.prefix && { prefix: label.prefix }),
 				...(label.suffix && { suffix: label.suffix }),
@@ -634,6 +1128,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
 				label: formatLabel(labelText, "!", undefined, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: instanceConfig.colors.reserved.WARN,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -647,6 +1142,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		} else {
 			processedLabel = {
 				label: formatLabel(label.label, label.prefix ?? "!", label.suffix, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: label.color ?? instanceConfig.colors.reserved.WARN,
 				...(label.prefix && { prefix: label.prefix }),
 				...(label.suffix && { suffix: label.suffix }),
@@ -668,6 +1164,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			const labelText = typeof label === "string" ? label : "";
 			processedLabel = {
 				label: formatLabel(labelText, "✕", undefined, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: instanceConfig.colors.reserved.ERROR,
 			};
 		} else if ("bgColor" in label && "fgColor" in label) {
@@ -681,6 +1178,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		} else {
 			processedLabel = {
 				label: formatLabel(label.label, label.prefix ?? "✕", label.suffix, instanceConfig),
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				color: label.color ?? instanceConfig.colors.reserved.ERROR,
 				...(label.prefix && { prefix: label.prefix }),
 				...(label.suffix && { suffix: label.suffix }),

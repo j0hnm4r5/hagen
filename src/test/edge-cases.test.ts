@@ -3,6 +3,7 @@
  * Tests specific scenarios to improve code coverage.
  */
 
+import { Chalk } from "chalk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearColorCache } from "../index.js";
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
@@ -254,18 +255,18 @@ describe("Edge Cases", () => {
 		});
 
 		it("should handle info with custom color instance", async () => {
-			const { createHagen, defaultConfig } = await import("../index.js");
+			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
+			const testChalk = new Chalk({ level: 3 });
 
 			logger.info(
 				{
 					label: "CUSTOM",
-					color: defaultConfig.colors.reserved.WARN, // Borrow WARN color
+					color: testChalk.bgYellowBright.black,
 					prefix: ">>",
 				},
 				"message"
 			);
-
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(label)).toBe(true);
@@ -275,18 +276,18 @@ describe("Edge Cases", () => {
 		});
 
 		it("should handle success with custom color instance", async () => {
-			const { createHagen, defaultConfig } = await import("../index.js");
+			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
+			const testChalk = new Chalk({ level: 3 });
 
 			logger.success(
 				{
 					label: "CUSTOM",
-					color: defaultConfig.colors.reserved.ERROR, // Borrow ERROR color
+					color: testChalk.bgRedBright.black,
 					suffix: "<<",
 				},
 				"message"
 			);
-
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(label)).toBe(true);
@@ -296,21 +297,21 @@ describe("Edge Cases", () => {
 		});
 
 		it("should handle warn with custom color instance", async () => {
-			const { createHagen, defaultConfig } = await import("../index.js");
+			const { createHagen } = await import("../index.js");
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const logger = createHagen({ enableColor: true });
+			const testChalk = new Chalk({ level: 3 });
 
 			logger.warn(
 				{
 					label: "CUSTOM",
-					color: defaultConfig.colors.reserved.INFO, // Borrow INFO color
+					color: testChalk.bgBlack.white,
 					prefix: ">>",
 					suffix: "<<",
 				},
 				"message"
 			);
-
 			const label = consoleWarnSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(label)).toBe(true);
@@ -323,21 +324,21 @@ describe("Edge Cases", () => {
 		});
 
 		it("should handle error with custom color instance", async () => {
-			const { createHagen, defaultConfig } = await import("../index.js");
+			const { createHagen } = await import("../index.js");
 			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 			const logger = createHagen({ enableColor: true });
+			const testChalk = new Chalk({ level: 3 });
 
 			logger.error(
 				{
 					label: "CUSTOM",
-					color: defaultConfig.colors.reserved.SUCCESS, // Borrow SUCCESS color
+					color: testChalk.bgBlack.greenBright,
 					prefix: ">>",
 					suffix: "<<",
 				},
 				"message"
 			);
-
 			const label = consoleErrorSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(label)).toBe(true);
