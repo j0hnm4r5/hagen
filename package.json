@@ -109,7 +109,8 @@
 	"lint-staged": {
 		"*.ts": [
 			"eslint --fix",
-			"prettier --write"
+			"prettier --write",
+			"bash -c 'tsc --noEmit'"
 		],
 		"*.{json,md}": [
 			"prettier --write"
