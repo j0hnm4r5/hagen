@@ -42,8 +42,6 @@
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage",
-		"test:browser": "vitest run --config vitest.browser.config.ts",
-		"test:browser:ui": "vitest --config vitest.browser.config.ts --ui",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",

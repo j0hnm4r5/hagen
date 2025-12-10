@@ -1,11 +1,11 @@
 import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
 
 export default defineConfig({
 	test: {
 		globals: true,
 		environment: "happy-dom",
 		include: ["src/test/**/*.test.ts"],
-		exclude: ["src/test/browser/**"],
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],
@@ -17,6 +17,19 @@ export default defineConfig({
 				branches: 50,
 				statements: 50,
 			},
+		},
+		browser: {
+			enabled: true,
+			instances: [
+				{
+					browser: "chromium",
+				},
+			],
+			provider: playwright({
+				launchOptions: {
+					headless: true,
+				},
+			}),
 		},
 	},
 });
