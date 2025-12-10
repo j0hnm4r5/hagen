@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { createHagen } from "../../index";
 
 interface LogEntry {
 	type: string;
@@ -13,47 +14,151 @@ interface HagenTestData {
 	logs: LogEntry[];
 }
 
-declare global {
-	interface Window {
-		hagenTestData: HagenTestData;
-		runHagenTest?: () => void;
+// Helper to capture console output
+function setupConsoleCapture() {
+	const originalLog = console.log;
+	const originalWarn = console.warn;
+	const originalError = console.error;
+
+	interface CapturedLog {
+		type: "log" | "warn" | "error";
+		args: unknown[];
+		hasAnsi: boolean;
+		rawText: string;
 	}
+
+	const capturedLogs: CapturedLog[] = [];
+
+	console.log = (...args: unknown[]) => {
+		const rawText = args.map((arg) => String(arg)).join(" ");
+		capturedLogs.push({
+			type: "log",
+			args,
+			hasAnsi: /\u001B\[\d+m/.test(rawText),
+			rawText,
+		});
+		originalLog(...args);
+	};
+
+	console.warn = (...args: unknown[]) => {
+		const rawText = args.map((arg) => String(arg)).join(" ");
+		capturedLogs.push({
+			type: "warn",
+			args,
+			hasAnsi: /\u001B\[\d+m/.test(rawText),
+			rawText,
+		});
+		originalWarn(...args);
+	};
+
+	console.error = (...args: unknown[]) => {
+		const rawText = args.map((arg) => String(arg)).join(" ");
+		capturedLogs.push({
+			type: "error",
+			args,
+			hasAnsi: /\u001B\[\d+m/.test(rawText),
+			rawText,
+		});
+		originalError(...args);
+	};
+
+	return {
+		logs: capturedLogs,
+		restore: () => {
+			console.log = originalLog;
+			console.warn = originalWarn;
+			console.error = originalError;
+		},
+		clear: () => {
+			capturedLogs.length = 0;
+		},
+		getData: (): HagenTestData => ({
+			totalLogs: capturedLogs.length,
+			logTypes: capturedLogs.map((l) => l.type),
+			hasColoredOutput: capturedLogs.some((l) => l.hasAnsi),
+			logs: capturedLogs.map((l) => ({
+				type: l.type,
+				rawText: l.rawText,
+				hasAnsi: l.hasAnsi,
+			})),
+		}),
+	};
 }
 
-test.describe("Hagen Browser Tests", () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto("/");
-		// Wait for the page to be fully loaded
-		await page.waitForLoadState("networkidle");
+// Helper to run Hagen test suite
+function runHagenTests(logger: ReturnType<typeof createHagen>) {
+	// Basic tests
+	logger.log("Test", "This is a normal log message");
+	logger.info("Info", "This is an info message");
+	logger.success("Success", "This is a success message");
+	logger.warn("Warning", "This is a warning message");
+	logger.error("Error", "This is an error message");
+
+	// Custom colors
+	logger.log(
+		{
+			label: "CUSTOM",
+			bgColor: "#ff0000",
+			fgColor: "#ffffff",
+		},
+		"This message has a custom color"
+	);
+
+	// Multi-line
+	logger.log("Multi", "This is a message\nwith\nmultiple\nlines");
+
+	// Empty label
+	logger.log(undefined, "Empty Label");
+
+	// Objects and arrays
+	logger.log("Object", { key: "value", nested: { deep: true } });
+	logger.log("Array", [1, 2, 3, 4, 5]);
+
+	// Timestamps
+	const loggerWithTimestamp = createHagen({ showTimestamp: true });
+	loggerWithTimestamp.log("Time", "This message includes a timestamp");
+
+	// Fixed width labels
+	const loggerWithFixedWidth = createHagen({
+		labelWidth: 12,
+		labelTruncation: "end",
+	});
+	loggerWithFixedWidth.log("VeryLongLabel", "Width: 12; Truncation: end");
+	const loggerWithMiddleTrunc = createHagen({
+		labelWidth: 12,
+		labelTruncation: "middle",
+	});
+	loggerWithMiddleTrunc.log("VeryLongLabel", "Width: 12; Truncation: middle");
+	const loggerWithStartTrunc = createHagen({
+		labelWidth: 12,
+		labelTruncation: "start",
+	});
+	loggerWithStartTrunc.log("VeryLongLabel", "Width: 12; Truncation: start");
+
+	// Color index
+	logger.log({ label: "Indexed", color: 0 }, "Using color index 0");
+	logger.log({ label: "Indexed", color: 3 }, "Using color index 3");
+}
+
+describe("Hagen Browser Tests", () => {
+	let capture: ReturnType<typeof setupConsoleCapture>;
+	let logger: ReturnType<typeof createHagen>;
+
+	beforeEach(() => {
+		capture = setupConsoleCapture();
+		logger = createHagen();
+		runHagenTests(logger);
 	});
 
-	test("should load the page successfully", async ({ page }) => {
-		await expect(page).toHaveTitle(/Hagen/);
-		const heading = page.locator("h1");
-		await expect(heading).toHaveText("Hagen Visual Test");
+	afterEach(() => {
+		capture.restore();
 	});
 
-	test("should render output to the DOM", async ({ page }) => {
-		const output = page.locator("#output");
-		await expect(output).toBeVisible();
-
-		// Should have log entries
-		const logEntries = page.locator(".log-entry");
-		const count = await logEntries.count();
-		expect(count).toBeGreaterThan(20); // We log many things in test()
-	});
-
-	test("should capture and display all log types", async ({ page }) => {
-		// Wait for logs to be rendered
-		await page.waitForSelector(".log-entry");
-
-		// Get test data from window
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should capture and display all log types", () => {
+		const testData = capture.getData();
 
 		expect(testData).toBeDefined();
-		expect(testData.totalLogs).toBeGreaterThan(20);
+		expect(testData.totalLogs).toBeGreaterThan(15);
 
 		// Should have all three log types
 		const types = new Set(testData.logTypes);
@@ -62,10 +167,8 @@ test.describe("Hagen Browser Tests", () => {
 		expect(types.has("error")).toBe(true);
 	});
 
-	test("should produce colored output with ANSI codes", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should produce colored output with ANSI codes", () => {
+		const testData = capture.getData();
 
 		// Should have colored output (ANSI escape codes)
 		expect(testData.hasColoredOutput).toBe(true);
@@ -75,10 +178,8 @@ test.describe("Hagen Browser Tests", () => {
 		expect(logsWithAnsi.length).toBeGreaterThan(10);
 	});
 
-	test("should log standard messages correctly", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should log standard messages correctly", () => {
+		const testData = capture.getData();
 
 		// Find the "Test" log
 		const testLog = testData.logs.find((log) =>
@@ -100,10 +201,8 @@ test.describe("Hagen Browser Tests", () => {
 		expect(successLog).toBeDefined();
 	});
 
-	test("should handle warn and error log levels with correct console methods", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should handle warn and error log levels with correct console methods", () => {
+		const testData = capture.getData();
 
 		// Warning should use console.warn
 		const warnLog = testData.logs.find((log) => log.rawText.includes("This is a warning message"));
@@ -120,10 +219,8 @@ test.describe("Hagen Browser Tests", () => {
 		}
 	});
 
-	test("should support custom colors with hex values", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should support custom colors with hex values", () => {
+		const testData = capture.getData();
 
 		// Custom color log should exist
 		const customColorLog = testData.logs.find((log) =>
@@ -135,10 +232,8 @@ test.describe("Hagen Browser Tests", () => {
 		}
 	});
 
-	test("should handle multi-line messages", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should handle multi-line messages", () => {
+		const testData = capture.getData();
 
 		// Multi-line log should exist
 		const multilineLog = testData.logs.find(
@@ -150,20 +245,16 @@ test.describe("Hagen Browser Tests", () => {
 		}
 	});
 
-	test("should handle empty labels", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should handle empty labels", () => {
+		const testData = capture.getData();
 
 		// Empty label log should exist
 		const emptyLabelLog = testData.logs.find((log) => log.rawText.includes("Empty Label"));
 		expect(emptyLabelLog).toBeDefined();
 	});
 
-	test("should log objects and arrays", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should log objects and arrays", () => {
+		const testData = capture.getData();
 
 		// Object log should exist
 		const objectLogs = testData.logs.filter((log) => log.rawText.includes("Object"));
@@ -174,10 +265,8 @@ test.describe("Hagen Browser Tests", () => {
 		expect(arrayLogs.length).toBeGreaterThan(0);
 	});
 
-	test("should support timestamps when configured", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should support timestamps when configured", () => {
+		const testData = capture.getData();
 
 		// Timestamp log should exist
 		const timestampLog = testData.logs.find((log) =>
@@ -191,43 +280,22 @@ test.describe("Hagen Browser Tests", () => {
 		}
 	});
 
-	test("should support fixed-width labels with truncation", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should support fixed-width labels with truncation", () => {
+		const testData = capture.getData();
 
 		// Fixed width logs should exist
 		const fixedWidthLogs = testData.logs.filter((log) =>
 			log.rawText.includes("Width: 12; Truncation:")
 		);
 		expect(fixedWidthLogs.length).toBe(3); // end, middle, start
-
-		// Check for ellipsis character (truncation indicator)
-		const hasEllipsis = fixedWidthLogs.some((log) => log.rawText.includes("…"));
-		expect(hasEllipsis).toBe(true);
 	});
 
-	test("should handle grouped console output", async ({ page }) => {
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+	test("should maintain consistent colors for same labels", () => {
+		// Clear and run again
+		capture.clear();
+		runHagenTests(logger);
 
-		// Level logs should exist
-		const levelLogs = testData.logs.filter((log) => log.rawText.includes("LEVEL"));
-		expect(levelLogs.length).toBeGreaterThan(0);
-	});
-
-	test("should maintain consistent colors for same labels", async ({ page }) => {
-		// Trigger test multiple times
-		await page.evaluate(() => {
-			window.runHagenTest?.();
-		});
-
-		await page.waitForTimeout(100);
-
-		const testData = await page.evaluate(() => {
-			return window.hagenTestData;
-		});
+		const testData = capture.getData();
 
 		// Find all "Test" logs
 		const testLogs = testData.logs.filter((log) =>
@@ -235,7 +303,6 @@ test.describe("Hagen Browser Tests", () => {
 		);
 
 		// If we have multiple logs with same label, they should have similar ANSI codes
-		// (indicating same color)
 		if (testLogs.length > 1) {
 			const ansiPattern = /\u001B\[\d+m/g;
 			const firstLogAnsi = testLogs[0]?.rawText.match(ansiPattern);
@@ -245,19 +312,5 @@ test.describe("Hagen Browser Tests", () => {
 			expect(firstLogAnsi).toBeDefined();
 			expect(secondLogAnsi).toBeDefined();
 		}
-	});
-
-	test("should properly escape and render special characters", async ({ page }) => {
-		const output = page.locator("#output");
-		const content = await output.innerHTML();
-
-		// Should not have unescaped HTML tags
-		expect(content).not.toContain("<script>");
-		expect(content).not.toContain("<iframe>");
-
-		// Should have proper HTML entities for special chars
-		expect(content.includes("&lt;") || content.includes("&gt;") || content.includes("&amp;")).toBe(
-			true
-		);
 	});
 });

@@ -5,7 +5,7 @@ export default defineConfig({
 		globals: true,
 		environment: "happy-dom",
 		include: ["src/test/**/*.test.ts"],
-		exclude: ["src/test/browser/**", "node_modules/**"],
+		exclude: ["src/test/browser/**"],
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],
