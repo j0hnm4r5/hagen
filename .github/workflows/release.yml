@@ -47,3 +47,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
+
+      - name: Trigger documentation rebuild
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.DOCS_DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/j0hnm4r5/hagen-docs/dispatches \
+            -d '{"event_type":"hagen-release"}'

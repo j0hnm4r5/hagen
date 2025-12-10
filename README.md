@@ -6,9 +6,9 @@ A colorful, instance-based logger for JavaScript and TypeScript in Node.js and m
 
 ## 📚 Documentation
 
-**[View Full Documentation →](https://j0hnm4r5.github.io/hagen/)**
+**[View Full Documentation →](https://j0hnm4r5.github.io/hagen-docs/)**
 
-Complete guides, examples, and API reference available at the documentation site.
+Complete guides, examples, and API reference available at the [documentation site](https://j0hnm4r5.github.io/hagen-docs/). Documentation is maintained in a [separate repository](https://github.com/j0hnm4r5/hagen-docs).
 
 Hagen enhances your logging with beautifully colored labels that stay consistent between calls. Perfect for debugging, monitoring, and making your console output actually readable.
 

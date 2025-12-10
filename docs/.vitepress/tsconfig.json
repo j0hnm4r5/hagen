@@ -1,9 +1,0 @@
-{
-	"extends": "../../tsconfig.json",
-	"include": ["./**/*.ts", "./**/*.vue", "./theme/vue-shim.d.ts"],
-	"compilerOptions": {
-		"composite": false,
-		"types": ["node"],
-		"skipLibCheck": true
-	}
-}
