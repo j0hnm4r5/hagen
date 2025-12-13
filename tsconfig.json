@@ -5,12 +5,13 @@
 		"module": "ESNext",
 		"lib": ["ES2022", "DOM"],
 		"moduleResolution": "bundler",
-		"types": ["vitest/globals", "@playwright/test"],
+		"types": ["vitest/globals", "node"],
 
 		// Emit
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
+		"rootDir": "./src",
 		"outDir": "./dist",
 		"removeComments": false,
 
@@ -35,6 +36,6 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*", "scripts/**/*", "tools/**/*"],
+	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "src/test/coverage/**/*"]
 }

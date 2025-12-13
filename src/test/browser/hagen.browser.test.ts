@@ -120,24 +120,30 @@ function runHagenTests(logger: ReturnType<typeof createHagen>) {
 
 	// Fixed width labels
 	const loggerWithFixedWidth = createHagen({
-		labelWidth: 12,
-		labelTruncation: "end",
+		fixedWidth: {
+			width: 12,
+			truncationMethod: "end",
+		},
 	});
 	loggerWithFixedWidth.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: end");
 	const loggerWithMiddleTrunc = createHagen({
-		labelWidth: 12,
-		labelTruncation: "middle",
+		fixedWidth: {
+			width: 12,
+			truncationMethod: "middle",
+		},
 	});
 	loggerWithMiddleTrunc.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: middle");
 	const loggerWithStartTrunc = createHagen({
-		labelWidth: 12,
-		labelTruncation: "start",
+		fixedWidth: {
+			width: 12,
+			truncationMethod: "start",
+		},
 	});
 	loggerWithStartTrunc.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: start");
 
-	// Color index
-	logger.log({ label: "Indexed", color: 0 }, "Using color index 0");
-	logger.log({ label: "Indexed", color: 3 }, "Using color index 3");
+	// Custom colors
+	logger.log({ label: "Custom", bgColor: [100, 50, 150] }, "Using custom bgColor");
+	logger.log({ label: "Custom2", bgColor: [200, 100, 50] }, "Using another custom bgColor");
 }
 
 describe("Hagen Browser Tests", () => {

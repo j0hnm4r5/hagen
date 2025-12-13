@@ -88,7 +88,7 @@ describe("Hagen Logger", () => {
 
 			it("should log with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "TEST", color: 3 };
+				const label: Label = { label: "TEST", bgColor: [100, 50, 150] };
 				logger.log(label, "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -97,7 +97,7 @@ describe("Hagen Logger", () => {
 				const logger = createHagen();
 				const label: Label = {
 					label: "TEST",
-					color: 3,
+					bgColor: [100, 50, 150],
 					prefix: ">>",
 					suffix: "<<",
 				};
@@ -121,7 +121,7 @@ describe("Hagen Logger", () => {
 
 			it("should log info message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "INFO", color: 3 };
+				const label: Label = { label: "INFO", bgColor: [65, 105, 225] };
 				logger.info(label, "information message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -136,7 +136,7 @@ describe("Hagen Logger", () => {
 
 			it("should log warning message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "WARN", color: 4 };
+				const label: Label = { label: "WARN", bgColor: [255, 165, 0] };
 				logger.warn(label, "warning message");
 				expect(consoleWarnSpy).toHaveBeenCalledOnce();
 			});
@@ -151,7 +151,7 @@ describe("Hagen Logger", () => {
 
 			it("should log error message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "ERROR", color: 1 };
+				const label: Label = { label: "ERROR", bgColor: [220, 20, 60] };
 				logger.error(label, "error message");
 				expect(consoleErrorSpy).toHaveBeenCalledOnce();
 			});
@@ -166,7 +166,7 @@ describe("Hagen Logger", () => {
 
 			it("should log success message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "SUCCESS", color: 2 };
+				const label: Label = { label: "SUCCESS", bgColor: [34, 139, 34] };
 				logger.success(label, "success message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -352,9 +352,9 @@ describe("Hagen Logger", () => {
 			expect(consoleLogSpy).toHaveBeenCalledOnce();
 		});
 
-		it("should accept Label with label and color", () => {
+		it("should accept Label with label and bgColor", () => {
 			const logger = createHagen();
-			logger.log({ label: "LABEL", color: 1 }, "message");
+			logger.log({ label: "LABEL", bgColor: [100, 50, 150] }, "message");
 			expect(consoleLogSpy).toHaveBeenCalledOnce();
 		});
 
@@ -362,7 +362,7 @@ describe("Hagen Logger", () => {
 			const logger = createHagen();
 			const label: Label = {
 				label: "FULL",
-				color: 5,
+				bgColor: [150, 100, 200],
 				prefix: "<<",
 				suffix: ">>",
 			};

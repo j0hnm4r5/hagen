@@ -25,38 +25,37 @@
 		"dist",
 		"src"
 	],
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"sideEffects": false,
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
+			"types": "./dist/index.d.mts",
+			"default": "./dist/index.mjs"
 		}
 	},
 	"scripts": {
-		"dev": "tsup src/index.ts --watch",
-		"build": "tsup src/index.ts --format esm --dts --minify --sourcemap --clean",
+		"dev": "tsup --watch",
+		"build": "tsup && mv dist/index.d.ts dist/index.d.mts",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage",
-		"lint": "eslint .",
+		"lint:check": "eslint .",
 		"lint:fix": "eslint . --fix",
-		"format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
-		"type-check": "tsc --noEmit",
-		"check": "attw --pack .",
+		"format:fix": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
+		"type:check": "tsc --noEmit",
+		"pkg:check": "attw --pack . --profile esm-only --no-summary",
 		"clean": "rm -rf dist coverage .vitest",
 		"prepare": "husky",
 		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
-		"visual:node": "tsx src/test/node.visualize.ts",
-		"visual:ci": "CI=true npm run visual:node",
-		"visual:browser": "vite"
+		"visualize:node": "tsx src/test/node.visualize.ts",
+		"visualize:ci": "CI=true npm run visualize:node",
+		"visualize:browser": "vite"
 	},
 	"dependencies": {
-		"chalk": "^5.4.1",
+		"ansis": "^3.4.0",
 		"std-env": "^3.8.1"
 	},
 	"devDependencies": {
@@ -68,12 +67,14 @@
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^12.0.2",
 		"@types/eslint__js": "^8.42.3",
+		"@types/node": "^25.0.1",
 		"@vitest/browser": "^4.0.15",
 		"@vitest/browser-playwright": "^4.0.15",
 		"@vitest/coverage-v8": "^4.0.15",
 		"@vitest/ui": "^4.0.15",
 		"@wasmer/sdk": "^0.7.0",
 		"coi-serviceworker": "^0.1.7",
+		"color": "^5.0.3",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.4",

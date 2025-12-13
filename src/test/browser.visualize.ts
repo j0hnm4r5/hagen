@@ -1,4 +1,9 @@
-import { test } from "./index";
+import {
+	test,
+	visualizeQuantization,
+	visualizeEdgeCases,
+	visualizeConfigurations,
+} from "./visualize";
 
 // Capture console output for DOM rendering
 const originalLog = console.log;
@@ -66,8 +71,7 @@ function renderLogsToDOM() {
 	outputElement.innerHTML = html;
 
 	// Store logs count for testing
-
-	(window as any).hagenTestData = {
+	(window as unknown as { hagenTestData: unknown }).hagenTestData = {
 		totalLogs: capturedLogs.length,
 		logTypes: capturedLogs.map((l) => l.type),
 		hasColoredOutput: capturedLogs.some((l) => l.hasAnsi),
@@ -82,11 +86,13 @@ function escapeHtml(text: string): string {
 }
 
 // Expose test function globally for testing purposes
-
-(window as any).runHagenTest = () => {
+(window as unknown as { runHagenTest: () => void }).runHagenTest = () => {
 	capturedLogs.length = 0; // Clear previous logs
 	captureConsole();
 	test();
+	visualizeQuantization();
+	visualizeConfigurations();
+	visualizeEdgeCases();
 	renderLogsToDOM();
 };
 
@@ -95,5 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Open the browser dev console to see the colored output.
 	captureConsole();
 	test();
+	visualizeQuantization();
+	visualizeConfigurations();
+	visualizeEdgeCases();
 	renderLogsToDOM();
 });
