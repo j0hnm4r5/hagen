@@ -61,7 +61,7 @@ describe("Output Format", () => {
 			expect(message).toBe("message");
 		});
 
-		it("should have colored label with bold formatting", async () => {
+		it("should have colored label without bold formatting", async () => {
 			vi.stubEnv("CI", "");
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
@@ -70,14 +70,14 @@ describe("Output Format", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 
-			// Should have bold code
-			expect(label).toContain("\u001B[1m");
+			// Should NOT have bold code (removed to fix color issues)
+			expect(label).not.toContain("\u001B[1m");
 
 			// Should have color codes (foreground or background)
-			expect(label).toMatch(/\u001B\[(?:[34]\d|9\d|10\d)m/);
+			expect(label).toMatch(/\u001B\[(?:[34]\d|9\d|10\d|38;2|48;2)m/);
 
 			// Should have reset codes
-			expect(label).toMatch(/\u001B\[(?:22|39|49)m/);
+			expect(label).toMatch(/\u001B\[(?:39|49|0)m/);
 		});
 
 		it("should format correctly for different label lengths", async () => {

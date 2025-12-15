@@ -4,7 +4,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { hasAnsiCodes, hasBold, hasBackgroundColor } from "./helpers/ansi.js";
+import { hasAnsiCodes, hasBackgroundColor, hasBold } from "./helpers/ansi.js";
 
 describe("Color Formatting", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
@@ -36,7 +36,6 @@ describe("Color Formatting", () => {
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(output)).toBe(true);
-			expect(hasBold(output)).toBe(true);
 			expect(hasBackgroundColor(output)).toBe(true);
 			// Should have RGB background codes
 			expect(output).toContain("\u001B[48;2;");
@@ -86,15 +85,15 @@ describe("Color Formatting", () => {
 			expect(color1).not.toBe(color2);
 		});
 
-		it("should apply bold to all labels", async () => {
+		it("should NOT apply bold to all labels (removed to fix color issues)", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
 			logger.log("TEST", "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasBold(output)).toBe(true);
-			expect(output).toContain("\u001B[1m");
+			expect(hasBold(output)).toBe(false);
+			expect(output).not.toContain("\u001B[1m");
 		});
 	});
 
@@ -108,12 +107,11 @@ describe("Color Formatting", () => {
 			const output = consoleWarnSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(output)).toBe(true);
-			expect(hasBold(output)).toBe(true);
 
 			// Should have Orange background (RGB 255,165,0)
 			expect(output).toContain("\u001B[48;2;255;165;0m");
-			// Should have black foreground (RGB 0,0,0)
-			expect(output).toContain("\u001B[38;2;0;0;0m");
+			// Should have black foreground (using standard ANSI black for better compatibility)
+			expect(output).toContain("\u001B[30m");
 		});
 
 		it("should use correct RGB codes for ERROR (Crimson with white text)", async () => {
@@ -125,12 +123,11 @@ describe("Color Formatting", () => {
 			const output = consoleErrorSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(output)).toBe(true);
-			expect(hasBold(output)).toBe(true);
 
 			// Should have Crimson background (RGB 220,20,60)
 			expect(output).toContain("\u001B[48;2;220;20;60m");
-			// Should have white foreground (RGB 255,255,255)
-			expect(output).toContain("\u001B[38;2;255;255;255m");
+			// Should have white foreground (using standard ANSI white for better compatibility)
+			expect(output).toContain("\u001B[97m");
 		});
 
 		it("should use correct RGB codes for INFO (Royal Blue with white text)", async () => {
@@ -142,29 +139,11 @@ describe("Color Formatting", () => {
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(output)).toBe(true);
-			expect(hasBold(output)).toBe(true);
 
 			// Should have Royal Blue background (RGB 65,105,225)
 			expect(output).toContain("\u001B[48;2;65;105;225m");
-			// Should have white foreground (RGB 255,255,255)
-			expect(output).toContain("\u001B[38;2;255;255;255m");
-		});
-
-		it("should use correct RGB codes for SUCCESS (Forest Green with white text)", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
-
-			logger.success("SUCCESS", "success message");
-
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			expect(hasAnsiCodes(output)).toBe(true);
-			expect(hasBold(output)).toBe(true);
-
-			// Should have Forest Green background (RGB 34,139,34)
-			expect(output).toContain("\u001B[48;2;34;139;34m");
-			// Should have white foreground (RGB 255,255,255)
-			expect(output).toContain("\u001B[38;2;255;255;255m");
+			// Should have white foreground (using standard ANSI white for better compatibility)
+			expect(output).toContain("\u001B[97m");
 		});
 	});
 

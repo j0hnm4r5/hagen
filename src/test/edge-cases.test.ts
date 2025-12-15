@@ -165,33 +165,6 @@ describe("Edge Cases", () => {
 			expect(stripped).toContain("CUSTOM");
 		});
 
-		it("should handle success with custom colors (bgColor/fgColor)", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
-
-			logger.success(
-				{
-					label: "CUSTOM",
-					bgColor: "#FF5733",
-					fgColor: "#FFFFFF",
-					prefix: ">>",
-					suffix: "<<",
-				},
-				"message"
-			);
-
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// Should have RGB ANSI codes
-			expect(label).toMatch(/\u001B\[48;2;\d+;\d+;\d+m/);
-			expect(label).toMatch(/\u001B\[38;2;\d+;\d+;\d+m/);
-
-			const stripped = stripAnsi(label);
-			expect(stripped).toContain(">>");
-			expect(stripped).toContain("<<");
-			expect(stripped).toContain("CUSTOM");
-		});
-
 		it("should handle warn with custom colors (bgColor/fgColor)", async () => {
 			const { createHagen } = await import("../index.js");
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -262,7 +235,7 @@ describe("Edge Cases", () => {
 			logger.info(
 				{
 					label: "CUSTOM",
-					color: testChalk.bgYellowBright.black,
+					ansiFormatter: testChalk.bgYellowBright.black,
 					prefix: ">>",
 				},
 				"message"
@@ -272,27 +245,6 @@ describe("Edge Cases", () => {
 			expect(hasAnsiCodes(label)).toBe(true);
 			const stripped = stripAnsi(label);
 			expect(stripped).toContain(">>");
-			expect(stripped).toContain("CUSTOM");
-		});
-
-		it("should handle success with custom color instance", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
-			const testChalk = new Chalk({ level: 3 });
-
-			logger.success(
-				{
-					label: "CUSTOM",
-					color: testChalk.bgRedBright.black,
-					suffix: "<<",
-				},
-				"message"
-			);
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			expect(hasAnsiCodes(label)).toBe(true);
-			const stripped = stripAnsi(label);
-			expect(stripped).toContain("<<");
 			expect(stripped).toContain("CUSTOM");
 		});
 
@@ -306,7 +258,7 @@ describe("Edge Cases", () => {
 			logger.warn(
 				{
 					label: "CUSTOM",
-					color: testChalk.bgBlack.white,
+					ansiFormatter: testChalk.bgBlack.white,
 					prefix: ">>",
 					suffix: "<<",
 				},
@@ -333,7 +285,7 @@ describe("Edge Cases", () => {
 			logger.error(
 				{
 					label: "CUSTOM",
-					color: testChalk.bgBlack.greenBright,
+					ansiFormatter: testChalk.bgBlack.greenBright,
 					prefix: ">>",
 					suffix: "<<",
 				},

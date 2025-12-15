@@ -3,11 +3,12 @@
  * Creates logger instances with configurable options.
  */
 
+import ansis, { Ansis } from "ansis";
 import { generateReservedColors } from "./colors";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
 import { formatLabel } from "./format";
 import { print } from "./print";
-import type { HagenInstance, Label } from "./types";
+import type { AnsiFormatter, ColorLabel, FormatterLabel, HagenInstance, Label } from "./types";
 
 /**
  * Creates a new Hagen logger instance with custom configuration.
@@ -59,16 +60,111 @@ import type { HagenInstance, Label } from "./types";
  * testLogger.log("TEST", "Running tests");
  * ```
  */
+/**
+ * Determines effective color support based on user preference and terminal capabilities
+ */
+function determineColorSupport(userSetting?: boolean): boolean {
+	// User explicitly disabled colors
+	if (userSetting === false) {
+		return false;
+	}
+
+	// User explicitly enabled colors, but terminal doesn't support them
+	if (userSetting === true && !ansis.isSupported()) {
+		return false; // Force no-color mode regardless of user preference
+	}
+
+	// Default to automatic detection
+	return ansis.isSupported();
+}
+
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	// Merge with defaults
 	const mergedConfig: LoggerConfig = { ...defaultConfig, ...config };
 
-	// Generate colors with optional quantization
-	const colors = generateReservedColors(mergedConfig.paletteSize);
+	// Determine final color support
+	const enableColor = determineColorSupport(mergedConfig.enableColor);
+
+	// Create appropriate ansis instance
+	// Use the same ansis instance but handle no-color mode in formatters
+	const ansisInstance = enableColor ? new Ansis() : new Ansis(0);
 
 	const instanceConfig: InternalConfig = {
 		...mergedConfig,
-		colors: { reserved: colors },
+		enableColor: enableColor, // Final resolved value
+		ansisInstance,
+		colors: {
+			reserved: generateReservedColors(mergedConfig.paletteSize, ansisInstance, !enableColor),
+		},
+	};
+
+	// Helper to create common label logic
+	const createProcessedLabel = (
+		label: Label,
+		defaultPrefix: string,
+		defaultFormatter: AnsiFormatter
+	): Label => {
+		if (label === undefined || label === null || typeof label === "string") {
+			const labelText = typeof label === "string" ? label : "";
+			return {
+				kind: "formatter",
+				label: formatLabel(labelText, defaultPrefix, undefined, instanceConfig),
+				ansiFormatter: defaultFormatter,
+			};
+		}
+
+		// Handle object labels
+		if (label.kind === "color") {
+			return {
+				kind: "color",
+				label: formatLabel(
+					label.label,
+					label.prefix ?? defaultPrefix,
+					label.suffix,
+					instanceConfig
+				),
+				...(label.bgColor ? { bgColor: label.bgColor } : {}),
+				...(label.fgColor ? { fgColor: label.fgColor } : {}),
+			};
+		} else if (label.kind === "formatter") {
+			return {
+				kind: "formatter",
+				label: formatLabel(
+					label.label,
+					label.prefix ?? defaultPrefix,
+					label.suffix,
+					instanceConfig
+				),
+				ansiFormatter: label.ansiFormatter,
+			};
+		} else {
+			// Fallback for objects that might be missing 'kind' (backward compatibility or loose types)
+			// checking for properties to guess
+			if ("bgColor" in label || "fgColor" in label) {
+				return {
+					kind: "color",
+					label: formatLabel(
+						label.label,
+						label.prefix ?? defaultPrefix,
+						label.suffix,
+						instanceConfig
+					),
+					...((label as ColorLabel).bgColor ? { bgColor: (label as ColorLabel).bgColor } : {}),
+					...((label as ColorLabel).fgColor ? { fgColor: (label as ColorLabel).fgColor } : {}),
+				};
+			}
+
+			return {
+				kind: "formatter",
+				label: formatLabel(
+					label.label,
+					label.prefix ?? defaultPrefix,
+					label.suffix,
+					instanceConfig
+				),
+				ansiFormatter: (label as FormatterLabel).ansiFormatter,
+			};
+		}
 	};
 
 	const log = (label: Label, ...data: unknown[]): void => {
@@ -81,54 +177,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const info = (label: Label, ...data: unknown[]): void => {
-		let processedLabel: Label;
-
-		if (label === undefined || label === null || typeof label === "string") {
-			const labelText = typeof label === "string" ? label : "";
-			processedLabel = {
-				label: formatLabel(labelText, "i", undefined, instanceConfig),
-				color: instanceConfig.colors.reserved.INFO,
-			};
-		} else if ("bgColor" in label) {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "i", label.suffix, instanceConfig),
-				bgColor: label.bgColor,
-			};
-		} else {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "i", label.suffix, instanceConfig),
-				color: label.color ?? instanceConfig.colors.reserved.INFO,
-			};
-		}
-
-		print({
-			logger: console.log,
-			label: processedLabel,
-			data,
-			config: instanceConfig,
-		});
-	};
-
-	const success = (label: Label, ...data: unknown[]): void => {
-		let processedLabel: Label;
-
-		if (label === undefined || label === null || typeof label === "string") {
-			const labelText = typeof label === "string" ? label : "";
-			processedLabel = {
-				label: formatLabel(labelText, "✓", undefined, instanceConfig),
-				color: instanceConfig.colors.reserved.SUCCESS,
-			};
-		} else if ("bgColor" in label) {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "✓", label.suffix, instanceConfig),
-				bgColor: label.bgColor,
-			};
-		} else {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "✓", label.suffix, instanceConfig),
-				color: label.color ?? instanceConfig.colors.reserved.SUCCESS,
-			};
-		}
+		const processedLabel = createProcessedLabel(label, "i", instanceConfig.colors.reserved.INFO);
 
 		print({
 			logger: console.log,
@@ -139,25 +188,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const warn = (label: Label, ...data: unknown[]): void => {
-		let processedLabel: Label;
-
-		if (label === undefined || label === null || typeof label === "string") {
-			const labelText = typeof label === "string" ? label : "";
-			processedLabel = {
-				label: formatLabel(labelText, "!", undefined, instanceConfig),
-				color: instanceConfig.colors.reserved.WARN,
-			};
-		} else if ("bgColor" in label) {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "!", label.suffix, instanceConfig),
-				bgColor: label.bgColor,
-			};
-		} else {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "!", label.suffix, instanceConfig),
-				color: label.color ?? instanceConfig.colors.reserved.WARN,
-			};
-		}
+		const processedLabel = createProcessedLabel(label, "!", instanceConfig.colors.reserved.WARN);
 
 		print({
 			logger: console.warn,
@@ -168,25 +199,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const error = (label: Label, ...data: unknown[]): void => {
-		let processedLabel: Label;
-
-		if (label === undefined || label === null || typeof label === "string") {
-			const labelText = typeof label === "string" ? label : "";
-			processedLabel = {
-				label: formatLabel(labelText, "✕", undefined, instanceConfig),
-				color: instanceConfig.colors.reserved.ERROR,
-			};
-		} else if ("bgColor" in label) {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "✕", label.suffix, instanceConfig),
-				bgColor: label.bgColor,
-			};
-		} else {
-			processedLabel = {
-				label: formatLabel(label.label, label.prefix ?? "✕", label.suffix, instanceConfig),
-				color: label.color ?? instanceConfig.colors.reserved.ERROR,
-			};
-		}
+		const processedLabel = createProcessedLabel(label, "✕", instanceConfig.colors.reserved.ERROR);
 
 		print({
 			logger: console.error,
@@ -196,5 +209,16 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		});
 	};
 
-	return { log, info, success, warn, error };
+	const debug = (label: Label, ...data: unknown[]): void => {
+		const processedLabel = createProcessedLabel(label, "?", instanceConfig.colors.reserved.DEBUG);
+
+		print({
+			logger: console.debug,
+			label: processedLabel,
+			data,
+			config: instanceConfig,
+		});
+	};
+
+	return { log, info, warn, error, debug };
 }

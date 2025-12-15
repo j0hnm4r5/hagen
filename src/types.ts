@@ -15,14 +15,14 @@ export type Color = HEX | RGB;
  * A function that applies ANSI color formatting to text.
  * Returns the formatted string with ANSI escape codes.
  */
-export type ColorFormatter = (text: string) => string;
+export type AnsiFormatter = (text: string) => string;
 
 /**
  * Label configuration for log messages.
  *
  * Labels can be specified in multiple ways:
  * 1. Simple string: `"API"` - uses automatic color selection based on hash
- * 2. Object with ColorFormatter: `{ label: "API", color: myFormatter }` - uses provided formatter
+ * 2. Object with AnsiFormatter: `{ label: "API", color: myFormatter }` - uses provided formatter
  * 3. Object with custom colors: `{ label: "API", bgColor: "#ff0000", fgColor: "#ffffff" }` - custom colors
  *
  * Colors can be specified as:
@@ -56,91 +56,84 @@ export type ColorFormatter = (text: string) => string;
  * }, "Message");
  * ```
  */
+export interface BaseLabel {
+	/** The text content of the label */
+	label: string;
+	/** Custom prefix to override global labelPrefix */
+	prefix?: string;
+	/** Custom suffix to override global labelSuffix */
+	suffix?: string;
+}
+
+export interface FormatterLabel extends BaseLabel {
+	kind?: "formatter";
+
+	/** A function that applies ANSI codes to input text. */
+	ansiFormatter: AnsiFormatter;
+}
+
+export interface ColorLabel extends BaseLabel {
+	kind?: "color";
+
+	/** Background color as hex string or RGB tuple. If not specified, auto-calculated from the label text. */
+	bgColor?: Color;
+	/** Foreground (text) color as hex string or RGB tuple. If not specified, auto-calculated for contrast. */
+	fgColor?: Color;
+}
+
 export type Label =
 	| string
 	| undefined
 	| null
-	| {
-			/** The text content of the label */
-			label: string;
-			/** ColorFormatter for styling */
-			color?: ColorFormatter;
-			/** Custom prefix to override global labelPrefix */
-			prefix?: string;
-			/** Custom suffix to override global labelSuffix */
-			suffix?: string;
-	  }
-	| {
-			/** The text content of the label */
-			label: string;
-			/** Background color as hex string or RGB tuple. */
-			bgColor: Color;
-			/** Foreground (text) color as hex string or RGB tuple. If not specified, auto-calculated for contrast. */
-			fgColor?: Color;
-			/** Custom prefix to override global labelPrefix */
-			prefix?: string;
-			/** Custom suffix to override global labelSuffix */
-			suffix?: string;
-	  };
+	| FormatterLabel
+	| ColorLabel
+	| (BaseLabel & { kind?: never; bgColor?: Color; fgColor?: Color; ansiFormatter?: never });
+
+export type Logger = (label: Label, ...data: unknown[]) => void;
 
 /**
  * Logger instance with methods for different log levels.
  *
  * Each method accepts a label (string or Label object) followed by any number of data arguments.
- *
- * @example
- * ```typescript
- * const logger = createHagen();
- *
- * // General logging
- * logger.log("API", "Request received", { userId: 123 });
- *
- * // Informational messages (blue by default, prefixed with 'i')
- * logger.info("SYSTEM", "Service started");
- *
- * // Success messages (green by default, prefixed with '✓')
- * logger.success("DATABASE", "Connection established");
- *
- * // Warnings (yellow/orange by default, prefixed with '!', uses console.warn)
- * logger.warn("AUTH", "Token expires soon");
- *
- * // Errors (red by default, prefixed with '✕', uses console.error)
- * logger.error("API", "Request failed", error);
- * ```
  */
 export interface HagenInstance {
 	/**
-	 * General purpose logging with automatic color selection.
-	 * @param label - String label or Label object for categorization
-	 * @param data - Any number of values to log
+	 * Outputs a message to the console, using `console.log`.
+	 * The label defaults to automatic color selection.
+	 *
+	 * In Node.js, `console.log` prints to `stdout`.
 	 */
-	log: (label: Label, ...data: unknown[]) => void;
+	log: Logger;
 
 	/**
-	 * Informational logging (defaults to blue, prefixed with 'i').
-	 * @param label - String label or Label object for categorization
-	 * @param data - Any number of values to log
+	 * Outputs a message to the console with the error log level, using `console.error`.
+	 * Defaults to red label color and is prefixed with '!!'.
+	 *
+	 * In Node.js, `console.error` prints to `stderr`.
 	 */
-	info: (label: Label, ...data: unknown[]) => void;
+	error: Logger;
 
 	/**
-	 * Success logging (defaults to green, prefixed with '✓').
-	 * @param label - String label or Label object for categorization
-	 * @param data - Any number of values to log
+	 * Outputs a message to the console with the warning log level, using `console.warn`.
+	 * Defaults to yellow label color and is prefixed with '!'.
+	 *
+	 * In Node.js, `console.warn` is an alias for `console.error`, and will print to `stderr`.
 	 */
-	success: (label: Label, ...data: unknown[]) => void;
+	warn: Logger;
 
 	/**
-	 * Warning logging (defaults to orange, prefixed with '!', uses console.warn).
-	 * @param label - String label or Label object for categorization
-	 * @param data - Any number of values to log
+	 * Outputs a message to the console with the info log level, using `console.info`.
+	 * Defaults to blue label color and is prefixed with 'i'.
+	 *
+	 * In Node.js, `console.info` is an alias for `console.log`, and will print to `stdout`.
 	 */
-	warn: (label: Label, ...data: unknown[]) => void;
+	info: Logger;
 
 	/**
-	 * Error logging (defaults to red, prefixed with '✕', uses console.error).
-	 * @param label - String label or Label object for categorization
-	 * @param data - Any number of values to log
+	 * Outputs a message to the console with the debug log level, using `console.debug`.
+	 * Defaults to cyan label color and is prefixed with '?'.
+	 *
+	 * In Node.js, `console.debug` is an alias for `console.log`, and will print to `stdout`.
 	 */
-	error: (label: Label, ...data: unknown[]) => void;
+	debug: Logger;
 }

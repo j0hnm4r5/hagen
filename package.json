@@ -55,8 +55,7 @@
 		"visualize:browser": "vite"
 	},
 	"dependencies": {
-		"ansis": "^3.4.0",
-		"std-env": "^3.8.1"
+		"ansis": "^4.2.0"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.17.4",

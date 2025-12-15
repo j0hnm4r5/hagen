@@ -90,7 +90,6 @@ function runHagenTests(logger: ReturnType<typeof createHagen>) {
 	// Basic tests
 	logger.log("Test", "This is a normal log message");
 	logger.info("Info", "This is an info message");
-	logger.success("Success", "This is a success message");
 	logger.warn("Warning", "This is a warning message");
 	logger.error("Error", "This is an error message");
 
@@ -164,7 +163,7 @@ describe("Hagen Browser Tests", () => {
 		const testData = capture.getData();
 
 		expect(testData).toBeDefined();
-		expect(testData.totalLogs).toBeGreaterThan(15);
+		expect(testData.totalLogs).toBeGreaterThanOrEqual(15);
 
 		// Should have all three log types
 		const types = new Set(testData.logTypes);
@@ -199,12 +198,6 @@ describe("Hagen Browser Tests", () => {
 		// Find the info log
 		const infoLog = testData.logs.find((log) => log.rawText.includes("This is an info message"));
 		expect(infoLog).toBeDefined();
-
-		// Find the success log
-		const successLog = testData.logs.find((log) =>
-			log.rawText.includes("This is a success message")
-		);
-		expect(successLog).toBeDefined();
 	});
 
 	test("should handle warn and error log levels with correct console methods", () => {

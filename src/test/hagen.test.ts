@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import hagen, { createHagen, type LoggerConfig } from "../index.js";
 import type { Label } from "../index.js";
+import hagen, { createHagen, type LoggerConfig } from "../index.js";
 
 describe("Hagen Logger", () => {
 	beforeEach(() => {
@@ -15,7 +15,7 @@ describe("Hagen Logger", () => {
 			expect(logger.info).toBeDefined();
 			expect(logger.warn).toBeDefined();
 			expect(logger.error).toBeDefined();
-			expect(logger.success).toBeDefined();
+			expect(logger.debug).toBeDefined();
 		});
 
 		it("should create a logger instance with custom config", () => {
@@ -58,7 +58,7 @@ describe("Hagen Logger", () => {
 			expect(hagen.info).toBeTypeOf("function");
 			expect(hagen.warn).toBeTypeOf("function");
 			expect(hagen.error).toBeTypeOf("function");
-			expect(hagen.success).toBeTypeOf("function");
+			expect(hagen.debug).toBeTypeOf("function");
 		});
 	});
 
@@ -66,17 +66,20 @@ describe("Hagen Logger", () => {
 		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 		let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+		let consoleDebugSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 			consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 			consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+			consoleDebugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
 		});
 
 		afterEach(() => {
 			consoleLogSpy.mockRestore();
 			consoleWarnSpy.mockRestore();
 			consoleErrorSpy.mockRestore();
+			consoleDebugSpy.mockRestore();
 		});
 
 		describe("log", () => {
@@ -157,18 +160,18 @@ describe("Hagen Logger", () => {
 			});
 		});
 
-		describe("success", () => {
-			it("should log success message with string label", () => {
+		describe("debug", () => {
+			it("should log debug message with string label", () => {
 				const logger = createHagen();
-				logger.success("SUCCESS", "success message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
+				logger.debug("DEBUG", "debug message");
+				expect(consoleDebugSpy).toHaveBeenCalledOnce();
 			});
 
-			it("should log success message with Label object", () => {
+			it("should log debug message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "SUCCESS", bgColor: [34, 139, 34] };
-				logger.success(label, "success message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
+				const label: Label = { label: "DEBUG", bgColor: [0, 255, 255] };
+				logger.debug(label, "debug message");
+				expect(consoleDebugSpy).toHaveBeenCalledOnce();
 			});
 		});
 	});

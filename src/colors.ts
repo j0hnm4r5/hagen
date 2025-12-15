@@ -3,8 +3,8 @@
  * Handles color parsing, quantization, contrast calculation, and formatter creation.
  */
 
-import ansis from "ansis";
-import type { Color, ColorFormatter, RGB } from "./types";
+import ansis, { Ansis } from "ansis";
+import type { AnsiFormatter, Color, RGB } from "./types";
 
 // ========= COLOR PARSING =========
 
@@ -86,11 +86,13 @@ export function getContrastingTextColor(bgColor: RGB): RGB {
  * unless a custom fgColor is provided.
  * @internal
  */
-export function createColorFormatter(
+export function createAnsiFormatter(
 	bgColor: Color,
 	fgColor?: Color,
-	paletteSize?: number
-): ColorFormatter {
+	paletteSize?: number,
+	ansisInstance: Ansis = ansis,
+	forceNoColor = false
+): AnsiFormatter {
 	let bg = parseColor(bgColor);
 
 	// Apply quantization if palette size is specified
@@ -109,7 +111,11 @@ export function createColorFormatter(
 		fg = getContrastingTextColor(bg);
 	}
 
-	return (text: string) => ansis.bgRgb(bg[0], bg[1], bg[2]).rgb(fg[0], fg[1], fg[2])(text);
+	return (text: string) => {
+		const colored = ansisInstance.bgRgb(bg[0], bg[1], bg[2]).rgb(fg[0], fg[1], fg[2])(text);
+		// Strip colors if no-color mode is forced
+		return forceNoColor ? ansis.strip(colored) : colored;
+	};
 }
 
 // ========= RESERVED COLORS =========
@@ -117,15 +123,15 @@ export function createColorFormatter(
 /** Reserved colors for log levels with explicit bg and fg */
 export const RESERVED_COLORS = {
 	INFO: { bg: [65, 105, 225] as const, fg: [255, 255, 255] as const }, // Royal Blue, white text
-	SUCCESS: { bg: [34, 139, 34] as const, fg: [255, 255, 255] as const }, // Forest Green, white text
 	WARN: { bg: [255, 165, 0] as const, fg: [0, 0, 0] as const }, // Orange, black text
 	ERROR: { bg: [220, 20, 60] as const, fg: [255, 255, 255] as const }, // Crimson, white text
+	DEBUG: { bg: [0, 255, 255] as const, fg: [0, 0, 0] as const }, // Cyan, black text
 } as const;
 
 // ========= COLOR CACHE =========
 
 /** Color cache for performance - stores generated formatters by label+paletteSize */
-const colorCache = new Map<string, ColorFormatter>();
+const colorCache = new Map<string, AnsiFormatter>();
 
 /**
  * Clears the color cache.
@@ -153,18 +159,29 @@ export function clearColorCache(): void {
  *
  * @param label - The label text to hash
  * @param paletteSize - Optional palette size for quantization
- * @returns A ColorFormatter with the generated color
+ * @param ansisInstance - Ansis instance to use for color formatting
+ * @returns A AnsiFormatter with the generated color
  *
  * @internal
  */
-export function calculateLabelColor(label: string, paletteSize?: number): ColorFormatter {
-	const cacheKey = `${label}:${paletteSize ?? "full"}`;
+export function calculateLabelColor({
+	label,
+	paletteSize,
+	ansisInstance = ansis,
+	forceNoColor = false,
+}: {
+	label: string;
+	paletteSize?: number | undefined;
+	ansisInstance?: Ansis | undefined;
+	forceNoColor?: boolean | undefined;
+}): AnsiFormatter {
+	const cacheKey = `${label}:${paletteSize ?? "full"}:${forceNoColor}`;
 	if (colorCache.has(cacheKey)) {
 		return colorCache.get(cacheKey)!;
 	}
 
 	// Generate a hash from the label
-	const hash = [...label].reduce((acc, char) => {
+	const hash = Array.from(label).reduce((acc, char) => {
 		return ((acc << 5) - acc + char.codePointAt(0)!) | 0;
 	}, 0);
 
@@ -173,7 +190,7 @@ export function calculateLabelColor(label: string, paletteSize?: number): ColorF
 	const g = Math.abs(hash >> 8) % 256;
 	const b = Math.abs(hash >> 16) % 256;
 
-	const color = createColorFormatter([r, g, b], undefined, paletteSize);
+	const color = createAnsiFormatter([r, g, b], undefined, paletteSize, ansisInstance, forceNoColor);
 	colorCache.set(cacheKey, color);
 	return color;
 }
@@ -182,7 +199,11 @@ export function calculateLabelColor(label: string, paletteSize?: number): ColorF
  * Generates color formatters for reserved log level colors.
  * @internal
  */
-export function generateReservedColors(paletteSize?: number) {
+export function generateReservedColors(
+	paletteSize?: number,
+	ansisInstance: Ansis = ansis,
+	forceNoColor = false
+) {
 	const createReserved = (color: { bg: RGB; fg: RGB }) => {
 		let bg = color.bg;
 		let fg = color.fg;
@@ -191,28 +212,31 @@ export function generateReservedColors(paletteSize?: number) {
 			fg = quantizeColor(fg, paletteSize);
 		}
 		// Create background formatter
-		const bgFormatter = ansis.bgRgb(bg[0], bg[1], bg[2]);
+		const bgFormatter = ansisInstance.bgRgb(bg[0], bg[1], bg[2]);
 
 		// Create foreground formatter - use pure black/white for contrast
 		let fgFormatter;
 		if (fg[0] === 0 && fg[1] === 0 && fg[2] === 0) {
 			// Pure black - use ansis.black for consistent black text
-			fgFormatter = ansis.black;
+			fgFormatter = ansisInstance.black;
 		} else if (fg[0] === 255 && fg[1] === 255 && fg[2] === 255) {
 			// Pure white - use ansis.whiteBright for consistent white text
-			fgFormatter = ansis.whiteBright;
+			fgFormatter = ansisInstance.whiteBright;
 		} else {
 			// Custom color - use RGB
-			fgFormatter = ansis.rgb(fg[0], fg[1], fg[2]);
+			fgFormatter = ansisInstance.rgb(fg[0], fg[1], fg[2]);
 		}
 
-		return (text: string) => bgFormatter(fgFormatter(text));
+		return (text: string) => {
+			const colored = bgFormatter(fgFormatter(text));
+			return forceNoColor ? ansis.strip(colored) : colored;
+		};
 	};
 
 	return {
 		INFO: createReserved(RESERVED_COLORS.INFO),
-		SUCCESS: createReserved(RESERVED_COLORS.SUCCESS),
 		WARN: createReserved(RESERVED_COLORS.WARN),
 		ERROR: createReserved(RESERVED_COLORS.ERROR),
+		DEBUG: createReserved(RESERVED_COLORS.DEBUG),
 	};
 }

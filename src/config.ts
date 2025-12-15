@@ -2,8 +2,7 @@
  * Configuration types and defaults for Hagen logger.
  */
 
-import { isCI } from "std-env";
-import type { ColorFormatter } from "./types";
+import ansis, { Ansis } from "ansis";
 
 /**
  * Configuration options for Hagen logger instances.
@@ -29,8 +28,9 @@ export interface LoggerConfig {
 
 	/**
 	 * Whether to enable colored output.
-	 * Automatically disabled in CI environments.
-	 * Default: true (false in CI)
+	 * Automatically detects terminal color support.
+	 * Can be explicitly overridden to force enable/disable colors.
+	 * Default: true if terminal supports colors, false otherwise
 	 */
 	enableColor: boolean;
 
@@ -99,14 +99,13 @@ export interface LoggerConfig {
 }
 
 /** Internal config with resolved color formatters */
+import type { AnsiFormatter } from "./types";
+
+/** Internal config with resolved color formatters */
 export interface InternalConfig extends LoggerConfig {
+	ansisInstance: Ansis;
 	colors: {
-		reserved: {
-			WARN: ColorFormatter;
-			ERROR: ColorFormatter;
-			INFO: ColorFormatter;
-			SUCCESS: ColorFormatter;
-		};
+		reserved: Record<"INFO" | "WARN" | "ERROR" | "DEBUG", AnsiFormatter>;
 	};
 }
 
@@ -114,7 +113,7 @@ export interface InternalConfig extends LoggerConfig {
  * Default configuration for Hagen instances.
  *
  * This configuration is used when no custom config is provided to createHagen().
- * Colors are automatically disabled in CI environments.
+ * Colors are automatically enabled based on terminal color support detection.
  *
  * @example
  * ```typescript
@@ -122,12 +121,12 @@ export interface InternalConfig extends LoggerConfig {
  *
  * // Inspect default settings
  * console.log(defaultConfig.showTimestamp); // false
- * console.log(defaultConfig.enableColor); // true (false in CI)
+ * console.log(defaultConfig.enableColor); // true if terminal supports colors
  * ```
  */
 export const defaultConfig: LoggerConfig = {
 	showTimestamp: false,
-	enableColor: !isCI,
+	enableColor: ansis.isSupported(),
 	dateFormat: "iso",
 	timeFormat: "24h",
 	defaultLabel: "·",

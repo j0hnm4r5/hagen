@@ -3,8 +3,7 @@ import hagen, { createHagen } from "../index";
 export function test() {
 	// Test reserved colors
 	hagen.info("Info", "This is an info message.");
-	hagen.success("Success", "This is a success message.");
-	hagen.warn("Warning", "This is a warning message.");
+
 	hagen.error("Error", "This is an error message.");
 
 	// Test with consistent palette labels
@@ -113,19 +112,6 @@ export function visualizeQuantization() {
 	logger8.info("Info", "Information message");
 	console.log();
 
-	console.log("SUCCESS:");
-	console.log("  Full:     ");
-	loggerFull.success("Success", "Success message");
-	console.log("  216:      ");
-	logger216.success("Success", "Success message");
-	console.log("  64:       ");
-	logger64.success("Success", "Success message");
-	console.log("  27:       ");
-	logger27.success("Success", "Success message");
-	console.log("  8:        ");
-	logger8.success("Success", "Success message");
-	console.log();
-
 	console.log("WARN:");
 	console.log("  Full:     ");
 	loggerFull.warn("Warning", "Warning message");
@@ -187,7 +173,7 @@ export function visualizeConfigurations() {
 	console.log("--- DEFAULT ---\n");
 	const defaultLogger = createHagen();
 	defaultLogger.info("Info", "Information message");
-	defaultLogger.success("Success", "Success message");
+
 	defaultLogger.warn("Warning", "Warning message");
 	defaultLogger.error("Error", "Error message");
 	defaultLogger.log("API", "Regular log message");
@@ -197,7 +183,7 @@ export function visualizeConfigurations() {
 	console.log("--- WITH TIMESTAMPS ---\n");
 	const timestampLogger = createHagen({ showTimestamp: true });
 	timestampLogger.info("Info", "Information message");
-	timestampLogger.success("Success", "Success message");
+
 	timestampLogger.warn("Warning", "Warning message");
 	timestampLogger.error("Error", "Error message");
 	timestampLogger.log("API", "Regular log message");

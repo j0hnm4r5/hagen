@@ -4,8 +4,8 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { stripAnsi } from "./helpers/ansi.js";
 import type { Label } from "../index.js";
+import { stripAnsi } from "./helpers/ansi.js";
 
 describe("Content Validation", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
@@ -382,17 +382,6 @@ describe("Content Validation", () => {
 			const logger = createHagen({ enableColor: true });
 
 			logger.info("TEST", "msg");
-
-			expect(consoleLogSpy).toHaveBeenCalledOnce();
-			expect(consoleWarnSpy).not.toHaveBeenCalled();
-			expect(consoleErrorSpy).not.toHaveBeenCalled();
-		});
-
-		it("should use console.log for success()", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
-
-			logger.success("TEST", "msg");
 
 			expect(consoleLogSpy).toHaveBeenCalledOnce();
 			expect(consoleWarnSpy).not.toHaveBeenCalled();

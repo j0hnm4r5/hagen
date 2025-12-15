@@ -8,11 +8,11 @@
  */
 
 // ========= TYPE EXPORTS =========
-export type { Color, ColorFormatter, HagenInstance, Label, RGB } from "./types";
+export type { AnsiFormatter, Color, HagenInstance, Label, RGB } from "./types";
 
 // ========= CONFIG EXPORTS =========
-export type { LoggerConfig } from "./config";
 export { defaultConfig } from "./config";
+export type { LoggerConfig } from "./config";
 
 // ========= COLOR EXPORTS =========
 export { clearColorCache } from "./colors";
@@ -38,7 +38,6 @@ import { createHagen } from "./logger";
  *
  * hagen.log("TEST", "Hello, world!");
  * hagen.info("INFO", "This is informational");
- * hagen.success("SUCCESS", "Operation completed");
  * hagen.warn("WARNING", "Be careful!");
  * hagen.error("ERROR", "Something went wrong");
  * ```
@@ -46,11 +45,10 @@ import { createHagen } from "./logger";
  * @example
  * ```typescript
  * // Named imports (same instance)
- * import { log, info, success, warn, error } from "hagen";
+ * import { log, info, warn, error } from "hagen";
  *
  * log("API", "Request received");
  * info("SYSTEM", "Service started");
- * success("DB", "Connected");
  * warn("MEMORY", "High usage");
  * error("API", "Failed", error);
  * ```
@@ -60,35 +58,34 @@ const defaultInstance = createHagen();
 // ========= NAMED METHOD EXPORTS =========
 
 /**
- * Named export: General purpose logging method from the default instance.
+ * General purpose logging method from the default instance.
  * @see {@link HagenInstance.log}
  */
 export const log = defaultInstance.log;
 
 /**
- * Named export: Informational logging method from the default instance.
+ * Error logging method from the default instance.
+ * @see {@link HagenInstance.error}
+ */
+export const error = defaultInstance.error;
+
+/**
+ * Warning logging method from the default instance.
+ * @see {@link HagenInstance.warn}
+ */
+export const warn = defaultInstance.warn;
+
+/**
+ * Informational logging method from the default instance.
  * @see {@link HagenInstance.info}
  */
 export const info = defaultInstance.info;
 
 /**
- * Named export: Success logging method from the default instance.
- * @see {@link HagenInstance.success}
+ * Debug logging method from the default instance.
+ * @see {@link HagenInstance.debug}
  */
-export const success = defaultInstance.success;
-
-/**
- * Named export: Warning logging method from the default instance.
- * @see {@link HagenInstance.warn}
- */
-export const warn = defaultInstance.warn;
-// hi
-
-/**
- * Named export: Error logging method from the default instance.
- * @see {@link HagenInstance.error}
- */
-export const error = defaultInstance.error;
+export const debug = defaultInstance.debug;
 
 // ========= DEFAULT EXPORT =========
 export default defaultInstance;

@@ -184,27 +184,24 @@ describe("Integration Tests", () => {
 
 		logger.log("LOG", "msg");
 		logger.info("INFO", "msg");
-		logger.success("SUCCESS", "msg");
+
 		logger.warn("WARN", "msg");
 		logger.error("ERROR", "msg");
 
 		// All should have ANSI codes
 		expect(hasAnsiCodes(consoleLogSpy.mock.calls[0]?.[0] as string)).toBe(true);
 		expect(hasAnsiCodes(consoleLogSpy.mock.calls[1]?.[0] as string)).toBe(true);
-		expect(hasAnsiCodes(consoleLogSpy.mock.calls[2]?.[0] as string)).toBe(true);
 		expect(hasAnsiCodes(consoleWarnSpy.mock.calls[0]?.[0] as string)).toBe(true);
 		expect(hasAnsiCodes(consoleErrorSpy.mock.calls[0]?.[0] as string)).toBe(true);
 
 		// All should have timestamps
 		const stripped1 = stripAnsi(consoleLogSpy.mock.calls[0]?.[0] as string);
 		const stripped2 = stripAnsi(consoleLogSpy.mock.calls[1]?.[0] as string);
-		const stripped3 = stripAnsi(consoleLogSpy.mock.calls[2]?.[0] as string);
 		const stripped4 = stripAnsi(consoleWarnSpy.mock.calls[0]?.[0] as string);
 		const stripped5 = stripAnsi(consoleErrorSpy.mock.calls[0]?.[0] as string);
 
 		expect(stripped1).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 		expect(stripped2).toMatch(/\d{1,2}:\d{2}:\d{2}/);
-		expect(stripped3).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 		expect(stripped4).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 		expect(stripped5).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 
