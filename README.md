@@ -194,16 +194,6 @@ export async function fetchUser(id: string) {
 }
 ```
 
-### Advanced: Color Cache Management
-
-Hagen caches label→color mappings for performance. Clear if needed:
-
-```typescript
-import { clearColorCache } from "hagen";
-
-// After processing a batch of unique labels
-clearColorCache();
-```
 
 ## 🔄 Migration from v3
 

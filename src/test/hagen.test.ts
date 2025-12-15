@@ -29,8 +29,7 @@ describe("Hagen Logger", () => {
 			const config: Partial<LoggerConfig> = {
 				showTimestamp: true,
 				enableColor: true,
-				dateFormat: "iso",
-				timeFormat: "24h",
+
 				labelPrefix: "<",
 				labelSuffix: ">",
 			};
@@ -41,7 +40,7 @@ describe("Hagen Logger", () => {
 		it("should accept custom date format function", () => {
 			const customDateFormat = (date: Date) => date.toISOString();
 			const logger = createHagen({
-				dateFormat: customDateFormat,
+				timestampFormatter: customDateFormat,
 			});
 			expect(logger).toBeDefined();
 		});
@@ -90,8 +89,12 @@ describe("Hagen Logger", () => {
 			});
 
 			it("should log with Label object", () => {
-				const logger = createHagen();
-				const label: Label = { label: "TEST", bgColor: [100, 50, 150] };
+				const logger = createHagen({
+					labelPrefix: ">>", // Adding prefix from previous config not visible but assumed based on context? No, wait.
+					// Ah, earlier I saw strict type error for { label, bgColor }.
+					// Let's just fix the object.
+				});
+				const label: Label = { kind: "color", label: "TEST", bgColor: [100, 50, 150] };
 				logger.log(label, "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -99,6 +102,7 @@ describe("Hagen Logger", () => {
 			it("should log with prefix and suffix in label", () => {
 				const logger = createHagen();
 				const label: Label = {
+					kind: "color",
 					label: "TEST",
 					bgColor: [100, 50, 150],
 					prefix: ">>",
@@ -124,7 +128,7 @@ describe("Hagen Logger", () => {
 
 			it("should log info message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "INFO", bgColor: [65, 105, 225] };
+				const label: Label = { kind: "color", label: "INFO", bgColor: [65, 105, 225] };
 				logger.info(label, "information message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -139,7 +143,7 @@ describe("Hagen Logger", () => {
 
 			it("should log warning message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "WARN", bgColor: [255, 165, 0] };
+				const label: Label = { kind: "color", label: "WARN", bgColor: [255, 165, 0] };
 				logger.warn(label, "warning message");
 				expect(consoleWarnSpy).toHaveBeenCalledOnce();
 			});
@@ -154,7 +158,7 @@ describe("Hagen Logger", () => {
 
 			it("should log error message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "ERROR", bgColor: [220, 20, 60] };
+				const label: Label = { kind: "color", label: "ERROR", bgColor: [220, 20, 60] };
 				logger.error(label, "error message");
 				expect(consoleErrorSpy).toHaveBeenCalledOnce();
 			});
@@ -169,7 +173,7 @@ describe("Hagen Logger", () => {
 
 			it("should log debug message with Label object", () => {
 				const logger = createHagen();
-				const label: Label = { label: "DEBUG", bgColor: [0, 255, 255] };
+				const label: Label = { kind: "color", label: "DEBUG", bgColor: [0, 255, 255] };
 				logger.debug(label, "debug message");
 				expect(consoleDebugSpy).toHaveBeenCalledOnce();
 			});
@@ -230,25 +234,6 @@ describe("Hagen Logger", () => {
 			it("should use iso format", () => {
 				const logger = createHagen({
 					showTimestamp: true,
-					dateFormat: "iso",
-				});
-				logger.log("TEST", "message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
-			});
-
-			it("should use locale format", () => {
-				const logger = createHagen({
-					showTimestamp: true,
-					dateFormat: "locale",
-				});
-				logger.log("TEST", "message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
-			});
-
-			it("should use time format", () => {
-				const logger = createHagen({
-					showTimestamp: true,
-					dateFormat: "time",
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -258,34 +243,12 @@ describe("Hagen Logger", () => {
 				const customFormat = (date: Date) => `CUSTOM:${date.getFullYear()}`;
 				const logger = createHagen({
 					showTimestamp: true,
-					dateFormat: customFormat,
+					timestampFormatter: customFormat,
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 				expect(output).toContain("CUSTOM:");
-			});
-		});
-
-		describe("timeFormat", () => {
-			it("should use 12-hour format", () => {
-				const logger = createHagen({
-					showTimestamp: true,
-					dateFormat: "time",
-					timeFormat: "12h",
-				});
-				logger.log("TEST", "message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
-			});
-
-			it("should use 24-hour format", () => {
-				const logger = createHagen({
-					showTimestamp: true,
-					dateFormat: "time",
-					timeFormat: "24h",
-				});
-				logger.log("TEST", "message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
 		});
 
@@ -319,6 +282,7 @@ describe("Hagen Logger", () => {
 					labelSuffix: "]",
 				});
 				const label: Label = {
+					kind: "color",
 					label: "TEST",
 					prefix: ">>",
 					suffix: "<<",
@@ -351,19 +315,20 @@ describe("Hagen Logger", () => {
 
 		it("should accept Label with label only", () => {
 			const logger = createHagen();
-			logger.log({ label: "LABEL" }, "message");
+			logger.log({ kind: "color", label: "LABEL" }, "message");
 			expect(consoleLogSpy).toHaveBeenCalledOnce();
 		});
 
 		it("should accept Label with label and bgColor", () => {
 			const logger = createHagen();
-			logger.log({ label: "LABEL", bgColor: [100, 50, 150] }, "message");
+			logger.log({ kind: "color", label: "LABEL", bgColor: [100, 50, 150] }, "message");
 			expect(consoleLogSpy).toHaveBeenCalledOnce();
 		});
 
 		it("should accept Label with all properties", () => {
 			const logger = createHagen();
 			const label: Label = {
+				kind: "color",
 				label: "FULL",
 				bgColor: [150, 100, 200],
 				prefix: "<<",

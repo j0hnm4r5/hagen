@@ -25,8 +25,7 @@ describe("Integration Tests", () => {
 		const logger = createHagen({
 			enableColor: true,
 			showTimestamp: true,
-			dateFormat: "time",
-			timeFormat: "24h",
+
 			labelPrefix: ">>",
 			labelSuffix: "<<",
 		});
@@ -51,8 +50,9 @@ describe("Integration Tests", () => {
 		// Should have suffix
 		expect(stripped).toContain("<<");
 
-		// Should have timestamp
-		expect(stripped).toMatch(/\d{1,2}:\d{2}:\d{2}/);
+		// Should have timestamp (looking for date or time parts)
+		// ISO format: 2024-03-15T10:30:00.000Z
+		expect(stripped).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 
 		// Message should be separate
 		expect(message).toBe("message");
@@ -63,8 +63,7 @@ describe("Integration Tests", () => {
 		const logger = createHagen({
 			enableColor: false,
 			showTimestamp: true,
-			dateFormat: "time",
-			timeFormat: "24h",
+
 			labelPrefix: ">>",
 			labelSuffix: "<<",
 		});
@@ -113,13 +112,14 @@ describe("Integration Tests", () => {
 		const logger = createHagen({
 			enableColor: true,
 			showTimestamp: true,
-			dateFormat: "time",
+
 			labelPrefix: ">>",
 			labelSuffix: "<<",
 		});
 
 		logger.log(
 			{
+				kind: "color",
 				label: "CUSTOM",
 				bgColor: "#FF5733",
 				fgColor: "#FFFFFF",
@@ -149,7 +149,7 @@ describe("Integration Tests", () => {
 		const logger = createHagen({
 			enableColor: true,
 			showTimestamp: true,
-			dateFormat: "time",
+
 			fixedWidth: {
 				width: 10,
 				truncationMethod: "end",
@@ -179,7 +179,6 @@ describe("Integration Tests", () => {
 		const logger = createHagen({
 			enableColor: true,
 			showTimestamp: true,
-			dateFormat: "time",
 		});
 
 		logger.log("LOG", "msg");

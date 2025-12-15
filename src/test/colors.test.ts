@@ -44,8 +44,7 @@ describe("Color Formatting", () => {
 		});
 
 		it("should generate consistent colors for the same label", async () => {
-			const { createHagen, clearColorCache } = await import("../index.js");
-			clearColorCache();
+			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
 			logger.log("CONSISTENT", "first call");
@@ -64,8 +63,7 @@ describe("Color Formatting", () => {
 		});
 
 		it("should generate different colors for different labels", async () => {
-			const { createHagen, clearColorCache } = await import("../index.js");
-			clearColorCache();
+			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
 			logger.log("LABEL_A", "test");
@@ -153,7 +151,7 @@ describe("Color Formatting", () => {
 			const logger = createHagen({ enableColor: true });
 
 			// Use a light color that should get black text
-			logger.log({ label: "CUSTOM", bgColor: "#FFFF00" }, "test");
+			logger.log({ kind: "color", label: "CUSTOM", bgColor: "#FFFF00" }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -169,7 +167,7 @@ describe("Color Formatting", () => {
 			const logger = createHagen({ enableColor: true });
 
 			// Use a dark color that should get white text
-			logger.log({ label: "CUSTOM", bgColor: [20, 20, 80] }, "test");
+			logger.log({ kind: "color", label: "CUSTOM", bgColor: [20, 20, 80] }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -184,7 +182,7 @@ describe("Color Formatting", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			logger.log({ label: "LIGHT", bgColor: "#FFFFFF" }, "test");
+			logger.log({ kind: "color", label: "LIGHT", bgColor: "#FFFFFF" }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -197,7 +195,7 @@ describe("Color Formatting", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			logger.log({ label: "DARK", bgColor: "#000000" }, "test");
+			logger.log({ kind: "color", label: "DARK", bgColor: "#000000" }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -214,7 +212,7 @@ describe("Color Formatting", () => {
 			// With 8 colors (2 levels per channel), RGB values snap to 0 or 255
 			const logger = createHagen({ enableColor: true, paletteSize: 8 });
 
-			logger.log({ label: "QUANT", bgColor: [100, 150, 200] }, "test");
+			logger.log({ kind: "color", label: "QUANT", bgColor: [100, 150, 200] }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -227,7 +225,7 @@ describe("Color Formatting", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			logger.log({ label: "FULL", bgColor: [100, 150, 200] }, "test");
+			logger.log({ kind: "color", label: "FULL", bgColor: [100, 150, 200] }, "test");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 
@@ -249,29 +247,6 @@ describe("Color Formatting", () => {
 			// Orange (255,165,0) should be quantized
 			// With 2 levels: 255->255, 165->255, 0->0 = (255,255,0)
 			expect(output).toContain("\u001B[48;2;255;255;0m");
-		});
-	});
-
-	describe("Color Cache", () => {
-		it("should clear cache when clearColorCache is called", async () => {
-			const { createHagen, clearColorCache } = await import("../index.js");
-
-			const logger = createHagen({ enableColor: true });
-
-			logger.log("CACHE_TEST", "before clear");
-			const output1 = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			clearColorCache();
-			consoleLogSpy.mockClear();
-
-			logger.log("CACHE_TEST", "after clear");
-			const output2 = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// After clearing, should still get consistent color (same hash)
-			const colorRegex = /\u001B\[48;2;\d+;\d+;\d+m/;
-			const color1 = colorRegex.exec(output1)?.[0];
-			const color2 = colorRegex.exec(output2)?.[0];
-			expect(color1).toBe(color2);
 		});
 	});
 });

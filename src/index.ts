@@ -15,7 +15,6 @@ export { defaultConfig } from "./config";
 export type { LoggerConfig } from "./config";
 
 // ========= COLOR EXPORTS =========
-export { clearColorCache } from "./colors";
 
 // ========= FACTORY EXPORT =========
 export { createHagen } from "./logger";

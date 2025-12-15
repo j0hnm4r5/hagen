@@ -4,11 +4,13 @@
  */
 
 import ansis, { Ansis } from "ansis";
+import figures from "figures";
 import { generateReservedColors } from "./colors";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
 import { formatLabel } from "./format";
 import { print } from "./print";
-import type { AnsiFormatter, ColorLabel, FormatterLabel, HagenInstance, Label } from "./types";
+import type { AnsiFormatter, HagenInstance, Label } from "./types";
+import { assertNever } from "./utils/assert-never";
 
 /**
  * Creates a new Hagen logger instance with custom configuration.
@@ -26,8 +28,8 @@ import type { AnsiFormatter, ColorLabel, FormatterLabel, HagenInstance, Label } 
  * // Create logger with timestamps
  * const logger = createHagen({
  *   showTimestamp: true,
- *   dateFormat: "time",
- *   timeFormat: "12h"
+ *   showTimestamp: true,
+ *   dateFormat: "iso"
  * });
  *
  * logger.log("API", "Request received");
@@ -104,66 +106,72 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		defaultPrefix: string,
 		defaultFormatter: AnsiFormatter
 	): Label => {
-		if (label === undefined || label === null || typeof label === "string") {
-			const labelText = typeof label === "string" ? label : "";
-			return {
-				kind: "formatter",
-				label: formatLabel(labelText, defaultPrefix, undefined, instanceConfig),
-				ansiFormatter: defaultFormatter,
-			};
-		}
-
-		// Handle object labels
-		if (label.kind === "color") {
-			return {
-				kind: "color",
-				label: formatLabel(
-					label.label,
-					label.prefix ?? defaultPrefix,
-					label.suffix,
-					instanceConfig
-				),
-				...(label.bgColor ? { bgColor: label.bgColor } : {}),
-				...(label.fgColor ? { fgColor: label.fgColor } : {}),
-			};
-		} else if (label.kind === "formatter") {
-			return {
-				kind: "formatter",
-				label: formatLabel(
-					label.label,
-					label.prefix ?? defaultPrefix,
-					label.suffix,
-					instanceConfig
-				),
-				ansiFormatter: label.ansiFormatter,
-			};
-		} else {
-			// Fallback for objects that might be missing 'kind' (backward compatibility or loose types)
-			// checking for properties to guess
-			if ("bgColor" in label || "fgColor" in label) {
+		switch (true) {
+			case label === undefined:
+			case label === null: {
 				return {
-					kind: "color",
-					label: formatLabel(
-						label.label,
-						label.prefix ?? defaultPrefix,
-						label.suffix,
-						instanceConfig
-					),
-					...((label as ColorLabel).bgColor ? { bgColor: (label as ColorLabel).bgColor } : {}),
-					...((label as ColorLabel).fgColor ? { fgColor: (label as ColorLabel).fgColor } : {}),
+					kind: "formatter",
+					label: formatLabel({
+						labelText: "",
+						customPrefix: defaultPrefix,
+						customSuffix: undefined,
+						config: instanceConfig,
+					}),
+					ansiFormatter: defaultFormatter,
 				};
 			}
 
-			return {
-				kind: "formatter",
-				label: formatLabel(
-					label.label,
-					label.prefix ?? defaultPrefix,
-					label.suffix,
-					instanceConfig
-				),
-				ansiFormatter: (label as FormatterLabel).ansiFormatter,
-			};
+			case typeof label === "string": {
+				return {
+					kind: "formatter",
+					label: formatLabel({
+						labelText: label,
+						customPrefix: defaultPrefix,
+						customSuffix: undefined,
+						config: instanceConfig,
+					}),
+					ansiFormatter: defaultFormatter,
+				};
+			}
+
+			case typeof label === "object": {
+				const strategy = label.kind;
+
+				switch (strategy) {
+					case "color": {
+						return {
+							kind: "color",
+							label: formatLabel({
+								labelText: label.label,
+								customPrefix: label.prefix ?? defaultPrefix,
+								customSuffix: label.suffix,
+								config: instanceConfig,
+							}),
+							bgColor: label.bgColor,
+							fgColor: label.fgColor,
+						};
+					}
+
+					case "formatter": {
+						return {
+							kind: "formatter",
+							label: formatLabel({
+								labelText: label.label,
+								customPrefix: label.prefix ?? defaultPrefix,
+								customSuffix: label.suffix,
+								config: instanceConfig,
+							}),
+							ansiFormatter: label.ansiFormatter,
+						};
+					}
+
+					default:
+						return assertNever(strategy);
+				}
+			}
+
+			default:
+				return assertNever(label);
 		}
 	};
 
@@ -176,11 +184,15 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		});
 	};
 
-	const info = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "i", instanceConfig.colors.reserved.INFO);
+	const error = (label: Label, ...data: unknown[]): void => {
+		const processedLabel = createProcessedLabel(
+			label,
+			figures.cross,
+			instanceConfig.colors.reserved.ERROR
+		);
 
 		print({
-			logger: console.log,
+			logger: console.error,
 			label: processedLabel,
 			data,
 			config: instanceConfig,
@@ -188,7 +200,11 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const warn = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "!", instanceConfig.colors.reserved.WARN);
+		const processedLabel = createProcessedLabel(
+			label,
+			figures.warning,
+			instanceConfig.colors.reserved.WARN
+		);
 
 		print({
 			logger: console.warn,
@@ -198,11 +214,15 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		});
 	};
 
-	const error = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "✕", instanceConfig.colors.reserved.ERROR);
+	const info = (label: Label, ...data: unknown[]): void => {
+		const processedLabel = createProcessedLabel(
+			label,
+			figures.info,
+			instanceConfig.colors.reserved.INFO
+		);
 
 		print({
-			logger: console.error,
+			logger: console.info,
 			label: processedLabel,
 			data,
 			config: instanceConfig,
@@ -220,5 +240,5 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		});
 	};
 
-	return { log, info, warn, error, debug };
+	return { log, error, warn, info, debug };
 }

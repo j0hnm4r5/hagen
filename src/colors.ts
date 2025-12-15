@@ -86,13 +86,19 @@ export function getContrastingTextColor(bgColor: RGB): RGB {
  * unless a custom fgColor is provided.
  * @internal
  */
-export function createAnsiFormatter(
-	bgColor: Color,
-	fgColor?: Color,
-	paletteSize?: number,
-	ansisInstance: Ansis = ansis,
-	forceNoColor = false
-): AnsiFormatter {
+export function createAnsiFormatter({
+	bgColor,
+	fgColor,
+	paletteSize,
+	ansisInstance = ansis,
+	forceNoColor = false,
+}: {
+	bgColor: Color;
+	fgColor?: Color | undefined;
+	paletteSize?: number | undefined;
+	ansisInstance?: Ansis | undefined;
+	forceNoColor?: boolean | undefined;
+}): AnsiFormatter {
 	let bg = parseColor(bgColor);
 
 	// Apply quantization if palette size is specified
@@ -112,7 +118,7 @@ export function createAnsiFormatter(
 	}
 
 	return (text: string) => {
-		const colored = ansisInstance.bgRgb(bg[0], bg[1], bg[2]).rgb(fg[0], fg[1], fg[2])(text);
+		const colored = ansisInstance.bgRgb(...bg).rgb(...fg)(text);
 		// Strip colors if no-color mode is forced
 		return forceNoColor ? ansis.strip(colored) : colored;
 	};
@@ -128,71 +134,27 @@ export const RESERVED_COLORS = {
 	DEBUG: { bg: [0, 255, 255] as const, fg: [0, 0, 0] as const }, // Cyan, black text
 } as const;
 
-// ========= COLOR CACHE =========
-
-/** Color cache for performance - stores generated formatters by label+paletteSize */
-const colorCache = new Map<string, AnsiFormatter>();
-
 /**
- * Clears the color cache.
+ * Generates an RGB color from a label string.
+ * Uses a hash function to deterministically map the label to a color.
  *
- * Hagen caches color assignments for performance. Call this function to reset
- * the cache if you want labels to potentially receive different colors, or for
- * memory management in long-running applications with many unique labels.
- *
- * @example
- * ```typescript
- * import { clearColorCache } from "hagen";
- *
- * // Clear cache after processing batch of logs
- * clearColorCache();
- * ```
- */
-export function clearColorCache(): void {
-	colorCache.clear();
-}
-
-/**
- * Generates a color formatter based on a hash of the label text.
- * Uses caching for performance - identical labels always get the same color.
- * Color is generated from the hash and quantized if paletteSize is specified.
- *
- * @param label - The label text to hash
- * @param paletteSize - Optional palette size for quantization
- * @param ansisInstance - Ansis instance to use for color formatting
- * @returns A AnsiFormatter with the generated color
- *
+ * @param label - The label to generate a color for
+ * @returns The generated RGB color
  * @internal
  */
-export function calculateLabelColor({
-	label,
-	paletteSize,
-	ansisInstance = ansis,
-	forceNoColor = false,
-}: {
-	label: string;
-	paletteSize?: number | undefined;
-	ansisInstance?: Ansis | undefined;
-	forceNoColor?: boolean | undefined;
-}): AnsiFormatter {
-	const cacheKey = `${label}:${paletteSize ?? "full"}:${forceNoColor}`;
-	if (colorCache.has(cacheKey)) {
-		return colorCache.get(cacheKey)!;
+export function getColorFromLabel(label: string): RGB {
+	// Generate a hash from the label
+	let hash = 0;
+	for (let i = 0; i < label.length; i++) {
+		hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
 	}
 
-	// Generate a hash from the label
-	const hash = Array.from(label).reduce((acc, char) => {
-		return ((acc << 5) - acc + char.codePointAt(0)!) | 0;
-	}, 0);
-
 	// Generate RGB from hash (use different bits for each channel)
-	const r = Math.abs(hash) % 256;
-	const g = Math.abs(hash >> 8) % 256;
-	const b = Math.abs(hash >> 16) % 256;
+	const r = hash & 0xff;
+	const g = (hash >> 8) & 0xff;
+	const b = (hash >> 16) & 0xff;
 
-	const color = createAnsiFormatter([r, g, b], undefined, paletteSize, ansisInstance, forceNoColor);
-	colorCache.set(cacheKey, color);
-	return color;
+	return [r, g, b];
 }
 
 /**

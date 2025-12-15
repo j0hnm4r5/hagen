@@ -50,12 +50,13 @@
 		"clean": "rm -rf dist coverage .vitest",
 		"prepare": "husky",
 		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
-		"visualize:node": "tsx src/test/node.visualize.ts",
-		"visualize:ci": "CI=true npm run visualize:node",
+		"visualize:node": "tsx src/test/visualize/node.visualize.ts",
+		"visualize:node:no-color": "NO_COLOR=true npm run visualize:node",
 		"visualize:browser": "vite"
 	},
 	"dependencies": {
-		"ansis": "^4.2.0"
+		"ansis": "^4.2.0",
+		"figures": "^6.1.0"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.17.4",

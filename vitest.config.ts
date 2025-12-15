@@ -1,4 +1,3 @@
-import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -17,21 +16,6 @@ export default defineConfig({
 				branches: 50,
 				statements: 50,
 			},
-		},
-		browser: {
-			enabled: true,
-			instances: [
-				{
-					browser: "chromium",
-				},
-			],
-			provider: playwright({
-				launchOptions: {
-					headless: true,
-					args: ["--headless=new", "--disable-gpu", "--no-sandbox"],
-				},
-			}),
-			ui: false,
 		},
 	},
 });

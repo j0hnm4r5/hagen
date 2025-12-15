@@ -21,12 +21,12 @@ export type AnsiFormatter = (text: string) => string;
  * Label configuration for log messages.
  *
  * Labels can be specified in multiple ways:
- * 1. Simple string: `"API"` - uses automatic color selection based on hash
- * 2. Object with AnsiFormatter: `{ label: "API", color: myFormatter }` - uses provided formatter
- * 3. Object with custom colors: `{ label: "API", bgColor: "#ff0000", fgColor: "#ffffff" }` - custom colors
+ * 1. Simple string: `"API"` - uses deterministic coloring based on the label text
+ * 2. Object with custom colors: `{ label: "API", bgColor: "#ff0000", fgColor: "#ffffff" }` - custom colors
+ * 3. Object with AnsiFormatter: `{ label: "API", ansiFormatter: myFormatter }` - uses a user-provided formatter, like one from Ansis, Picocolors, or Chalk
  *
  * Colors can be specified as:
- * - Hex strings: `"#FF0000"` or `"FF0000"`
+ * - Hex strings: `"#FF0000"`
  * - RGB tuples: `[255, 0, 0]`
  *
  * @example
@@ -66,28 +66,22 @@ export interface BaseLabel {
 }
 
 export interface FormatterLabel extends BaseLabel {
-	kind?: "formatter";
+	kind: "formatter";
 
 	/** A function that applies ANSI codes to input text. */
 	ansiFormatter: AnsiFormatter;
 }
 
 export interface ColorLabel extends BaseLabel {
-	kind?: "color";
+	kind: "color";
 
 	/** Background color as hex string or RGB tuple. If not specified, auto-calculated from the label text. */
-	bgColor?: Color;
+	bgColor?: Color | undefined;
 	/** Foreground (text) color as hex string or RGB tuple. If not specified, auto-calculated for contrast. */
-	fgColor?: Color;
+	fgColor?: Color | undefined;
 }
 
-export type Label =
-	| string
-	| undefined
-	| null
-	| FormatterLabel
-	| ColorLabel
-	| (BaseLabel & { kind?: never; bgColor?: Color; fgColor?: Color; ansiFormatter?: never });
+export type Label = string | undefined | null | FormatterLabel | ColorLabel;
 
 export type Logger = (label: Label, ...data: unknown[]) => void;
 
@@ -107,7 +101,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the error log level, using `console.error`.
-	 * Defaults to red label color and is prefixed with '!!'.
+	 * Defaults to red label color and is prefixed with '✘' (or '×' in terminals with limited character support).
 	 *
 	 * In Node.js, `console.error` prints to `stderr`.
 	 */
@@ -115,7 +109,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the warning log level, using `console.warn`.
-	 * Defaults to yellow label color and is prefixed with '!'.
+	 * Defaults to yellow label color and is prefixed with '⚠' (or '!' in terminals with limited character support).
 	 *
 	 * In Node.js, `console.warn` is an alias for `console.error`, and will print to `stderr`.
 	 */
@@ -123,7 +117,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the info log level, using `console.info`.
-	 * Defaults to blue label color and is prefixed with 'i'.
+	 * Defaults to blue label color and is prefixed with 'ℹ' (or 'i' in terminals with limited character support).
 	 *
 	 * In Node.js, `console.info` is an alias for `console.log`, and will print to `stdout`.
 	 */

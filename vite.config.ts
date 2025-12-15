@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	root: "src/test",
+	root: "src/test/visualize",
 	server: {
 		port: 5174, // Use different port to avoid conflict with docs:dev (5173)
 		open: true,

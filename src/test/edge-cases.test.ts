@@ -5,7 +5,7 @@
 
 import { Chalk } from "chalk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearColorCache } from "../index.js";
+
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Edge Cases", () => {
@@ -20,43 +20,6 @@ describe("Edge Cases", () => {
 		consoleLogSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
-	});
-
-	describe("clearColorCache", () => {
-		it("should clear the color cache", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
-
-			// Log with same label twice
-			logger.log("TEST", "first");
-			const label1 = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// Clear cache
-			clearColorCache();
-
-			// Log again with same label
-			logger.log("TEST", "second");
-			const label2 = consoleLogSpy.mock.calls[1]?.[0] as string;
-
-			// Both should have ANSI codes (colors still work)
-			expect(hasAnsiCodes(label1)).toBe(true);
-			expect(hasAnsiCodes(label2)).toBe(true);
-
-			// Function should not throw
-			expect(() => {
-				clearColorCache();
-			}).not.toThrow();
-		});
-
-		it("should work when clearing empty cache", () => {
-			// Clear cache when it's already empty
-			expect(() => {
-				clearColorCache();
-			}).not.toThrow();
-			expect(() => {
-				clearColorCache();
-			}).not.toThrow();
-		});
 	});
 
 	describe("fixedWidthFormat edge cases", () => {
@@ -149,6 +112,7 @@ describe("Edge Cases", () => {
 
 			logger.info(
 				{
+					kind: "color",
 					label: "CUSTOM",
 					prefix: ">>",
 					suffix: "<<",
@@ -173,6 +137,7 @@ describe("Edge Cases", () => {
 
 			logger.warn(
 				{
+					kind: "color",
 					label: "CUSTOM",
 					bgColor: "#FF5733",
 					fgColor: "#FFFFFF",
@@ -204,6 +169,7 @@ describe("Edge Cases", () => {
 
 			logger.error(
 				{
+					kind: "color",
 					label: "CUSTOM",
 					bgColor: "#FF5733",
 					fgColor: "#FFFFFF",
@@ -234,6 +200,7 @@ describe("Edge Cases", () => {
 
 			logger.info(
 				{
+					kind: "formatter",
 					label: "CUSTOM",
 					ansiFormatter: testChalk.bgYellowBright.black,
 					prefix: ">>",
@@ -257,6 +224,7 @@ describe("Edge Cases", () => {
 
 			logger.warn(
 				{
+					kind: "formatter",
 					label: "CUSTOM",
 					ansiFormatter: testChalk.bgBlack.white,
 					prefix: ">>",
@@ -284,6 +252,7 @@ describe("Edge Cases", () => {
 
 			logger.error(
 				{
+					kind: "formatter",
 					label: "CUSTOM",
 					ansiFormatter: testChalk.bgBlack.greenBright,
 					prefix: ">>",

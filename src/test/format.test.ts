@@ -171,8 +171,6 @@ describe("Output Format", () => {
 			const logger = createHagen({
 				enableColor: true,
 				showTimestamp: true,
-				dateFormat: "time", // Use time format for consistent HH:MM:SS
-				timeFormat: "24h",
 			});
 
 			logger.log("TEST", "message");
@@ -183,13 +181,13 @@ describe("Output Format", () => {
 			// Label should still have ANSI codes
 			expect(hasAnsiCodes(label)).toBe(true);
 
-			// Label should have timestamp (in brackets with colons for time)
-			expect(label).toMatch(/\[\s*\d{1,2}:\d{2}:\d{2}\s*\]/);
+			// Label should have timestamp (in brackets with ISO format)
+			expect(label).toMatch(/\[\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\s*\]/);
 
 			// Strip and check structure
 			const stripped = stripAnsi(label);
 			expect(stripped).toContain("TEST");
-			expect(stripped).toMatch(/\d{1,2}:\d{2}:\d{2}/);
+			expect(stripped).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 
 			// Message should be separate
 			expect(message).toBe("message");
@@ -203,8 +201,6 @@ describe("Output Format", () => {
 			const logger = createHagen({
 				enableColor: false,
 				showTimestamp: true,
-				dateFormat: "time",
-				timeFormat: "24h",
 			});
 
 			logger.log("TEST", "message");
@@ -219,7 +215,7 @@ describe("Output Format", () => {
 			expect(label).toContain("[ TEST ]");
 
 			// Label should have timestamp brackets
-			expect(label).toMatch(/\[\s*\d{1,2}:\d{2}:\d{2}\s*\]/);
+			expect(label).toMatch(/\[\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\s*\]/);
 
 			// Message should be separate
 			expect(message).toBe("message");

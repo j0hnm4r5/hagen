@@ -1,4 +1,4 @@
-import hagen, { createHagen } from "../index";
+import hagen, { createHagen } from "../../index";
 
 export function test() {
 	// Test reserved colors
@@ -16,11 +16,11 @@ export function test() {
 
 	// Test custom colors
 	hagen.log(
-		{ label: "Custom RGB", bgColor: "#c0ffee", fgColor: "#bada55" },
+		{ label: "Custom RGB", bgColor: "#c0ffee", fgColor: "#bada55", kind: "color" },
 		"This message has custom RGB colors."
 	);
 	hagen.log(
-		{ label: "Custom Tuple", bgColor: [255, 100, 50], fgColor: [50, 200, 255] },
+		{ label: "Custom Tuple", bgColor: [255, 100, 50], fgColor: [50, 200, 255], kind: "color" },
 		"This message uses RGB tuples."
 	);
 
@@ -251,12 +251,18 @@ export function visualizeEdgeCases() {
 
 	// Custom colors - RGB tuples vs hex
 	console.log("--- CUSTOM COLORS ---\n");
-	logger.log({ label: "Hex BG", bgColor: "#ff6b6b", fgColor: "#c0ffee" }, "Hex color background");
 	logger.log(
-		{ label: "RGB Tuple", bgColor: [107, 203, 119], fgColor: [200, 255, 0] },
+		{ label: "Hex BG", bgColor: "#ff6b6b", fgColor: "#c0ffee", kind: "color" },
+		"Hex color background"
+	);
+	logger.log(
+		{ label: "RGB Tuple", bgColor: [107, 203, 119], fgColor: [200, 255, 0], kind: "color" },
 		"RGB tuple colors"
 	);
-	logger.log({ label: "Mixed", bgColor: "#4ecdc4", fgColor: [123, 0, 255] }, "Hex BG + RGB FG");
+	logger.log(
+		{ label: "Mixed", bgColor: "#4ecdc4", fgColor: [123, 0, 255], kind: "color" },
+		"Hex BG + RGB FG"
+	);
 	console.log();
 
 	// Console groups

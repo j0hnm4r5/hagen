@@ -1,8 +1,8 @@
 import {
 	test,
-	visualizeQuantization,
-	visualizeEdgeCases,
 	visualizeConfigurations,
+	visualizeEdgeCases,
+	visualizeQuantization,
 } from "./visualize";
 
 // Capture console output for DOM rendering

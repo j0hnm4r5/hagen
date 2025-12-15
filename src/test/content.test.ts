@@ -76,7 +76,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			logger.log({ label: "" }, "msg");
+			logger.log({ kind: "color", label: "" }, "msg");
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
@@ -87,7 +87,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
-			logger.log({ label: undefined as unknown as string }, "msg");
+			logger.log({ kind: "color", label: undefined as unknown as string }, "msg");
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
@@ -251,6 +251,7 @@ describe("Content Validation", () => {
 			});
 
 			const label: Label = {
+				kind: "color",
 				label: "TEST",
 				prefix: "**",
 			};
@@ -269,6 +270,7 @@ describe("Content Validation", () => {
 			});
 
 			const label: Label = {
+				kind: "color",
 				label: "TEST",
 				suffix: "**",
 			};
@@ -281,29 +283,11 @@ describe("Content Validation", () => {
 	});
 
 	describe("Timestamps", () => {
-		it("should include timestamp when enabled", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({
-				enableColor: false,
-				showTimestamp: true,
-				dateFormat: "time",
-				timeFormat: "24h",
-			});
-
-			logger.log("TEST", "msg");
-
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// Should have timestamp in brackets with time format
-			expect(label).toMatch(/\[\s*\d{1,2}:\d{2}:\d{2}\s*\]/);
-		});
-
 		it("should use ISO format", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
 				showTimestamp: true,
-				dateFormat: "iso",
 			});
 
 			logger.log("TEST", "msg");
@@ -314,30 +298,13 @@ describe("Content Validation", () => {
 			expect(label).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
 		});
 
-		it("should use 12-hour time format", async () => {
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen({
-				enableColor: false,
-				showTimestamp: true,
-				dateFormat: "time",
-				timeFormat: "12h",
-			});
-
-			logger.log("TEST", "msg");
-
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// 12-hour format should have AM or PM
-			expect(label).toMatch(/(AM|PM)/);
-		});
-
 		it("should use custom date format function", async () => {
 			const { createHagen } = await import("../index.js");
 			const customFormat = (date: Date) => `CUSTOM-${date.getFullYear()}`;
 			const logger = createHagen({
 				enableColor: false,
 				showTimestamp: true,
-				dateFormat: customFormat,
+				timestampFormatter: customFormat,
 			});
 
 			logger.log("TEST", "msg");

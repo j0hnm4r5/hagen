@@ -3,6 +3,7 @@
  * Handles label formatting, fixed width, and timestamps.
  */
 
+import figures from "figures";
 import type { LoggerConfig } from "./config";
 
 /**
@@ -32,7 +33,7 @@ export function fixedWidthFormat(
 		return " ".repeat(leftPadding) + text + " ".repeat(rightPadding);
 	}
 
-	const ellipsis = "…";
+	const ellipsis = figures.ellipsis;
 	const charsToShow = width - 1;
 
 	switch (truncationMethod) {
@@ -64,42 +65,30 @@ export function fixedWidthFormat(
 export function formatTimestamp(config: LoggerConfig): string {
 	const date = new Date();
 
-	if (typeof config.dateFormat === "function") {
-		return config.dateFormat(date);
+	if (typeof config.timestampFormatter === "function") {
+		return config.timestampFormatter(date);
 	}
 
-	switch (config.dateFormat) {
-		case "iso": {
-			return date.toISOString();
-		}
-		case "locale": {
-			return date.toLocaleString();
-		}
-		case "time": {
-			const hours = config.timeFormat === "12h" ? date.getHours() % 12 || 12 : date.getHours();
-			const minutes = date.getMinutes().toString().padStart(2, "0");
-			const seconds = date.getSeconds().toString().padStart(2, "0");
-			const ampm = config.timeFormat === "12h" ? (date.getHours() >= 12 ? "PM" : "AM") : "";
-			return `${hours}:${minutes}:${seconds}${ampm ? ` ${ampm}` : ""}`;
-		}
-		default: {
-			return date.toISOString();
-		}
-	}
+	return date.toISOString();
 }
 
 /**
  * Formats the label with prefix and suffix.
  * @internal
  */
-export function formatLabel(
-	labelText: string,
-	customPrefix?: string,
-	customSuffix?: string,
-	config?: LoggerConfig
-): string {
-	const prefix = customPrefix ?? config?.labelPrefix ?? "";
-	const suffix = customSuffix ?? config?.labelSuffix ?? "";
+export function formatLabel({
+	labelText,
+	customPrefix,
+	customSuffix,
+	config,
+}: {
+	labelText: string;
+	customPrefix?: string | undefined;
+	customSuffix?: string | undefined;
+	config?: LoggerConfig | undefined;
+}): string {
+	const prefix = customPrefix ?? config?.labelPrefix;
+	const suffix = customSuffix ?? config?.labelSuffix;
 
 	let result = labelText;
 	if (prefix) result = `${prefix} ${result}`;

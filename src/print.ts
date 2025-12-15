@@ -3,10 +3,11 @@
  * Handles the actual output of formatted labels and data.
  */
 
-import { calculateLabelColor, createAnsiFormatter } from "./colors";
+import { createAnsiFormatter, getColorFromLabel } from "./colors";
 import type { InternalConfig } from "./config";
 import { fixedWidthFormat, formatLabel, formatTimestamp } from "./format";
-import type { AnsiFormatter, Color, Label } from "./types";
+import type { AnsiFormatter, Label } from "./types";
+import { assertNever } from "./utils/assert-never";
 
 /** Parameters for the print function */
 export interface PrintParams {
@@ -27,83 +28,71 @@ export function print({ logger, label, data, config }: PrintParams): void {
 	let customSuffix: string | undefined;
 
 	switch (true) {
+		// if the label is undefined or null, use the default label
 		case label === undefined:
 		case label === null: {
-			color = calculateLabelColor({
-				label: finalLabel,
+			color = createAnsiFormatter({
+				bgColor: getColorFromLabel(finalLabel),
 				paletteSize: config.paletteSize,
 				ansisInstance: config.ansisInstance,
 				forceNoColor: !config.enableColor,
 			});
 			break;
 		}
+
+		// if the label is a string, use it as the label
 		case typeof label === "string": {
 			finalLabel = label.trim() || finalLabel;
-			color = calculateLabelColor({
-				label: finalLabel,
-				paletteSize: config.paletteSize,
+			color = createAnsiFormatter({
+				bgColor: getColorFromLabel(finalLabel),
+				...(config.paletteSize !== undefined ? { paletteSize: config.paletteSize } : {}),
 				ansisInstance: config.ansisInstance,
 				forceNoColor: !config.enableColor,
 			});
 			break;
 		}
+
+		// if the label is an options object, extract the label, prefix, and suffix
 		case typeof label === "object": {
 			const labelText = typeof label.label === "string" ? label.label : "";
 			finalLabel = labelText.trim() || finalLabel;
 			customPrefix = label.prefix;
 			customSuffix = label.suffix;
 
-			const { kind } = label;
-			switch (kind) {
-				case "color":
-					color = createAnsiFormatter(
-						label.bgColor ?? [0, 0, 0], // Fallback if undefined (should be caught by type check if strict)
-						label.fgColor,
-						config.paletteSize,
-						config.ansisInstance,
-						!config.enableColor
-					);
+			const strategy = label.kind;
+
+			switch (strategy) {
+				// if the label options provide colors, create the ansi formatter
+				case "color": {
+					color = createAnsiFormatter({
+						bgColor: label.bgColor ?? [0, 0, 0],
+						fgColor: label.fgColor,
+						paletteSize: config.paletteSize,
+						ansisInstance: config.ansisInstance,
+						forceNoColor: !config.enableColor,
+					});
 					break;
-				case "formatter":
+				}
+
+				// if the label options provide a formatter, use it directly
+				case "formatter": {
 					color = label.ansiFormatter;
 					break;
+				}
+
 				default:
-					// Check for loose object types (backward compatibility or missing kind)
-					if ("bgColor" in label || "fgColor" in label) {
-						color = createAnsiFormatter(
-							((label as { bgColor?: unknown }).bgColor as Color | undefined) ?? [0, 0, 0],
-							(label as { fgColor?: unknown }).fgColor as Color | undefined,
-							config.paletteSize,
-							config.ansisInstance,
-							!config.enableColor
-						);
-					} else if ("ansiFormatter" in label) {
-						color = (label as { ansiFormatter: AnsiFormatter }).ansiFormatter;
-					} else {
-						// Fallback to calculating from label text
-						color = calculateLabelColor({
-							label: finalLabel,
-							paletteSize: config.paletteSize,
-							ansisInstance: config.ansisInstance,
-							forceNoColor: !config.enableColor,
-						});
-					}
-					break;
+					assertNever(strategy);
 			}
+
 			break;
 		}
+
 		default:
-			// Should be unreachable
-			color = calculateLabelColor({
-				label: finalLabel,
-				paletteSize: config.paletteSize,
-				ansisInstance: config.ansisInstance,
-				forceNoColor: !config.enableColor,
-			});
+			assertNever(label);
 	}
 
 	// Apply formatting
-	finalLabel = formatLabel(finalLabel, customPrefix, customSuffix, config);
+	finalLabel = formatLabel({ labelText: finalLabel, customPrefix, customSuffix, config });
 
 	// Apply fixed width if configured
 	if (config.fixedWidth) {

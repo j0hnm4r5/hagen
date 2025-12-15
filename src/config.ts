@@ -13,8 +13,6 @@ import ansis, { Ansis } from "ansis";
  *
  * const logger = createHagen({
  *   showTimestamp: true,
- *   dateFormat: "time",
- *   timeFormat: "12h",
  *   labelPrefix: "<<",
  *   labelSuffix: ">>",
  *   enableColor: true,
@@ -62,20 +60,14 @@ export interface LoggerConfig {
 	/**
 	 * Date/time format for timestamps.
 	 * - "iso": ISO 8601 format (2024-03-15T10:30:00.000Z)
-	 * - "locale": Locale-specific format
-	 * - "time": Time only (HH:MM:SS)
 	 * - Custom function: (date) => string
+	 *
+	 * For complex formatting, use a custom function with your preferred library
+	 * (e.g. date-fns, moment, or Intl.DateTimeFormat).
+	 *
 	 * Default: "iso"
 	 */
-	dateFormat?: "iso" | "locale" | "time" | ((date: Date) => string);
-
-	/**
-	 * Time format when dateFormat is "time".
-	 * - "12h": 12-hour format with AM/PM
-	 * - "24h": 24-hour format
-	 * Default: "24h"
-	 */
-	timeFormat?: "12h" | "24h";
+	timestampFormatter?: (date: Date) => string;
 
 	/**
 	 * Global prefix to add before all labels.
@@ -127,7 +119,5 @@ export interface InternalConfig extends LoggerConfig {
 export const defaultConfig: LoggerConfig = {
 	showTimestamp: false,
 	enableColor: ansis.isSupported(),
-	dateFormat: "iso",
-	timeFormat: "24h",
 	defaultLabel: "·",
 };
