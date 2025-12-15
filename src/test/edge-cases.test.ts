@@ -3,21 +3,24 @@
  * Tests specific scenarios to improve code coverage.
  */
 
-import { Chalk } from "chalk";
+import { Ansis } from "ansis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Edge Cases", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
 	});
 
 	afterEach(() => {
 		consoleLogSpy.mockRestore();
+		consoleInfoSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -59,8 +62,8 @@ describe("Edge Cases", () => {
 			const stripped = stripAnsi(label).trim();
 
 			// Should have ellipsis at start
-			expect(stripped).toContain("…");
-			expect(stripped).toMatch(/^…/); // Starts with ellipsis
+			expect(stripped).toContain("~");
+			expect(stripped).toMatch(/^~.+/); //Starts with ellipsis
 		});
 
 		it("should handle middle truncation method", async () => {
@@ -79,9 +82,9 @@ describe("Edge Cases", () => {
 			const stripped = stripAnsi(label).trim();
 
 			// Should have ellipsis in middle
-			expect(stripped).toContain("…");
-			expect(stripped).not.toMatch(/^…/); // Not at start
-			expect(stripped).not.toMatch(/…$/); // Not at end
+			expect(stripped).toContain("~");
+			expect(stripped).not.toMatch(/^\.\.\./); // Not at start
+			expect(stripped).not.toMatch(/\.\.\.$/); // Not at end
 		});
 
 		it("should handle short label with padding", async () => {
@@ -120,7 +123,7 @@ describe("Edge Cases", () => {
 				"message"
 			);
 
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const label = consoleInfoSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
 
 			// Should use custom prefix instead of default "i"
@@ -196,18 +199,18 @@ describe("Edge Cases", () => {
 		it("should handle info with custom color instance", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
-			const testChalk = new Chalk({ level: 3 });
+			const testAnsis = new Ansis();
 
 			logger.info(
 				{
 					kind: "formatter",
 					label: "CUSTOM",
-					ansiFormatter: testChalk.bgYellowBright.black,
+					ansiFormatter: testAnsis.bgYellowBright.black,
 					prefix: ">>",
 				},
 				"message"
 			);
-			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const label = consoleInfoSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(label)).toBe(true);
 			const stripped = stripAnsi(label);
@@ -220,13 +223,13 @@ describe("Edge Cases", () => {
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const logger = createHagen({ enableColor: true });
-			const testChalk = new Chalk({ level: 3 });
+			const testAnsis = new Ansis();
 
 			logger.warn(
 				{
 					kind: "formatter",
 					label: "CUSTOM",
-					ansiFormatter: testChalk.bgBlack.white,
+					ansiFormatter: testAnsis.bgBlack.white,
 					prefix: ">>",
 					suffix: "<<",
 				},
@@ -248,13 +251,13 @@ describe("Edge Cases", () => {
 			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 			const logger = createHagen({ enableColor: true });
-			const testChalk = new Chalk({ level: 3 });
+			const testAnsis = new Ansis();
 
 			logger.error(
 				{
 					kind: "formatter",
 					label: "CUSTOM",
-					ansiFormatter: testChalk.bgBlack.greenBright,
+					ansiFormatter: testAnsis.bgBlack.greenBright,
 					prefix: ">>",
 					suffix: "<<",
 				},

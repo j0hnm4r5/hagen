@@ -11,11 +11,13 @@ describe("Content Validation", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 	let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
 	});
 
@@ -23,6 +25,7 @@ describe("Content Validation", () => {
 		consoleLogSpy.mockRestore();
 		consoleWarnSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
+		consoleInfoSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -58,7 +61,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" · "); // Default fallback symbol
+			expect(stripped).toBe(" * "); // Default fallback symbol
 		});
 
 		it("should handle null label with default fallback", async () => {
@@ -69,7 +72,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" · "); // Default fallback symbol
+			expect(stripped).toBe(" * "); // Default fallback symbol
 		});
 
 		it("should handle array with empty label", async () => {
@@ -80,7 +83,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" · "); // Default fallback symbol
+			expect(stripped).toBe(" * "); // Default fallback symbol
 		});
 
 		it("should handle object with undefined label", async () => {
@@ -91,7 +94,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" · "); // Default fallback symbol
+			expect(stripped).toBe(" * "); // Default fallback symbol
 		});
 
 		it("should use custom default label when configured", async () => {
@@ -344,13 +347,14 @@ describe("Content Validation", () => {
 			expect(consoleErrorSpy).not.toHaveBeenCalled();
 		});
 
-		it("should use console.log for info()", async () => {
+		it("should use console.info for info()", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
 
 			logger.info("TEST", "msg");
 
-			expect(consoleLogSpy).toHaveBeenCalledOnce();
+			expect(consoleInfoSpy).toHaveBeenCalledOnce();
+			expect(consoleLogSpy).not.toHaveBeenCalled();
 			expect(consoleWarnSpy).not.toHaveBeenCalled();
 			expect(consoleErrorSpy).not.toHaveBeenCalled();
 		});

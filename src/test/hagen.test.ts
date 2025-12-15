@@ -66,12 +66,14 @@ describe("Hagen Logger", () => {
 		let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 		let consoleDebugSpy: ReturnType<typeof vi.spyOn>;
+		let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 			consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 			consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 			consoleDebugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+			consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		});
 
 		afterEach(() => {
@@ -79,6 +81,7 @@ describe("Hagen Logger", () => {
 			consoleWarnSpy.mockRestore();
 			consoleErrorSpy.mockRestore();
 			consoleDebugSpy.mockRestore();
+			consoleInfoSpy.mockRestore();
 		});
 
 		describe("log", () => {
@@ -123,14 +126,14 @@ describe("Hagen Logger", () => {
 			it("should log info message with string label", () => {
 				const logger = createHagen();
 				logger.info("INFO", "information message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
+				expect(consoleInfoSpy).toHaveBeenCalledOnce();
 			});
 
 			it("should log info message with Label object", () => {
 				const logger = createHagen();
 				const label: Label = { kind: "color", label: "INFO", bgColor: [65, 105, 225] };
 				logger.info(label, "information message");
-				expect(consoleLogSpy).toHaveBeenCalledOnce();
+				expect(consoleInfoSpy).toHaveBeenCalledOnce();
 			});
 		});
 

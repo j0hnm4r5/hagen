@@ -101,7 +101,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the error log level, using `console.error`.
-	 * Defaults to red label color and is prefixed with '✘' (or '×' in terminals with limited character support).
+	 * Defaults to red label color and is prefixed with '×'.
 	 *
 	 * In Node.js, `console.error` prints to `stderr`.
 	 */
@@ -109,7 +109,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the warning log level, using `console.warn`.
-	 * Defaults to yellow label color and is prefixed with '⚠' (or '!' in terminals with limited character support).
+	 * Defaults to yellow label color and is prefixed with '!'.
 	 *
 	 * In Node.js, `console.warn` is an alias for `console.error`, and will print to `stderr`.
 	 */
@@ -117,7 +117,7 @@ export interface HagenInstance {
 
 	/**
 	 * Outputs a message to the console with the info log level, using `console.info`.
-	 * Defaults to blue label color and is prefixed with 'ℹ' (or 'i' in terminals with limited character support).
+	 * Defaults to blue label color and is prefixed with 'i'.
 	 *
 	 * In Node.js, `console.info` is an alias for `console.log`, and will print to `stdout`.
 	 */

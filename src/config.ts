@@ -85,7 +85,7 @@ export interface LoggerConfig {
 
 	/**
 	 * Default label to use when label is empty, undefined, or null.
-	 * Default: "·"
+	 * Default: "*"
 	 */
 	defaultLabel?: string;
 }
@@ -119,5 +119,5 @@ export interface InternalConfig extends LoggerConfig {
 export const defaultConfig: LoggerConfig = {
 	showTimestamp: false,
 	enableColor: ansis.isSupported(),
-	defaultLabel: "·",
+	defaultLabel: "*",
 };

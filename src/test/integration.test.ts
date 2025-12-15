@@ -8,14 +8,17 @@ import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Integration Tests", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
 	});
 
 	afterEach(() => {
 		consoleLogSpy.mockRestore();
+		consoleInfoSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -168,7 +171,7 @@ describe("Integration Tests", () => {
 		expect(stripped).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 
 		// Label should be truncated (contains ellipsis)
-		expect(stripped).toContain("…");
+		expect(stripped).toContain("~");
 	});
 
 	it("should handle all log levels with same config", async () => {
@@ -189,13 +192,13 @@ describe("Integration Tests", () => {
 
 		// All should have ANSI codes
 		expect(hasAnsiCodes(consoleLogSpy.mock.calls[0]?.[0] as string)).toBe(true);
-		expect(hasAnsiCodes(consoleLogSpy.mock.calls[1]?.[0] as string)).toBe(true);
+		expect(hasAnsiCodes(consoleInfoSpy.mock.calls[0]?.[0] as string)).toBe(true);
 		expect(hasAnsiCodes(consoleWarnSpy.mock.calls[0]?.[0] as string)).toBe(true);
 		expect(hasAnsiCodes(consoleErrorSpy.mock.calls[0]?.[0] as string)).toBe(true);
 
 		// All should have timestamps
 		const stripped1 = stripAnsi(consoleLogSpy.mock.calls[0]?.[0] as string);
-		const stripped2 = stripAnsi(consoleLogSpy.mock.calls[1]?.[0] as string);
+		const stripped2 = stripAnsi(consoleInfoSpy.mock.calls[0]?.[0] as string);
 		const stripped4 = stripAnsi(consoleWarnSpy.mock.calls[0]?.[0] as string);
 		const stripped5 = stripAnsi(consoleErrorSpy.mock.calls[0]?.[0] as string);
 

@@ -21,5 +21,5 @@ export default defineConfig({
 	target: "es2020",
 	platform: "neutral",
 	external: [],
-	noExternal: ["ansis", "std-env"],
+	noExternal: ["ansis"],
 });

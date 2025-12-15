@@ -3,7 +3,6 @@
  * Handles label formatting, fixed width, and timestamps.
  */
 
-import figures from "figures";
 import type { LoggerConfig } from "./config";
 
 /**
@@ -33,8 +32,8 @@ export function fixedWidthFormat(
 		return " ".repeat(leftPadding) + text + " ".repeat(rightPadding);
 	}
 
-	const ellipsis = figures.ellipsis;
-	const charsToShow = width - 1;
+	const ellipsis = "~";
+	const charsToShow = width - ellipsis.length;
 
 	switch (truncationMethod) {
 		case "start": {

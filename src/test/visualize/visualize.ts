@@ -2,17 +2,19 @@ import hagen, { createHagen } from "../../index";
 
 export function test() {
 	// Test reserved colors
+	hagen.log("Log", "This is a log message.");
 	hagen.info("Info", "This is an info message.");
-
 	hagen.error("Error", "This is an error message.");
+	hagen.warn("Warn", "This is a warning message.");
+	hagen.debug("Debug", "This is a debug message.");
 
 	// Test with consistent palette labels
 	hagen.log("API", "API endpoint called successfully.");
-	hagen.log("Database", "Database connection established.");
+	hagen.log("API", "Database connection established.");
 	hagen.log("Server", "Server is running on port 3000.");
-	hagen.log("Client", "Client request received.");
+	hagen.log("Server", "Client request received.");
 	hagen.log("Worker", "Background worker processing task.");
-	hagen.log("Queue", "Message added to queue.");
+	hagen.log("Worker", "Message added to queue.");
 
 	// Test custom colors
 	hagen.log(

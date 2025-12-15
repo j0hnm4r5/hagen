@@ -4,7 +4,6 @@
  */
 
 import ansis, { Ansis } from "ansis";
-import figures from "figures";
 import { generateReservedColors } from "./colors";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
 import { formatLabel } from "./format";
@@ -185,11 +184,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const error = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(
-			label,
-			figures.cross,
-			instanceConfig.colors.reserved.ERROR
-		);
+		const processedLabel = createProcessedLabel(label, "×", instanceConfig.colors.reserved.ERROR);
 
 		print({
 			logger: console.error,
@@ -200,11 +195,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const warn = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(
-			label,
-			figures.warning,
-			instanceConfig.colors.reserved.WARN
-		);
+		const processedLabel = createProcessedLabel(label, "!", instanceConfig.colors.reserved.WARN);
 
 		print({
 			logger: console.warn,
@@ -215,11 +206,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const info = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(
-			label,
-			figures.info,
-			instanceConfig.colors.reserved.INFO
-		);
+		const processedLabel = createProcessedLabel(label, "i", instanceConfig.colors.reserved.INFO);
 
 		print({
 			logger: console.info,

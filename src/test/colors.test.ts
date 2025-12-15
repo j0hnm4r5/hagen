@@ -10,11 +10,13 @@ describe("Color Formatting", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 	let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
 	});
 
@@ -22,6 +24,7 @@ describe("Color Formatting", () => {
 		consoleLogSpy.mockRestore();
 		consoleWarnSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
+		consoleInfoSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -134,7 +137,7 @@ describe("Color Formatting", () => {
 
 			logger.info("INFO", "info message");
 
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+			const output = consoleInfoSpy.mock.calls[0]?.[0] as string;
 
 			expect(hasAnsiCodes(output)).toBe(true);
 
