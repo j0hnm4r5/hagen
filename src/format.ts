@@ -75,23 +75,23 @@ export function formatTimestamp(config: LoggerConfig): string {
  * Formats the label with prefix and suffix.
  * @internal
  */
-export function formatLabel({
-	labelText,
-	customPrefix,
-	customSuffix,
+export function formatLabelWithPrefixSuffix({
+	text: labelText,
+	prefix: prefix,
+	suffix: suffix,
 	config,
 }: {
-	labelText: string;
-	customPrefix?: string | undefined;
-	customSuffix?: string | undefined;
+	text: string;
+	prefix?: string | undefined;
+	suffix?: string | undefined;
 	config?: LoggerConfig | undefined;
 }): string {
-	const prefix = customPrefix ?? config?.labelPrefix;
-	const suffix = customSuffix ?? config?.labelSuffix;
+	const labelPrefix = prefix ?? config?.labelPrefix;
+	const labelSuffix = suffix ?? config?.labelSuffix;
 
 	let result = labelText;
-	if (prefix) result = `${prefix} ${result}`;
-	if (suffix) result = `${result} ${suffix}`;
+	if (labelPrefix) result = `${labelPrefix} ${result}`;
+	if (labelSuffix) result = `${result} ${labelSuffix}`;
 
 	return result.trim();
 }

@@ -5,7 +5,7 @@
 
 import { createAnsiFormatter, getColorFromLabel } from "./colors";
 import type { InternalConfig } from "./config";
-import { fixedWidthFormat, formatLabel, formatTimestamp } from "./format";
+import { fixedWidthFormat, formatLabelWithPrefixSuffix, formatTimestamp } from "./format";
 import type { AnsiFormatter, Label } from "./types";
 import { assertNever } from "./utils/assert-never";
 
@@ -23,7 +23,7 @@ export interface PrintParams {
  */
 export function print({ logger, label, data, config }: PrintParams): void {
 	let color: AnsiFormatter;
-	let finalLabel = config.defaultLabel ?? "";
+	let finalLabel = config.defaultLabelText ?? "";
 	let customPrefix: string | undefined;
 	let customSuffix: string | undefined;
 
@@ -92,7 +92,12 @@ export function print({ logger, label, data, config }: PrintParams): void {
 	}
 
 	// Apply formatting
-	finalLabel = formatLabel({ labelText: finalLabel, customPrefix, customSuffix, config });
+	finalLabel = formatLabelWithPrefixSuffix({
+		text: finalLabel,
+		prefix: customPrefix,
+		suffix: customSuffix,
+		config,
+	});
 
 	// Apply fixed width if configured
 	if (config.fixedWidth) {

@@ -124,16 +124,6 @@ export function createAnsiFormatter({
 	};
 }
 
-// ========= RESERVED COLORS =========
-
-/** Reserved colors for log levels with explicit bg and fg */
-export const RESERVED_COLORS = {
-	INFO: { bg: [65, 105, 225] as const, fg: [255, 255, 255] as const }, // Royal Blue, white text
-	WARN: { bg: [255, 165, 0] as const, fg: [0, 0, 0] as const }, // Orange, black text
-	ERROR: { bg: [220, 20, 60] as const, fg: [255, 255, 255] as const }, // Crimson, white text
-	DEBUG: { bg: [0, 255, 255] as const, fg: [0, 0, 0] as const }, // Cyan, black text
-} as const;
-
 /**
  * Generates an RGB color from a label string.
  * Uses a hash function to deterministically map the label to a color.
@@ -155,50 +145,4 @@ export function getColorFromLabel(label: string): RGB {
 	const b = (hash >> 16) & 0xff;
 
 	return [r, g, b];
-}
-
-/**
- * Generates color formatters for reserved log level colors.
- * @internal
- */
-export function generateReservedColors(
-	paletteSize?: number,
-	ansisInstance: Ansis = ansis,
-	forceNoColor = false
-) {
-	const createReserved = (color: { bg: RGB; fg: RGB }) => {
-		let bg = color.bg;
-		let fg = color.fg;
-		if (paletteSize !== undefined) {
-			bg = quantizeColor(bg, paletteSize);
-			fg = quantizeColor(fg, paletteSize);
-		}
-		// Create background formatter
-		const bgFormatter = ansisInstance.bgRgb(bg[0], bg[1], bg[2]);
-
-		// Create foreground formatter - use pure black/white for contrast
-		let fgFormatter;
-		if (fg[0] === 0 && fg[1] === 0 && fg[2] === 0) {
-			// Pure black - use ansis.black for consistent black text
-			fgFormatter = ansisInstance.black;
-		} else if (fg[0] === 255 && fg[1] === 255 && fg[2] === 255) {
-			// Pure white - use ansis.whiteBright for consistent white text
-			fgFormatter = ansisInstance.whiteBright;
-		} else {
-			// Custom color - use RGB
-			fgFormatter = ansisInstance.rgb(fg[0], fg[1], fg[2]);
-		}
-
-		return (text: string) => {
-			const colored = bgFormatter(fgFormatter(text));
-			return forceNoColor ? ansis.strip(colored) : colored;
-		};
-	};
-
-	return {
-		INFO: createReserved(RESERVED_COLORS.INFO),
-		WARN: createReserved(RESERVED_COLORS.WARN),
-		ERROR: createReserved(RESERVED_COLORS.ERROR),
-		DEBUG: createReserved(RESERVED_COLORS.DEBUG),
-	};
 }

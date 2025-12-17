@@ -108,7 +108,7 @@ describe("Edge Cases", () => {
 		});
 	});
 
-	describe("Reserved method label overrides", () => {
+	describe("Specialized log method behavior", () => {
 		it("should handle info with custom prefix and suffix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });

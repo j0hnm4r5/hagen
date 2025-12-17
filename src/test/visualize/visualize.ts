@@ -1,7 +1,7 @@
 import hagen, { createHagen } from "../../index";
 
 export function test() {
-	// Test reserved colors
+	// Test specialized loggers
 	hagen.log("Log", "This is a log message.");
 	hagen.info("Info", "This is an info message.");
 	hagen.error("Error", "This is an error message.");
@@ -98,8 +98,8 @@ export function visualizeQuantization() {
 	const logger27 = createHagen({ paletteSize: 27 }); // 3×3×3 cube
 	const logger8 = createHagen({ paletteSize: 8 }); // 2×2×2 cube
 
-	// Test reserved colors
-	console.log("--- RESERVED COLORS ---\n");
+	// Test specialized loggers
+	console.log("--- SPECIALIZED LOGGERS ---\n");
 
 	console.log("INFO:");
 	console.log("  Full:     ");
@@ -281,4 +281,36 @@ export function visualizeEdgeCases() {
 	console.log();
 
 	console.log("═══════════════════════════════════════════════════════════\n");
+
+	logger.error(undefined, "Testing error with undefined label");
+	logger.error(null, "Testing error with null label");
+	logger.error("CustomError", "Testing error with custom label");
+	logger.error(
+		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
+		"Testing error with custom colors"
+	);
+
+	logger.warn(undefined, "Testing error with undefined label");
+	logger.warn(null, "Testing error with null label");
+	logger.warn("CustomError", "Testing error with custom label");
+	logger.warn(
+		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
+		"Testing error with custom colors"
+	);
+
+	logger.info(undefined, "Testing error with undefined label");
+	logger.info(null, "Testing error with null label");
+	logger.info("CustomError", "Testing error with custom label");
+	logger.info(
+		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
+		"Testing error with custom colors"
+	);
+
+	logger.debug(undefined, "Testing error with undefined label");
+	logger.debug(null, "Testing error with null label");
+	logger.debug("CustomError", "Testing error with custom label");
+	logger.debug(
+		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
+		"Testing error with custom colors"
+	);
 }

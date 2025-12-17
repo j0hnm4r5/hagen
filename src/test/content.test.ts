@@ -99,7 +99,7 @@ describe("Content Validation", () => {
 
 		it("should use custom default label when configured", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true, defaultLabel: "◆" });
+			const logger = createHagen({ enableColor: true, defaultLabelText: "◆" });
 
 			logger.log("", "msg");
 

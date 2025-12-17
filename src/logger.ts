@@ -4,12 +4,10 @@
  */
 
 import ansis, { Ansis } from "ansis";
-import { generateReservedColors } from "./colors";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
-import { formatLabel } from "./format";
+
 import { print } from "./print";
-import type { AnsiFormatter, HagenInstance, Label } from "./types";
-import { assertNever } from "./utils/assert-never";
+import type { Color, HagenInstance, Label } from "./types";
 
 /**
  * Creates a new Hagen logger instance with custom configuration.
@@ -94,84 +92,35 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		...mergedConfig,
 		enableColor: enableColor, // Final resolved value
 		ansisInstance,
-		colors: {
-			reserved: generateReservedColors(mergedConfig.paletteSize, ansisInstance, !enableColor),
-		},
+		colors: undefined,
 	};
 
 	// Helper to create common label logic
-	const createProcessedLabel = (
+	const buildSpecializedLabel = (
 		label: Label,
-		defaultPrefix: string,
-		defaultFormatter: AnsiFormatter
-	): Label => {
-		switch (true) {
-			case label === undefined:
-			case label === null: {
-				return {
-					kind: "formatter",
-					label: formatLabel({
-						labelText: "",
-						customPrefix: defaultPrefix,
-						customSuffix: undefined,
-						config: instanceConfig,
-					}),
-					ansiFormatter: defaultFormatter,
-				};
-			}
-
-			case typeof label === "string": {
-				return {
-					kind: "formatter",
-					label: formatLabel({
-						labelText: label,
-						customPrefix: defaultPrefix,
-						customSuffix: undefined,
-						config: instanceConfig,
-					}),
-					ansiFormatter: defaultFormatter,
-				};
-			}
-
-			case typeof label === "object": {
-				const strategy = label.kind;
-
-				switch (strategy) {
-					case "color": {
-						return {
-							kind: "color",
-							label: formatLabel({
-								labelText: label.label,
-								customPrefix: label.prefix ?? defaultPrefix,
-								customSuffix: label.suffix,
-								config: instanceConfig,
-							}),
-							bgColor: label.bgColor,
-							fgColor: label.fgColor,
-						};
-					}
-
-					case "formatter": {
-						return {
-							kind: "formatter",
-							label: formatLabel({
-								labelText: label.label,
-								customPrefix: label.prefix ?? defaultPrefix,
-								customSuffix: label.suffix,
-								config: instanceConfig,
-							}),
-							ansiFormatter: label.ansiFormatter,
-						};
-					}
-
-					default:
-						return assertNever(strategy);
-				}
-			}
-
-			default:
-				return assertNever(label);
+		defaults: {
+			prefix: string;
+			bgColor: Color;
+			fgColor: Color;
+			defaultText: string;
 		}
+	): Label => {
+		// Pass through user-provided Label objects unchanged
+		// If it's an object (FormatterLabel or ColorLabel), we assume the user intends
+		// to control the styling, so we don't override it with our defaults.
+		if (typeof label === "object" && label !== null) {
+			return label;
+		}
+
+		// Wrap string/null/undefined in a ColorLabel with the specialized styling
+		// The prefix is specified here but APPLIED in print.ts
+		return {
+			kind: "color",
+			label: typeof label === "string" ? label : defaults.defaultText,
+			prefix: defaults.prefix,
+			bgColor: defaults.bgColor,
+			fgColor: defaults.fgColor,
+		};
 	};
 
 	const log = (label: Label, ...data: unknown[]): void => {
@@ -184,44 +133,60 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	};
 
 	const error = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "×", instanceConfig.colors.reserved.ERROR);
-
+		const resolvedLabel = buildSpecializedLabel(label, {
+			prefix: "×",
+			bgColor: "#DC143C", // Crimson
+			fgColor: "#FFFFFF",
+			defaultText: "ERROR",
+		});
 		print({
 			logger: console.error,
-			label: processedLabel,
+			label: resolvedLabel,
 			data,
 			config: instanceConfig,
 		});
 	};
 
 	const warn = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "!", instanceConfig.colors.reserved.WARN);
-
+		const resolvedLabel = buildSpecializedLabel(label, {
+			prefix: "!",
+			bgColor: "#FFA500", // Orange
+			fgColor: "#000000",
+			defaultText: "WARN",
+		});
 		print({
 			logger: console.warn,
-			label: processedLabel,
+			label: resolvedLabel,
 			data,
 			config: instanceConfig,
 		});
 	};
 
 	const info = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "i", instanceConfig.colors.reserved.INFO);
-
+		const resolvedLabel = buildSpecializedLabel(label, {
+			prefix: "i",
+			bgColor: "#4169E1", // Royal Blue
+			fgColor: "#FFFFFF",
+			defaultText: "INFO",
+		});
 		print({
 			logger: console.info,
-			label: processedLabel,
+			label: resolvedLabel,
 			data,
 			config: instanceConfig,
 		});
 	};
 
 	const debug = (label: Label, ...data: unknown[]): void => {
-		const processedLabel = createProcessedLabel(label, "?", instanceConfig.colors.reserved.DEBUG);
-
+		const resolvedLabel = buildSpecializedLabel(label, {
+			prefix: "?",
+			bgColor: "#e000dc",
+			fgColor: "#000000",
+			defaultText: "DEBUG",
+		});
 		print({
 			logger: console.debug,
-			label: processedLabel,
+			label: resolvedLabel,
 			data,
 			config: instanceConfig,
 		});

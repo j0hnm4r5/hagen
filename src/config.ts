@@ -87,18 +87,15 @@ export interface LoggerConfig {
 	 * Default label to use when label is empty, undefined, or null.
 	 * Default: "*"
 	 */
-	defaultLabel?: string;
+	defaultLabelText?: string;
 }
 
 /** Internal config with resolved color formatters */
-import type { AnsiFormatter } from "./types";
 
 /** Internal config with resolved color formatters */
 export interface InternalConfig extends LoggerConfig {
 	ansisInstance: Ansis;
-	colors: {
-		reserved: Record<"INFO" | "WARN" | "ERROR" | "DEBUG", AnsiFormatter>;
-	};
+	colors?: unknown;
 }
 
 /**
@@ -119,5 +116,5 @@ export interface InternalConfig extends LoggerConfig {
 export const defaultConfig: LoggerConfig = {
 	showTimestamp: false,
 	enableColor: ansis.isSupported(),
-	defaultLabel: "*",
+	defaultLabelText: "*",
 };

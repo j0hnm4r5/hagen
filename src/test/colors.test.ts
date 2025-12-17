@@ -98,7 +98,7 @@ describe("Color Formatting", () => {
 		});
 	});
 
-	describe("Reserved Colors (Log Levels)", () => {
+	describe("Specialized Log Levels", () => {
 		it("should use correct RGB codes for WARN (Orange with black text)", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true });
@@ -111,8 +111,8 @@ describe("Color Formatting", () => {
 
 			// Should have Orange background (RGB 255,165,0)
 			expect(output).toContain("\u001B[48;2;255;165;0m");
-			// Should have black foreground (using standard ANSI black for better compatibility)
-			expect(output).toContain("\u001B[30m");
+			// Should have black foreground (using RGB black)
+			expect(output).toContain("\u001B[38;2;0;0;0m");
 		});
 
 		it("should use correct RGB codes for ERROR (Crimson with white text)", async () => {
@@ -127,8 +127,8 @@ describe("Color Formatting", () => {
 
 			// Should have Crimson background (RGB 220,20,60)
 			expect(output).toContain("\u001B[48;2;220;20;60m");
-			// Should have white foreground (using standard ANSI white for better compatibility)
-			expect(output).toContain("\u001B[97m");
+			// Should have white foreground (using RGB white)
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 
 		it("should use correct RGB codes for INFO (Royal Blue with white text)", async () => {
@@ -143,8 +143,8 @@ describe("Color Formatting", () => {
 
 			// Should have Royal Blue background (RGB 65,105,225)
 			expect(output).toContain("\u001B[48;2;65;105;225m");
-			// Should have white foreground (using standard ANSI white for better compatibility)
-			expect(output).toContain("\u001B[97m");
+			// Should have white foreground (using RGB white)
+			expect(output).toContain("\u001B[38;2;255;255;255m");
 		});
 	});
 
