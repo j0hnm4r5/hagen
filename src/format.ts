@@ -93,5 +93,5 @@ export function formatLabelWithPrefixSuffix({
 	if (labelPrefix) result = `${labelPrefix} ${result}`;
 	if (labelSuffix) result = `${result} ${labelSuffix}`;
 
-	return result.trim();
+	return result;
 }

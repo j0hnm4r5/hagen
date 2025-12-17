@@ -8,8 +8,8 @@ export type RGB = readonly [number, number, number];
 /** HEX: Hexadecimal color string */
 type HEX = `#${string}`;
 
-/** Color value: valid hex string or RGB tuple ([255, 0, 0]) */
-export type Color = HEX | RGB;
+/** Color value: valid hex string, RGB tuple ([255, 0, 0]), or null for transparent/hidden */
+export type Color = HEX | RGB | null;
 
 /**
  * A function that applies ANSI color formatting to text.
@@ -28,6 +28,7 @@ export type AnsiFormatter = (text: string) => string;
  * Colors can be specified as:
  * - Hex strings: `"#FF0000"`
  * - RGB tuples: `[255, 0, 0]`
+ * - Null (Transparent/Hidden): `null`
  *
  * @example
  * ```typescript
@@ -40,6 +41,13 @@ export type AnsiFormatter = (text: string) => string;
  *   bgColor: "#ff0000",
  *   fgColor: "#ffffff"
  * }, "Custom colored message");
+ *
+ * // Label with Transparent background (visible text)
+ * logger.log({
+ *   label: "Transp",
+ *   bgColor: null,
+ *   fgColor: "#FF0000"
+ * }, "Red text, no background block");
  *
  * // Label with RGB tuples
  * logger.log({
@@ -75,9 +83,17 @@ export interface FormatterLabel extends BaseLabel {
 export interface ColorLabel extends BaseLabel {
 	kind: "color";
 
-	/** Background color as hex string or RGB tuple. If not specified, auto-calculated from the label text. */
+	/**
+	 * Background color as hex string, RGB tuple, or null.
+	 * - `null`: Transparent background (no background color applied).
+	 * - `undefined`: Auto-calculated from the label text.
+	 */
 	bgColor?: Color | undefined;
-	/** Foreground (text) color as hex string or RGB tuple. If not specified, auto-calculated for contrast. */
+	/**
+	 * Foreground (text) color as hex string, RGB tuple, or null.
+	 * - `null`: Invisible text (ANSI hidden).
+	 * - `undefined`: Auto-calculated for contrast against background.
+	 */
 	fgColor?: Color | undefined;
 }
 

@@ -194,8 +194,8 @@ describe("Spacing and Margins", () => {
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
 
-			// Empty label gets replaced with '*'
-			expect(stripped).toBe(" * ");
+			// Empty label gets printed as empty space (padding)
+			expect(stripped).toBe("  ");
 		});
 
 		it("should handle label with internal spaces", async () => {
@@ -220,8 +220,8 @@ describe("Spacing and Margins", () => {
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
 
-			// formatLabel trims, so " TEST " after adding margins
-			expect(stripped).toBe(" TEST ");
+			// No trimming, plus margins: " " + "  TEST  " + " "
+			expect(stripped).toBe("   TEST   ");
 		});
 
 		it("should maintain consistent spacing across multiple logs", async () => {

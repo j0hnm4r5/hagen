@@ -83,7 +83,7 @@ describe("Content Validation", () => {
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);
-			expect(stripped).toBe(" * "); // Default fallback symbol
+			expect(stripped).toBe("  "); // Empty label with padding
 		});
 
 		it("should handle object with undefined label", async () => {
@@ -101,7 +101,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ enableColor: true, defaultLabelText: "◆" });
 
-			logger.log("", "msg");
+			logger.log(undefined as unknown as string, "msg");
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 			const stripped = stripAnsi(label);

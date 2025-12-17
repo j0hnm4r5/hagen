@@ -1,7 +1,12 @@
-import hagen, { createHagen } from "../../index";
+import hagen, { createHagen, type HagenInstance } from "../../index";
 
 export function test() {
+	console.log("\n═══════════════════════════════════════════════════════════");
+	console.log("  BASIC LOGGING FEATURES");
+	console.log("═══════════════════════════════════════════════════════════\n");
+
 	// Test specialized loggers
+	console.log("--- SPECIALIZED LOGGERS ---\n");
 	hagen.log("Log", "This is a log message.");
 	hagen.info("Info", "This is an info message.");
 	hagen.error("Error", "This is an error message.");
@@ -9,6 +14,7 @@ export function test() {
 	hagen.debug("Debug", "This is a debug message.");
 
 	// Test with consistent palette labels
+	console.log("\n--- CONSISTENT PALETTE LABELS ---\n");
 	hagen.log("API", "API endpoint called successfully.");
 	hagen.log("API", "Database connection established.");
 	hagen.log("Server", "Server is running on port 3000.");
@@ -17,6 +23,7 @@ export function test() {
 	hagen.log("Worker", "Message added to queue.");
 
 	// Test custom colors
+	console.log("\n--- CUSTOM COLORS ---\n");
 	hagen.log(
 		{ label: "Custom RGB", bgColor: "#c0ffee", fgColor: "#bada55", kind: "color" },
 		"This message has custom RGB colors."
@@ -26,6 +33,7 @@ export function test() {
 		"This message uses RGB tuples."
 	);
 
+	console.log("\n--- COMPLEX CONTENT ---\n");
 	hagen.log("Multi-line", "This is a message\nwith\nmultiple lines.\n\n\nHere's another line.");
 
 	hagen.log("", "Empty Label");
@@ -43,12 +51,14 @@ export function test() {
 	hagen.log("Multiple", "New error found:", new Error("Hello, world!"));
 	hagen.log("Multiple", 1, "TWO", { three: 4 }, [5, 6, 7], new Error("eight"));
 
+	console.log("\n--- TIMESTAMPS ---\n");
 	// Test with timestamp instance
 	const timestampLogger = createHagen({
 		showTimestamp: true,
 	});
 	timestampLogger.log("Timestamp", "This message includes a timestamp.");
 
+	console.log("\n--- FIXED WIDTH ---\n");
 	// Test fixed width - end truncation
 	const fixedWidthEnd = createHagen({
 		fixedWidth: {
@@ -76,6 +86,7 @@ export function test() {
 	});
 	fixedWidthStart.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: start");
 
+	console.log("\n--- GROUPS ---\n");
 	console.group();
 	hagen.log(`LEVEL 1`);
 	console.group();
@@ -92,72 +103,47 @@ export function visualizeQuantization() {
 	console.log("  PALETTE QUANTIZATION: Same colors at different palette sizes");
 	console.log("═══════════════════════════════════════════════════════════\n");
 
-	const loggerFull = createHagen(); // Full color (no quantization)
-	const logger216 = createHagen({ paletteSize: 216 }); // 6×6×6 cube
-	const logger64 = createHagen({ paletteSize: 64 }); // 4×4×4 cube
-	const logger27 = createHagen({ paletteSize: 27 }); // 3×3×3 cube
-	const logger8 = createHagen({ paletteSize: 8 }); // 2×2×2 cube
+	// Creates loggers for different palette sizes
+	const loggers = [
+		{ name: "Full", instance: createHagen() },
+		{ name: "216", instance: createHagen({ paletteSize: 216 }) },
+		{ name: "64", instance: createHagen({ paletteSize: 64 }) },
+		{ name: "27", instance: createHagen({ paletteSize: 27 }) },
+		{ name: "8", instance: createHagen({ paletteSize: 8 }) },
+	];
+
+	// Helper to run action across all palette sizes
+	const comparePalettes = (header: string, action: (l: HagenInstance) => void) => {
+		console.log(`${header}:`);
+		for (const { name, instance } of loggers) {
+			console.log(`  ${name.padEnd(10)}`);
+			action(instance);
+		}
+		console.log();
+	};
 
 	// Test specialized loggers
 	console.log("--- SPECIALIZED LOGGERS ---\n");
 
-	console.log("INFO:");
-	console.log("  Full:     ");
-	loggerFull.info("Info", "Information message");
-	console.log("  216:      ");
-	logger216.info("Info", "Information message");
-	console.log("  64:       ");
-	logger64.info("Info", "Information message");
-	console.log("  27:       ");
-	logger27.info("Info", "Information message");
-	console.log("  8:        ");
-	logger8.info("Info", "Information message");
-	console.log();
-
-	console.log("WARN:");
-	console.log("  Full:     ");
-	loggerFull.warn("Warning", "Warning message");
-	console.log("  216:      ");
-	logger216.warn("Warning", "Warning message");
-	console.log("  64:       ");
-	logger64.warn("Warning", "Warning message");
-	console.log("  27:       ");
-	logger27.warn("Warning", "Warning message");
-	console.log("  8:        ");
-	logger8.warn("Warning", "Warning message");
-	console.log();
-
-	console.log("ERROR:");
-	console.log("  Full:     ");
-	loggerFull.error("Error", "Error message");
-	console.log("  216:      ");
-	logger216.error("Error", "Error message");
-	console.log("  64:       ");
-	logger64.error("Error", "Error message");
-	console.log("  27:       ");
-	logger27.error("Error", "Error message");
-	console.log("  8:        ");
-	logger8.error("Error", "Error message");
-	console.log();
+	comparePalettes("INFO", (l) => {
+		l.info("Info", "Information message");
+	});
+	comparePalettes("WARN", (l) => {
+		l.warn("Warning", "Warning message");
+	});
+	comparePalettes("ERROR", (l) => {
+		l.error("Error", "Error message");
+	});
 
 	// Test normal palette colors
 	console.log("--- NORMAL PALETTE COLORS ---\n");
 
-	const testLabels = ["API", "Database", "Server", "Client", "Worker", "Queue"];
+	const testLabels = ["API", "Server"];
 
 	for (const label of testLabels) {
-		console.log(`${label}:`);
-		console.log("  Full:     ");
-		loggerFull.log(label, "Test message");
-		console.log("  216:      ");
-		logger216.log(label, "Test message");
-		console.log("  64:       ");
-		logger64.log(label, "Test message");
-		console.log("  27:       ");
-		logger27.log(label, "Test message");
-		console.log("  8:        ");
-		logger8.log(label, "Test message");
-		console.log();
+		comparePalettes(label, (l) => {
+			l.log(label, "Test message");
+		});
 	}
 
 	console.log("═══════════════════════════════════════════════════════════\n");
@@ -223,10 +209,13 @@ export function visualizeEdgeCases() {
 
 	// Empty and special labels
 	console.log("--- SPECIAL LABELS ---\n");
+	logger.log(null, "Null label");
+	logger.log(undefined, "Undefined label");
 	logger.log("", "Empty label");
 	logger.log("   ", "Whitespace label");
 	logger.log("M", "Single character");
 	logger.log("🚀", "Emoji label");
+	logger.log("👨🏻‍👩🏻‍👧🏻", "ZWJ Sequence Emoji label");
 	console.log();
 
 	// Multi-line content
@@ -254,16 +243,66 @@ export function visualizeEdgeCases() {
 	// Custom colors - RGB tuples vs hex
 	console.log("--- CUSTOM COLORS ---\n");
 	logger.log(
-		{ label: "Hex BG", bgColor: "#ff6b6b", fgColor: "#c0ffee", kind: "color" },
+		{
+			kind: "color",
+			label: "Hex BG",
+			bgColor: "#ff00ff",
+			fgColor: "#ffffff",
+		},
 		"Hex color background"
 	);
 	logger.log(
-		{ label: "RGB Tuple", bgColor: [107, 203, 119], fgColor: [200, 255, 0], kind: "color" },
+		{
+			kind: "color",
+			label: "RGB Tuple",
+			bgColor: [0, 255, 0],
+			fgColor: [0, 0, 0],
+		},
 		"RGB tuple colors"
 	);
 	logger.log(
-		{ label: "Mixed", bgColor: "#4ecdc4", fgColor: [123, 0, 255], kind: "color" },
+		{
+			kind: "color",
+			label: "Mixed",
+			bgColor: "#0000ff",
+			fgColor: [255, 255, 0],
+		},
 		"Hex BG + RGB FG"
+	);
+	logger.log(
+		{
+			kind: "color",
+			label: "ABCDEF",
+			bgColor: null,
+			fgColor: "#ff0000",
+		},
+		"Transparent BG (red text)"
+	);
+	logger.log(
+		{
+			kind: "color",
+			label: "ABCDEF",
+			bgColor: null,
+		},
+		"Transparent BG (default text)"
+	);
+	logger.log(
+		{
+			kind: "color",
+			label: "ABCDEF",
+			bgColor: null,
+			fgColor: null,
+		},
+		"Transparent BG + Invisible Text"
+	);
+	logger.log(
+		{
+			kind: "color",
+			label: "ABCDEF",
+			bgColor: undefined,
+			fgColor: undefined,
+		},
+		"Undefined BG (auto color)"
 	);
 	console.log();
 
@@ -282,35 +321,24 @@ export function visualizeEdgeCases() {
 
 	console.log("═══════════════════════════════════════════════════════════\n");
 
-	logger.error(undefined, "Testing error with undefined label");
-	logger.error(null, "Testing error with null label");
-	logger.error("CustomError", "Testing error with custom label");
-	logger.error(
-		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
-		"Testing error with custom colors"
-	);
+	// Test edge cases for a specific log method
+	const testLogMethodVariants = (
+		levelName: string,
+		logMethod: (label: any, ...args: any[]) => void
+	) => {
+		logMethod(undefined, `Testing ${levelName} with undefined label`);
+		// logMethod(null, ...) - removed as it's redundant with undefined behavior
+		logMethod("CustomError", `Testing ${levelName} with custom label`);
+		logMethod(
+			{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
+			`Testing ${levelName} with custom colors`
+		);
+	};
 
-	logger.warn(undefined, "Testing error with undefined label");
-	logger.warn(null, "Testing error with null label");
-	logger.warn("CustomError", "Testing error with custom label");
-	logger.warn(
-		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
-		"Testing error with custom colors"
-	);
+	console.log("--- LOG METHOD ERROR HANDLING ---\n");
 
-	logger.info(undefined, "Testing error with undefined label");
-	logger.info(null, "Testing error with null label");
-	logger.info("CustomError", "Testing error with custom label");
-	logger.info(
-		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
-		"Testing error with custom colors"
-	);
-
-	logger.debug(undefined, "Testing error with undefined label");
-	logger.debug(null, "Testing error with null label");
-	logger.debug("CustomError", "Testing error with custom label");
-	logger.debug(
-		{ label: "ColorError", bgColor: "#ff0000", fgColor: "#ffffff", kind: "color" },
-		"Testing error with custom colors"
-	);
+	testLogMethodVariants("error", logger.error);
+	testLogMethodVariants("warn", logger.warn);
+	testLogMethodVariants("info", logger.info);
+	testLogMethodVariants("debug", logger.debug);
 }

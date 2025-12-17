@@ -99,16 +99,52 @@ export function createAnsiFormatter({
 	ansisInstance?: Ansis | undefined;
 	forceNoColor?: boolean | undefined;
 }): AnsiFormatter {
-	let bg = parseColor(bgColor);
+	// Handle transparent background
+	if (bgColor === null) {
+		// If fgColor is null, we want hidden text on transparent background (invisible)
+		if (fgColor === null) {
+			return (text: string) => {
+				const colored = ansisInstance.hidden(text);
+				return forceNoColor ? ansis.strip(colored) : colored;
+			};
+		}
 
-	// Apply quantization if palette size is specified
+		// If fgColor is provided, apply it
+		if (fgColor) {
+			let fg = parseColor(fgColor);
+			if (paletteSize !== undefined) {
+				fg = quantizeColor(fg, paletteSize);
+			}
+			return (text: string) => {
+				const colored = ansisInstance.rgb(...fg)(text);
+				return forceNoColor ? ansis.strip(colored) : colored;
+			};
+		}
+
+		// Default: No formatting (transparent bg, default fg)
+		return (text: string) => {
+			const colored = text;
+			return forceNoColor ? ansis.strip(colored) : colored;
+		};
+	}
+
+	// Handle colored background
+	let bg = parseColor(bgColor);
 	if (paletteSize !== undefined) {
 		bg = quantizeColor(bg, paletteSize);
 	}
 
-	// Use custom fg color if provided, otherwise calculate for contrast
+	// Handle foreground
+	if (fgColor === null) {
+		// Hidden text on colored background
+		return (text: string) => {
+			const colored = ansisInstance.bgRgb(...bg).hidden(text);
+			return forceNoColor ? ansis.strip(colored) : colored;
+		};
+	}
+
 	let fg: RGB;
-	if (fgColor !== undefined) {
+	if (fgColor) {
 		fg = parseColor(fgColor);
 		if (paletteSize !== undefined) {
 			fg = quantizeColor(fg, paletteSize);

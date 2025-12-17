@@ -42,7 +42,7 @@ export function print({ logger, label, data, config }: PrintParams): void {
 
 		// if the label is a string, use it as the label
 		case typeof label === "string": {
-			finalLabel = label.trim() || finalLabel;
+			finalLabel = label;
 			color = createAnsiFormatter({
 				bgColor: getColorFromLabel(finalLabel),
 				...(config.paletteSize !== undefined ? { paletteSize: config.paletteSize } : {}),
@@ -54,8 +54,7 @@ export function print({ logger, label, data, config }: PrintParams): void {
 
 		// if the label is an options object, extract the label, prefix, and suffix
 		case typeof label === "object": {
-			const labelText = typeof label.label === "string" ? label.label : "";
-			finalLabel = labelText.trim() || finalLabel;
+			finalLabel = typeof label.label === "string" ? label.label : finalLabel;
 			customPrefix = label.prefix;
 			customSuffix = label.suffix;
 
@@ -65,7 +64,7 @@ export function print({ logger, label, data, config }: PrintParams): void {
 				// if the label options provide colors, create the ansi formatter
 				case "color": {
 					color = createAnsiFormatter({
-						bgColor: label.bgColor ?? [0, 0, 0],
+						bgColor: label.bgColor === undefined ? getColorFromLabel(finalLabel) : label.bgColor,
 						fgColor: label.fgColor,
 						paletteSize: config.paletteSize,
 						ansisInstance: config.ansisInstance,
