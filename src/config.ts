@@ -2,35 +2,32 @@
  * Configuration types and defaults for Hagen logger.
  */
 
-import ansis, { Ansis } from "ansis";
+import { Ansis } from "ansis";
+import type { Layout, SegmentDefinition, SegmentType } from "./types";
 
 /**
  * Configuration options for Hagen logger instances.
- *
- * @example
- * ```typescript
- * import { createHagen } from "hagen";
- *
- * const logger = createHagen({
- *   showTimestamp: true,
- *   labelPrefix: "<<",
- *   labelSuffix: ">>",
- *   enableColor: true,
- *   paletteSize: 256
- * });
- * ```
  */
 export interface LoggerConfig {
-	/** Whether to include timestamps in log output. Default: false */
-	showTimestamp: boolean;
+	/**
+	 * Output segment layout.
+	 *
+	 * Can be a template string or an array of segments.
+	 * Default: "%l %m"
+	 */
+	layout?: Layout;
+
+	/**
+	 * Default styles for each segment type.
+	 * Merged with per-segment overrides.
+	 */
+	segmentStyles?: Partial<Record<SegmentType, Partial<SegmentDefinition>>>;
 
 	/**
 	 * Whether to enable colored output.
 	 * Automatically detects terminal color support.
-	 * Can be explicitly overridden to force enable/disable colors.
-	 * Default: true if terminal supports colors, false otherwise
 	 */
-	enableColor: boolean;
+	enableColor?: boolean;
 
 	/**
 	 * Palette size for color quantization.
@@ -47,9 +44,9 @@ export interface LoggerConfig {
 	 *
 	 * Default: undefined (no quantization)
 	 */
-	paletteSize?: number;
+	paletteSize?: number | undefined;
 
-	/** Fixed width configuration for labels (advanced feature) */
+	/** Fixed width configuration for labels */
 	fixedWidth?: {
 		/** Target width in characters */
 		width: number;
@@ -59,29 +56,13 @@ export interface LoggerConfig {
 
 	/**
 	 * Date/time format for timestamps.
-	 * - "iso": ISO 8601 format (2024-03-15T10:30:00.000Z)
-	 * - Custom function: (date) => string
+	 *
+	 * Default: ISO 8601
 	 *
 	 * For complex formatting, use a custom function with your preferred library
 	 * (e.g. date-fns, moment, or Intl.DateTimeFormat).
-	 *
-	 * Default: "iso"
 	 */
 	timestampFormatter?: (date: Date) => string;
-
-	/**
-	 * Global prefix to add before all labels.
-	 * Can be overridden per-label.
-	 * Default: none
-	 */
-	labelPrefix?: string;
-
-	/**
-	 * Global suffix to add after all labels.
-	 * Can be overridden per-label.
-	 * Default: none
-	 */
-	labelSuffix?: string;
 
 	/**
 	 * Default label to use when label is empty, undefined, or null.
@@ -90,31 +71,21 @@ export interface LoggerConfig {
 	defaultLabelText?: string;
 }
 
-/** Internal config with resolved color formatters */
-
-/** Internal config with resolved color formatters */
+/** Internal config with resolved defaults */
 export interface InternalConfig extends LoggerConfig {
+	// /** Final resolved color support */
+	// enableColor: boolean;
+	/** Ansis instance for generating codes */
 	ansisInstance: Ansis;
-	colors?: unknown;
+	layout: Layout;
+	segmentStyles: Partial<Record<SegmentType, Partial<SegmentDefinition>>>;
 }
 
-/**
- * Default configuration for Hagen instances.
- *
- * This configuration is used when no custom config is provided to createHagen().
- * Colors are automatically enabled based on terminal color support detection.
- *
- * @example
- * ```typescript
- * import { defaultConfig } from "hagen";
- *
- * // Inspect default settings
- * console.log(defaultConfig.showTimestamp); // false
- * console.log(defaultConfig.enableColor); // true if terminal supports colors
- * ```
- */
+/** Default configuration values */
 export const defaultConfig: LoggerConfig = {
-	showTimestamp: false,
-	enableColor: ansis.isSupported(),
+	paletteSize: undefined,
+	timestampFormatter: (date: Date) => date.toISOString(),
 	defaultLabelText: "*",
+	layout: "%l %m",
+	segmentStyles: {},
 };

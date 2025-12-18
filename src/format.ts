@@ -70,28 +70,3 @@ export function formatTimestamp(config: LoggerConfig): string {
 
 	return date.toISOString();
 }
-
-/**
- * Formats the label with prefix and suffix.
- * @internal
- */
-export function formatLabelWithPrefixSuffix({
-	text: labelText,
-	prefix: prefix,
-	suffix: suffix,
-	config,
-}: {
-	text: string;
-	prefix?: string | undefined;
-	suffix?: string | undefined;
-	config?: LoggerConfig | undefined;
-}): string {
-	const labelPrefix = prefix ?? config?.labelPrefix;
-	const labelSuffix = suffix ?? config?.labelSuffix;
-
-	let result = labelText;
-	if (labelPrefix) result = `${labelPrefix} ${result}`;
-	if (labelSuffix) result = `${result} ${labelSuffix}`;
-
-	return result;
-}
