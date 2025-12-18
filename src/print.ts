@@ -3,11 +3,9 @@
  * Handles the actual output of formatted labels and data.
  */
 
-import { createAnsiFormatter, getColorFromLabel } from "./colors";
 import type { InternalConfig } from "./config";
-import { fixedWidthFormat, formatLabelWithPrefixSuffix, formatTimestamp } from "./format";
-import type { AnsiFormatter, Label } from "./types";
-import { assertNever } from "./utils/assert-never";
+import { parseTemplateLayout, renderSegment, type SegmentContext } from "./segments";
+import type { Label } from "./types";
 
 /** Parameters for the print function */
 export interface PrintParams {
@@ -22,113 +20,32 @@ export interface PrintParams {
  * @internal
  */
 export function print({ logger, label, data, config }: PrintParams): void {
-	let color: AnsiFormatter;
-	let finalLabel = config.defaultLabelText ?? "";
-	let customPrefix: string | undefined;
-	let customSuffix: string | undefined;
+	const layoutInput = config.layout;
+	const layoutItems =
+		typeof layoutInput === "string" ? parseTemplateLayout(layoutInput) : layoutInput;
 
-	switch (true) {
-		// if the label is undefined or null, use the default label
-		case label === undefined:
-		case label === null: {
-			color = createAnsiFormatter({
-				bgColor: getColorFromLabel(finalLabel),
-				paletteSize: config.paletteSize,
-				ansisInstance: config.ansisInstance,
-				forceNoColor: !config.enableColor,
-			});
-			break;
-		}
-
-		// if the label is a string, use it as the label
-		case typeof label === "string": {
-			finalLabel = label;
-			color = createAnsiFormatter({
-				bgColor: getColorFromLabel(finalLabel),
-				...(config.paletteSize !== undefined ? { paletteSize: config.paletteSize } : {}),
-				ansisInstance: config.ansisInstance,
-				forceNoColor: !config.enableColor,
-			});
-			break;
-		}
-
-		// if the label is an options object, extract the label, prefix, and suffix
-		case typeof label === "object": {
-			finalLabel = typeof label.label === "string" ? label.label : finalLabel;
-			customPrefix = label.prefix;
-			customSuffix = label.suffix;
-
-			const strategy = label.kind;
-
-			switch (strategy) {
-				// if the label options provide colors, create the ansi formatter
-				case "color": {
-					color = createAnsiFormatter({
-						bgColor: label.bgColor === undefined ? getColorFromLabel(finalLabel) : label.bgColor,
-						fgColor: label.fgColor,
-						paletteSize: config.paletteSize,
-						ansisInstance: config.ansisInstance,
-						forceNoColor: !config.enableColor,
-					});
-					break;
-				}
-
-				// if the label options provide a formatter, use it directly
-				case "formatter": {
-					color = label.ansiFormatter;
-					break;
-				}
-
-				default:
-					assertNever(strategy);
-			}
-
-			break;
-		}
-
-		default:
-			assertNever(label);
-	}
-
-	// Apply formatting
-	finalLabel = formatLabelWithPrefixSuffix({
-		text: finalLabel,
-		prefix: customPrefix,
-		suffix: customSuffix,
+	const context: SegmentContext = {
+		label,
+		data,
 		config,
-	});
+		segmentIndex: 0,
+		totalSegments: layoutItems.length,
+		labelIndex: 0,
+		incrementLabelIndex: () => {
+			context.labelIndex++;
+		},
+	};
 
-	// Apply fixed width if configured
-	if (config.fixedWidth) {
-		finalLabel = fixedWidthFormat(
-			finalLabel,
-			config.fixedWidth.width,
-			config.fixedWidth.truncationMethod
-		);
+	const parts: string[] = [];
+
+	for (let i = 0; i < layoutItems.length; i++) {
+		context.segmentIndex = i;
+		parts.push(renderSegment(layoutItems[i]!, context));
 	}
 
-	// Handle colorless mode
-	if (!config.enableColor) {
-		finalLabel = `[ ${finalLabel} ]`;
+	// Join parts
+	const finalLabel = parts.join("");
 
-		if (config.showTimestamp) {
-			const timestamp = formatTimestamp(config);
-			finalLabel = `${finalLabel} [ ${timestamp} ]`;
-		}
-
-		logger(finalLabel, ...data);
-		return;
-	} else {
-		// Apply color
-		finalLabel = color(` ${finalLabel} `);
-
-		// Add timestamp
-		if (config.showTimestamp) {
-			const timestamp = formatTimestamp(config);
-			const timestampLabel = config.ansisInstance.gray(`[ ${timestamp} ]`);
-			finalLabel = `${finalLabel} ${timestampLabel}`;
-		}
-
-		logger(finalLabel, ...data);
-	}
+	// Log with data
+	logger(finalLabel, ...data);
 }

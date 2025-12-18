@@ -92,7 +92,8 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		...mergedConfig,
 		enableColor: enableColor, // Final resolved value
 		ansisInstance,
-		colors: undefined,
+		layout: mergedConfig.layout ?? (defaultConfig.layout as string),
+		segmentStyles: mergedConfig.segmentStyles || {},
 	};
 
 	// Helper to create common label logic
@@ -106,7 +107,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		}
 	): Label => {
 		// Pass through user-provided Label objects unchanged
-		// If it's an object (FormatterLabel or ColorLabel), we assume the user intends
+		// If it's an object (FormatterLabel or ColorLabel or Array), we assume the user intends
 		// to control the styling, so we don't override it with our defaults.
 		if (typeof label === "object" && label !== null) {
 			return label;
