@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Hagen Visual Test - Browser</title>
+		<style>
+			body {
+				background-color: black;
+				color: white;
+				font-family: monospace;
+				text-align: center;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				height: 100vh;
+			}
+			code {
+				background-color: #333;
+				padding: 2px 4px;
+				margin: 0 2px;
+				border-radius: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="info">
+			<h1>Hagen Visual Test</h1>
+			<p>
+				Open your browser console (<code>Ctrl + Shift + I</code> / <code>Cmd + Opt + I</code>) to
+				view the logger output, and check the output below.
+			</p>
+		</div>
+
+		<div id="output"></div>
+		<script type="module" src="/index.ts"></script>
+	</body>
+</html>
