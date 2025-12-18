@@ -19,7 +19,16 @@ export function parseColor(color: Color): RGB {
 
 	// Hex string - color is now narrowed to string type
 	const hexString = color as string;
-	const cleanHex = hexString.replace("#", "");
+	let cleanHex = hexString.replace("#", "");
+
+	// Expand 3-digit hex to 6-digit
+	if (cleanHex.length === 3) {
+		cleanHex = cleanHex
+			.split("")
+			.map((c) => c + c)
+			.join("");
+	}
+
 	const r = Number.parseInt(cleanHex.slice(0, 2), 16);
 	const g = Number.parseInt(cleanHex.slice(2, 4), 16);
 	const b = Number.parseInt(cleanHex.slice(4, 6), 16);
@@ -93,14 +102,14 @@ export function createAnsiFormatter({
 	ansisInstance = ansis,
 	forceNoColor = false,
 }: {
-	bgColor: Color;
+	bgColor: Color | undefined;
 	fgColor?: Color | undefined;
 	paletteSize?: number | undefined;
 	ansisInstance?: Ansis | undefined;
 	forceNoColor?: boolean | undefined;
 }): AnsiFormatter {
 	// Handle transparent background
-	if (bgColor === null) {
+	if (bgColor === null || bgColor === undefined) {
 		// If fgColor is null, we want hidden text on transparent background (invisible)
 		if (fgColor === null) {
 			return (text: string) => {
