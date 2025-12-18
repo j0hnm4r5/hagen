@@ -26,6 +26,19 @@ export interface SegmentContext {
 }
 
 /**
+ * Intermediate representation of a segment before final ANSI formatting.
+ */
+export interface PreparedSegment {
+	text: string;
+	bgColor: Color | undefined;
+	fgColor: Color | undefined;
+	padding: number;
+	ansiFormatter?: AnsiFormatter | undefined;
+	// Store original item for stitch phase (separators)
+	item: LayoutItem;
+}
+
+/**
  * Default styles for each segment type.
  */
 export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDefinition>>> = {
@@ -68,6 +81,37 @@ export function getSeparatorGlyph(preset: string): string {
 	}
 
 	return entry.symbol;
+}
+
+/**
+ * Checks if a preset is a Powerline separator and returns its direction.
+ */
+export function getPowerlineDirection(preset: string): "left" | "right" | undefined {
+	if (!preset.startsWith("%")) return undefined;
+	const name = preset.slice(1);
+	const entry = SEPARATOR_CONFIG.find(
+		(c) => c.name === name || (c.aliases as readonly string[]).includes(name)
+	);
+
+	if (!entry) return undefined;
+
+	if (entry.name.startsWith("pl-left")) {
+		return "left";
+	}
+	if (entry.name.startsWith("pl-right")) {
+		return "right";
+	}
+
+	// Double check aliases
+	const allNames: string[] = [entry.name, ...entry.aliases];
+	if (allNames.some((n) => n.includes("left") || n === "pl" || n === "pll" || n === "powerline")) {
+		return "left";
+	}
+	if (allNames.some((n) => n.includes("right") || n === "plr")) {
+		return "right";
+	}
+
+	return undefined;
 }
 
 /**
