@@ -194,6 +194,7 @@ function resolveSegmentStyle(
 /**
  * Resolve the actual text content for a label segment based on input.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-plus-operands */
 function resolveLabelContent(
 	label: Label,
 	index: number,
@@ -222,16 +223,24 @@ function resolveLabelContent(
 	}
 
 	// It's a FormatterLabel or ColorLabel
-	if (item.kind === "formatter") {
-		return { text: item.label, customFormatter: item.ansiFormatter };
+	if ("kind" in item && item.kind === "formatter") {
+		const text =
+			(item.prefix ?? "") + ((item.label as string | undefined) ?? fallback) + (item.suffix ?? "");
+		return { text, customFormatter: item.ansiFormatter };
 	}
 
+	const cl = item as any;
+
+	const text =
+		(cl.prefix ?? "") + ((cl.label as string | undefined) ?? fallback) + (cl.suffix ?? "");
+
 	return {
-		text: item.label,
-		color: item.fgColor,
-		bgColor: item.bgColor,
+		text,
+		color: cl.fgColor,
+		bgColor: cl.bgColor,
 	};
 }
+/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-plus-operands */
 
 /**
  * Step 1: Prepare a segment by resolving its content and styles.
