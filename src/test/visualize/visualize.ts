@@ -111,10 +111,11 @@ export function visualizeLayoutTemplates() {
 
 	logger = createHagen({
 		layout: [
-			{ type: "label", bgColor: "#00ffff", fgColor: "#FFFFFF" },
-			{ type: "separator", preset: "%powerline" },
+			{ type: "separator", preset: "%pl-right-rounded" },
+			{ type: "label", bgColor: "#00ffff", fgColor: "#000000" },
+			{ type: "separator", preset: "%pl-left" },
 			{ type: "label", bgColor: "#ff00ff", fgColor: "#FFFFFF" },
-			" ",
+			{ type: "separator", preset: "%pl-left-rounded" },
 			{ type: "message" },
 		],
 	});
