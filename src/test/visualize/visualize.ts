@@ -119,6 +119,18 @@ export function visualizeLayoutTemplates() {
 			{ type: "message" },
 		],
 	});
+	logger.log(["Nerd", "Font"], "Built-in Nerd Font glyphs (will look broken if font missing)");
+
+	logger = createHagen({
+		layout: [
+			{ type: "separator", content: "\ue0be" },
+			{ type: "label", bgColor: "#00ffff", fgColor: "#000000" },
+			{ type: "separator", content: "\ue0b1" },
+			{ type: "label", bgColor: "#ff00ff", fgColor: "#FFFFFF" },
+			{ type: "separator", content: "\ue0b8" },
+			{ type: "message" },
+		],
+	});
 	logger.log(["Nerd", "Font"], "Forced Nerd Font glyphs (may look broken if font missing)");
 
 	console.log();
