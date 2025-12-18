@@ -234,43 +234,36 @@ function resolveLabelContent(
 }
 
 /**
- * Renders a single segment.
- * Returns the fully formatted ANSI string.
+ * Step 1: Prepare a segment by resolving its content and styles.
+ * This determines the final text and "intended" colors before any neighbor stitching.
  */
-export function renderSegment(item: LayoutItem, context: SegmentContext): string {
+export function prepareSegment(item: LayoutItem, context: SegmentContext): PreparedSegment {
 	// Handle string literals (separators)
 	if (typeof item === "string") {
-		return getSeparatorGlyph(item);
+		return {
+			text: getSeparatorGlyph(item),
+			bgColor: undefined,
+			fgColor: undefined,
+			padding: 0,
+			item,
+		};
 	}
 
 	// Handle explicit separators
 	if ("type" in item && item.type === "separator") {
-		const glyph = item.content ?? (item.preset ? getSeparatorGlyph(item.preset) : "");
-
-		if (context.config.enableColor && (item.fgColor || item.bgColor)) {
-			const fmt = createAnsiFormatter({
-				bgColor: item.bgColor,
-				fgColor: item.fgColor,
-				paletteSize: context.config.paletteSize,
-				ansisInstance: context.config.ansisInstance,
-				forceNoColor: false,
-			});
-			return fmt(glyph);
-		}
-
-		return glyph;
+		return {
+			text: item.content ?? (item.preset ? getSeparatorGlyph(item.preset) : ""),
+			bgColor: item.bgColor,
+			fgColor: item.fgColor,
+			padding: 0,
+			item,
+		};
 	}
 
-	// It's a SegmentDefinition
-	// Double check type just to be safe if TS isn't sure, but LayoutItem union should ensure it.
-	if (!("type" in item)) {
-		return "";
-	}
-
+	// Handle SegmentDefinition
 	const segmentDef = item;
 	const style = resolveSegmentStyle(segmentDef.type, segmentDef, context.config);
 
-	// Determine content
 	let text = "";
 	let effectiveBg = style.bgColor;
 	let effectiveFg = style.fgColor;
@@ -281,8 +274,6 @@ export function renderSegment(item: LayoutItem, context: SegmentContext): string
 			const resolved = resolveLabelContent(context.label, context.labelIndex, context.config);
 			text = resolved.text;
 
-			// However, explicit transparency in segment (null) should NOT be overridden by label color.
-			// So we only override if segment style is undefined.
 			if (style.bgColor === undefined && resolved.bgColor !== undefined) {
 				effectiveBg = resolved.bgColor;
 			}
@@ -297,52 +288,71 @@ export function renderSegment(item: LayoutItem, context: SegmentContext): string
 		case "timestamp":
 			text = formatTimestamp(context.config);
 			break;
-		case "icon":
-			{
-				const firstLabel = Array.isArray(context.label) ? context.label[0] : context.label;
-				if (typeof firstLabel === "object" && firstLabel && "prefix" in firstLabel) {
-					text = firstLabel.prefix || "";
-				} else {
-					text = "";
-				}
+		case "icon": {
+			const firstLabel = Array.isArray(context.label) ? context.label[0] : context.label;
+			if (typeof firstLabel === "object" && firstLabel && "prefix" in firstLabel) {
+				text = firstLabel.prefix || "";
 			}
 			break;
+		}
 		case "message":
-			return "";
+			// Message is handled elsewhere/later, but we still need a placeholder
+			text = "";
+			break;
 	}
 
-	// Apply strict fixed width
+	// Apply fixed width
 	if (style.fixedWidth) {
 		text = fixedWidthFormat(text, style.fixedWidth, style.truncationMethod);
 	}
 
-	// Formatting with ANSI
-	if (context.config.enableColor) {
-		if (customFormatter) {
-			const padding = style.padding || 0;
+	// Resolve auto-color for labels IF not explicitly set
+	if (effectiveBg === undefined && segmentDef.type === "label") {
+		effectiveBg = getColorFromLabel(text);
+	}
+
+	return {
+		text,
+		bgColor: effectiveBg,
+		fgColor: effectiveFg,
+		padding: style.padding ?? 0,
+		ansiFormatter: customFormatter,
+		item,
+	};
+}
+
+/**
+ * Step 2: Render a prepared segment into final ANSI string.
+ */
+export function renderPreparedSegment(prepared: PreparedSegment, config: InternalConfig): string {
+	const { text, bgColor, fgColor, padding, ansiFormatter } = prepared;
+
+	if (config.enableColor) {
+		if (ansiFormatter) {
 			const padded = " ".repeat(padding) + text + " ".repeat(padding);
-			return customFormatter(padded);
+			return ansiFormatter(padded);
 		}
 
 		const fmt = createAnsiFormatter({
-			bgColor:
-				effectiveBg === undefined
-					? segmentDef.type === "label"
-						? getColorFromLabel(text)
-						: null
-					: effectiveBg,
-			fgColor: effectiveFg,
-			paletteSize: context.config.paletteSize,
-			ansisInstance: context.config.ansisInstance,
+			bgColor: bgColor ?? null, // Default to transparent if still undefined
+			fgColor: fgColor,
+			paletteSize: config.paletteSize,
+			ansisInstance: config.ansisInstance,
 			forceNoColor: false,
 		});
 
-		const padding = style.padding || 0;
 		const padded = " ".repeat(padding) + text + " ".repeat(padding);
 		return fmt(padded);
-	} else {
-		// No color
-		const padding = style.padding || 0;
-		return " ".repeat(padding) + text + " ".repeat(padding);
 	}
+
+	// No color mode
+	return " ".repeat(padding) + text + " ".repeat(padding);
+}
+
+/**
+ * Legacy single-pass renderer (now uses two-pass internally).
+ */
+export function renderSegment(item: LayoutItem, context: SegmentContext): string {
+	const prepared = prepareSegment(item, context);
+	return renderPreparedSegment(prepared, context.config);
 }
