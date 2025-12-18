@@ -65,9 +65,9 @@ export interface BaseLabel {
 	/** The text content of the label */
 	label: string;
 	/** Custom prefix to override global labelPrefix */
-	prefix?: string;
+	prefix?: string | undefined;
 	/** Custom suffix to override global labelSuffix */
-	suffix?: string;
+	suffix?: string | undefined;
 }
 
 export interface FormatterLabel extends BaseLabel {

@@ -7,7 +7,7 @@ import ansis, { Ansis } from "ansis";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
 
 import { print } from "./print";
-import type { Color, HagenInstance, Label } from "./types";
+import type { BaseLabel, Color, HagenInstance, Label } from "./types";
 
 /**
  * Creates a new Hagen logger instance with custom configuration.
@@ -77,6 +77,7 @@ function determineColorSupport(userSetting?: boolean): boolean {
 	return ansis.isSupported();
 }
 
+/* eslint-disable @typescript-eslint/no-deprecated */
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	// Merge with defaults
 	const mergedConfig: LoggerConfig = { ...defaultConfig, ...config };
@@ -88,12 +89,67 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	// Use the same ansis instance but handle no-color mode in formatters
 	const ansisInstance = enableColor ? new Ansis() : new Ansis(0);
 
+	// Determine final layout and honor showTimestamp for back-compatibility
+	let finalLayout = mergedConfig.layout ?? (defaultConfig.layout as string);
+
+	if (
+		mergedConfig.showTimestamp === true &&
+		typeof finalLayout === "string" &&
+		!finalLayout.includes("%t")
+	) {
+		// In legacy mode, timestamps were usually shown in brackets
+		finalLayout = "[%t] " + finalLayout;
+	} else if (mergedConfig.showTimestamp === false && typeof finalLayout === "string") {
+		finalLayout = finalLayout.replace("%t", "").trim();
+	}
+
+	// Apply brackets for colorless mode if not already present
+	if (!enableColor && typeof finalLayout === "string") {
+		if (finalLayout.includes("%l") && !finalLayout.includes("[%l]")) {
+			finalLayout = finalLayout.replace("%l", "[%l]");
+		}
+		if (finalLayout.includes("%t") && !finalLayout.includes("[%t]")) {
+			finalLayout = finalLayout.replace("%t", "[%t]");
+		}
+	}
+
 	const instanceConfig: InternalConfig = {
 		...mergedConfig,
 		enableColor: enableColor, // Final resolved value
 		ansisInstance,
-		layout: mergedConfig.layout ?? (defaultConfig.layout as string),
+		layout: finalLayout,
 		segmentStyles: mergedConfig.segmentStyles || {},
+	};
+
+	const wrapLabelIfNeeded = (label: Label): Label => {
+		if (typeof label === "string") {
+			if (mergedConfig.labelPrefix || mergedConfig.labelSuffix) {
+				return {
+					kind: "color",
+					label,
+					prefix: mergedConfig.labelPrefix,
+					suffix: mergedConfig.labelSuffix,
+				};
+			}
+			return label;
+		}
+
+		// Merge global prefix/suffix into object labels if they don't have their own
+		if (typeof label === "object" && label !== null && !Array.isArray(label)) {
+			const l = label as BaseLabel;
+			if (
+				(mergedConfig.labelPrefix && l.prefix === undefined) ||
+				(mergedConfig.labelSuffix && l.suffix === undefined)
+			) {
+				return {
+					...label,
+					prefix: l.prefix ?? mergedConfig.labelPrefix,
+					suffix: l.suffix ?? mergedConfig.labelSuffix,
+				};
+			}
+		}
+
+		return label;
 	};
 
 	// Helper to create common label logic
@@ -106,19 +162,17 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			defaultText: string;
 		}
 	): Label => {
-		// Pass through user-provided Label objects unchanged
-		// If it's an object (FormatterLabel or ColorLabel or Array), we assume the user intends
-		// to control the styling, so we don't override it with our defaults.
+		// If it's an object, we still want to merge global prefix/suffix if not present
 		if (typeof label === "object" && label !== null) {
-			return label;
+			return wrapLabelIfNeeded(label);
 		}
 
 		// Wrap string/null/undefined in a ColorLabel with the specialized styling
-		// The prefix is specified here but APPLIED in print.ts
 		return {
 			kind: "color",
 			label: typeof label === "string" ? label : defaults.defaultText,
-			prefix: defaults.prefix,
+			prefix: mergedConfig.labelPrefix ?? defaults.prefix,
+			suffix: mergedConfig.labelSuffix,
 			bgColor: defaults.bgColor,
 			fgColor: defaults.fgColor,
 		};
@@ -127,11 +181,12 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const log = (label: Label, ...data: unknown[]): void => {
 		print({
 			logger: console.log,
-			label,
+			label: wrapLabelIfNeeded(label),
 			data,
 			config: instanceConfig,
 		});
 	};
+	/* eslint-enable @typescript-eslint/no-deprecated */
 
 	const error = (label: Label, ...data: unknown[]): void => {
 		const resolvedLabel = buildSpecializedLabel(label, {

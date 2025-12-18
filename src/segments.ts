@@ -287,6 +287,10 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 		}
 		case "timestamp":
 			text = formatTimestamp(context.config);
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+			if ((context.config as any).showTimestamp) {
+				text = `[${text}]`;
+			}
 			break;
 		case "icon": {
 			const firstLabel = Array.isArray(context.label) ? context.label[0] : context.label;
