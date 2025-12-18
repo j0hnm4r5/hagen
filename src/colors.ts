@@ -108,64 +108,133 @@ export function createAnsiFormatter({
 	ansisInstance?: Ansis | undefined;
 	forceNoColor?: boolean | undefined;
 }): AnsiFormatter {
+	// Helper to apply named colors if they exist on the instance
+	const applyNamed = (text: string, color: Color, isBg: boolean): string | undefined => {
+		if (typeof color !== "string" || color.startsWith("#")) return undefined;
+
+		const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
+		const method = inst[color];
+
+		if (typeof method === "function") return method(text);
+
+		// If it's a background color, also try bg[Color]
+		if (isBg) {
+			const bgName = "bg" + color.charAt(0).toUpperCase() + color.slice(1);
+			const bgMethod = inst[bgName];
+			if (typeof bgMethod === "function") return bgMethod(text);
+		}
+		return undefined;
+	};
+
 	// Handle transparent background
 	if (bgColor === null || bgColor === undefined) {
 		// If fgColor is null, we want hidden text on transparent background (invisible)
 		if (fgColor === null) {
 			return (text: string) => {
 				const colored = ansisInstance.hidden(text);
-				return forceNoColor ? ansis.strip(colored) : colored;
+				return forceNoColor ? ansisInstance.strip(colored) : colored;
 			};
 		}
 
 		// If fgColor is provided, apply it
 		if (fgColor) {
-			let fg = parseColor(fgColor);
-			if (paletteSize !== undefined) {
-				fg = quantizeColor(fg, paletteSize);
-			}
 			return (text: string) => {
-				const colored = ansisInstance.rgb(...fg)(text);
-				return forceNoColor ? ansis.strip(colored) : colored;
+				let colored = applyNamed(text, fgColor, false);
+				if (colored === undefined) {
+					let fg = parseColor(fgColor);
+					if (paletteSize !== undefined) {
+						fg = quantizeColor(fg, paletteSize);
+					}
+					colored = ansisInstance.rgb(...fg)(text);
+				}
+				return forceNoColor ? ansisInstance.strip(colored) : colored;
 			};
 		}
 
 		// Default: No formatting (transparent bg, default fg)
 		return (text: string) => {
 			const colored = text;
-			return forceNoColor ? ansis.strip(colored) : colored;
+			return forceNoColor ? ansisInstance.strip(colored) : colored;
 		};
 	}
 
-	// Handle colored background
-	let bg = parseColor(bgColor);
-	if (paletteSize !== undefined) {
-		bg = quantizeColor(bg, paletteSize);
-	}
-
-	// Handle foreground
+	// Handle foreground invisibility on colored background
 	if (fgColor === null) {
-		// Hidden text on colored background
 		return (text: string) => {
-			const colored = ansisInstance.bgRgb(...bg).hidden(text);
-			return forceNoColor ? ansis.strip(colored) : colored;
+			let colored = applyNamed(text, bgColor, true);
+			if (colored !== undefined) {
+				colored = ansisInstance.hidden(ansisInstance.strip(colored));
+			} else {
+				const rgb = parseColor(bgColor);
+				const qBg = paletteSize !== undefined ? quantizeColor(rgb, paletteSize) : rgb;
+				colored = ansisInstance.bgRgb(...qBg).hidden(text);
+			}
+			return forceNoColor ? ansisInstance.strip(colored) : colored;
 		};
 	}
 
-	let fg: RGB;
-	if (fgColor) {
-		fg = parseColor(fgColor);
-		if (paletteSize !== undefined) {
-			fg = quantizeColor(fg, paletteSize);
-		}
-	} else {
-		fg = getContrastingTextColor(bg);
+	// Handle named background color
+	const namedBg = typeof bgColor === "string" && !bgColor.startsWith("#") ? bgColor : undefined;
+	if (namedBg) {
+		return (text: string) => {
+			let res = text;
+			// Apply named foreground if present
+			const namedFg =
+				fgColor && typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
+			const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
+
+			if (namedFg && typeof inst[namedFg] === "function") {
+				res = inst[namedFg](res);
+			} else if (fgColor) {
+				const fgRgb = parseColor(fgColor);
+				const qFg = paletteSize !== undefined ? quantizeColor(fgRgb, paletteSize) : fgRgb;
+				res = ansisInstance.rgb(...qFg)(res);
+			}
+
+			// Apply named background
+			const bgName = namedBg.startsWith("bg")
+				? namedBg
+				: "bg" + namedBg.charAt(0).toUpperCase() + namedBg.slice(1);
+			const bgMethod = inst[bgName];
+			if (typeof bgMethod === "function") {
+				res = bgMethod(res);
+			}
+
+			return forceNoColor ? ansisInstance.strip(res) : res;
+		};
 	}
 
+	// Fallback to RGB logic for background
+	const rgbBg = parseColor(bgColor);
+	const qBg = paletteSize !== undefined ? quantizeColor(rgbBg, paletteSize) : rgbBg;
+
+	if (fgColor) {
+		const namedFg = typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
+		if (namedFg) {
+			const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
+			if (typeof inst[namedFg] === "function") {
+				return (text: string) => {
+					let res = inst[namedFg]!(text);
+					res = ansisInstance.bgRgb(...qBg)(res);
+					return forceNoColor ? ansisInstance.strip(res) : res;
+				};
+			}
+		}
+
+		// Regular RGB foreground
+		const rgbFg = parseColor(fgColor);
+		const qFg = paletteSize !== undefined ? quantizeColor(rgbFg, paletteSize) : rgbFg;
+		return (text: string) => {
+			const colored = ansisInstance.bgRgb(...qBg).rgb(...qFg)(text);
+			return forceNoColor ? ansisInstance.strip(colored) : colored;
+		};
+	}
+
+	// Auto-contrasting foreground
+	const qFg = getContrastingTextColor(qBg);
 	return (text: string) => {
-		const colored = ansisInstance.bgRgb(...bg).rgb(...fg)(text);
-		// Strip colors if no-color mode is forced
-		return forceNoColor ? ansis.strip(colored) : colored;
+		const colored = ansisInstance.bgRgb(...qBg).rgb(...qFg)(text);
+		return forceNoColor ? ansisInstance.strip(colored) : colored;
 	};
 }
 

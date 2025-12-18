@@ -5,11 +5,8 @@
 /** RGB color tuple [red, green, blue] where each value is 0-255 */
 export type RGB = readonly [number, number, number];
 
-/** HEX: Hexadecimal color string */
-type HEX = `#${string}`;
-
-/** Color value: valid hex string, RGB tuple ([255, 0, 0]), or null for transparent/hidden */
-export type Color = HEX | RGB | null;
+/** Color value: hex string, named ANSI color, RGB tuple, or null for transparent/hidden */
+export type Color = string | RGB | null;
 
 /**
  * A function that applies ANSI color formatting to text.

@@ -52,7 +52,7 @@ export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDe
 	},
 	timestamp: {
 		bgColor: null, // Transparent
-		fgColor: "#888888", // Gray
+		fgColor: "gray", // Terminal Gray
 		padding: 0,
 	},
 	message: {
