@@ -97,7 +97,87 @@ export interface ColorLabel extends BaseLabel {
 	fgColor?: Color | undefined;
 }
 
-export type Label = string | undefined | null | FormatterLabel | ColorLabel;
+/** Segment type identifiers */
+export type SegmentType = "icon" | "label" | "timestamp" | "message";
+
+/** Separator preset names */
+/** Configuration for separator presets and their aliases */
+export const SEPARATOR_CONFIG = [
+	{
+		name: "pl-left",
+		aliases: ["pl", "powerline", "pll"],
+		symbol: "\ue0b0",
+	},
+	{
+		name: "pl-right",
+		aliases: ["plr"],
+		symbol: "\ue0b2",
+	},
+	{
+		name: "pl-left-rounded",
+		aliases: ["pllo"],
+		symbol: "\ue0b4",
+	},
+	{
+		name: "pl-right-rounded",
+		aliases: ["plro"],
+		symbol: "\ue0b6",
+	},
+	{
+		name: "arrow",
+		aliases: ["->"],
+		symbol: "→",
+	},
+	{
+		name: "arrow-double",
+		aliases: [">>"],
+		symbol: "»",
+	},
+	{
+		name: "dot",
+		aliases: ["."],
+		symbol: "•",
+	},
+] as const;
+
+/**
+ * Presets for separator glyphs.
+ * Programmatically derived from SEPARATOR_CONFIG names and aliases.
+ */
+export type SeparatorPreset =
+	| `%${(typeof SEPARATOR_CONFIG)[number]["name"]}`
+	| `%${(typeof SEPARATOR_CONFIG)[number]["aliases"][number]}`;
+
+/** Full segment definition */
+export interface SegmentDefinition {
+	type: SegmentType;
+	bgColor?: Color | undefined;
+	fgColor?: Color | undefined;
+	ansiFormatter?: AnsiFormatter | undefined;
+	fixedWidth?: number | undefined;
+	truncationMethod?: "start" | "end" | "middle" | undefined;
+	padding?: number | undefined;
+}
+
+/** Separator definition */
+export interface SeparatorDefinition {
+	type: "separator";
+	preset?: SeparatorPreset | undefined;
+	content?: string | undefined;
+	fgColor?: Color | undefined;
+	bgColor?: Color | undefined;
+}
+
+/** Layout item types */
+export type LayoutItem = SegmentDefinition | SeparatorDefinition | string;
+
+/** Layout: template string or array */
+export type Layout = string | LayoutItem[];
+
+/** Label array for multiple labels */
+export type LabelArray = (string | FormatterLabel | ColorLabel)[];
+
+export type Label = string | undefined | null | FormatterLabel | ColorLabel | LabelArray;
 
 export type Logger = (label: Label, ...data: unknown[]) => void;
 
