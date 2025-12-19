@@ -22,16 +22,13 @@ import type { Color, HagenInstance, Label } from "./types";
  * ```typescript
  * import { createHagen } from "hagen";
  *
- * // Create logger with timestamps
+ * // Create logger with custom layout including timestamps
  * const logger = createHagen({
- *   showTimestamp: true,
- *   showTimestamp: true,
- *   dateFormat: "iso"
+ *   layout: "[%t] %l %m"
  * });
  *
  * logger.log("API", "Request received");
  * logger.info("AUTH", "User logged in");
- * logger.success("DB", "Connection established");
  * logger.warn("CACHE", "High memory usage");
  * logger.error("API", "Request failed", error);
  * ```
@@ -44,9 +41,9 @@ import type { Color, HagenInstance, Label } from "./types";
  *
  * @example
  * ```typescript
- * // Create multiple independent loggers
- * const apiLogger = createHagen({ labelPrefix: "[API]" });
- * const dbLogger = createHagen({ labelPrefix: "[DB]" });
+ * // Create multiple independent loggers with custom layouts
+ * const apiLogger = createHagen({ layout: "[API] %l %m" });
+ * const dbLogger = createHagen({ layout: "[DB] %l %m" });
  *
  * apiLogger.log("FETCH", "Fetching data...");
  * dbLogger.log("QUERY", "Running query...");
