@@ -3,14 +3,13 @@ import type { InternalConfig } from "./config";
 import { fixedWidthFormat, formatTimestamp } from "./format";
 import type {
 	AnsiFormatter,
-	BaseLabel,
 	Color,
 	Label,
 	LayoutItem,
 	SegmentDefinition,
 	SegmentType,
 } from "./types";
-import { SEPARATOR_CONFIG, TOKEN_CONFIG } from "./types";
+import { TOKEN_CONFIG } from "./types";
 
 /**
  * Context for rendering a single segment.
@@ -43,10 +42,6 @@ export interface PreparedSegment {
  * Default styles for each segment type.
  */
 export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDefinition>>> = {
-	icon: {
-		bgColor: null, // Transparent
-		padding: 0,
-	},
 	label: {
 		// No default bgColor means it falls back to auto-coloring
 		padding: 1,
@@ -60,59 +55,6 @@ export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDe
 		padding: 0,
 	},
 };
-
-/**
- * Get the glyph for a separator preset.
- * If the input doesn't start with %, it's returned as-is (literal).
- * If the input starts with % but isn't a known preset, it's also returned as-is.
- */
-export function getSeparatorGlyph(preset: string): string {
-	if (!preset.startsWith("%")) {
-		return preset;
-	}
-
-	const searchName = preset.slice(1);
-	const entry = SEPARATOR_CONFIG.find(
-		(c) => c.name === searchName || (c.aliases as readonly string[]).includes(searchName)
-	);
-
-	if (!entry) {
-		return preset;
-	}
-
-	return entry.symbol;
-}
-
-/**
- * Checks if a preset is a Powerline separator and returns its direction.
- */
-export function getPowerlineDirection(preset: string): "left" | "right" | undefined {
-	if (!preset.startsWith("%")) return undefined;
-	const name = preset.slice(1);
-	const entry = SEPARATOR_CONFIG.find(
-		(c) => c.name === name || (c.aliases as readonly string[]).includes(name)
-	);
-
-	if (!entry) return undefined;
-
-	if (entry.name.startsWith("pl-left")) {
-		return "left";
-	}
-	if (entry.name.startsWith("pl-right")) {
-		return "right";
-	}
-
-	// Double check aliases
-	const allNames: string[] = [entry.name, ...entry.aliases];
-	if (allNames.some((n) => n.includes("left") || n === "pl" || n === "pll" || n === "powerline")) {
-		return "left";
-	}
-	if (allNames.some((n) => n.includes("right") || n === "plr")) {
-		return "right";
-	}
-
-	return undefined;
-}
 
 /**
  * Parses a template string layout into a LayoutItem array.
@@ -244,23 +186,12 @@ function resolveLabelContent(
  * This determines the final text and "intended" colors before any neighbor stitching.
  */
 export function prepareSegment(item: LayoutItem, context: SegmentContext): PreparedSegment {
-	// Handle string literals (separators)
+	// Handle string literals (e.g., " | ", powerline symbols, etc.)
 	if (typeof item === "string") {
 		return {
-			text: getSeparatorGlyph(item),
+			text: item,
 			bgColor: undefined,
 			fgColor: undefined,
-			padding: 0,
-			item,
-		};
-	}
-
-	// Handle explicit separators
-	if ("type" in item && item.type === "separator") {
-		return {
-			text: item.content ?? (item.preset ? getSeparatorGlyph(item.preset) : ""),
-			bgColor: item.bgColor,
-			fgColor: item.fgColor,
 			padding: 0,
 			item,
 		};
@@ -294,13 +225,6 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 		case "timestamp":
 			text = formatTimestamp(context.config);
 			break;
-		case "icon": {
-			const firstLabel = Array.isArray(context.label) ? context.label[0] : context.label;
-			if (typeof firstLabel === "object" && firstLabel !== null && "prefix" in firstLabel) {
-				text = (firstLabel as BaseLabel).prefix || "";
-			}
-			break;
-		}
 		case "message":
 			// Message is handled elsewhere/later, but we still need a placeholder
 			text = "";

@@ -95,7 +95,7 @@ export interface ColorLabel extends BaseLabel {
 }
 
 /** Segment type identifiers */
-export type SegmentType = "icon" | "label" | "timestamp" | "message";
+export type SegmentType = "label" | "timestamp" | "message";
 
 /** Configuration for segment tokens and their aliases */
 export const TOKEN_CONFIG = [
@@ -176,17 +176,8 @@ export interface SegmentDefinition {
 	padding?: number | undefined;
 }
 
-/** Separator definition */
-export interface SeparatorDefinition {
-	type: "separator";
-	preset?: SeparatorPreset | undefined;
-	content?: string | undefined;
-	fgColor?: Color | undefined;
-	bgColor?: Color | undefined;
-}
-
 /** Layout item types */
-export type LayoutItem = SegmentDefinition | SeparatorDefinition | string;
+export type LayoutItem = SegmentDefinition | string;
 
 /** Layout: template string or array */
 export type Layout = string | LayoutItem[];

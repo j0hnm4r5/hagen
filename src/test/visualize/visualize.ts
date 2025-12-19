@@ -195,14 +195,9 @@ export function visualizeStylingTransparency() {
 	console.log("--- STYLING & TRANSPARENCY ---\n");
 
 	const logger = createHagen({
-		layout: [
-			{ type: "icon" },
-			{ type: "label", bgColor: null, fgColor: "#FF00FF" },
-			" : ",
-			{ type: "message" },
-		],
+		layout: [{ type: "label", bgColor: null, fgColor: "#FF00FF" }, " : ", { type: "message" }],
 	});
-	logger.info("Transp", "Icon with transparent label background");
+	logger.info("Transp", "Transparent label background");
 
 	console.log();
 }
