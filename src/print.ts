@@ -88,27 +88,33 @@ export function print({ logger, label, data, config }: PrintParams): void {
 
 	// Check if we actually replaced the message token
 	// We need to know if the layout CONTAINED %m
+	const messageAliases = TOKEN_CONFIG.find((t) => t.type === "message")?.aliases || [];
 	const hasMessageToken = layoutItems.some(
 		(item) =>
-			item === "%m" || item === "%message" || (typeof item === "object" && item.type === "message")
+			(typeof item === "string" && (messageAliases as readonly string[]).includes(item)) ||
+			(typeof item === "object" && item.type === "message")
 	);
 
 	let finalLabel: string;
 
 	if (hasMessageToken) {
 		// Re-render, but this time we substitute the format string for the message segment
-		// Wait, I can just map and join.
+		let dataIndex = 0;
 		finalLabel = preparedSegments
 			.map((ps) => {
 				const isMessage =
-					ps.item === "%m" ||
-					ps.item === "%message" ||
+					(typeof ps.item === "string" &&
+						(messageAliases as readonly string[]).includes(ps.item)) ||
 					(typeof ps.item === "object" && "type" in ps.item && ps.item.type === "message");
 
 				if (isMessage) {
-					if (data.length === 0) return "";
+					if (dataIndex >= data.length) return ""; // No more data to show
+
+					const arg = data[dataIndex];
+					dataIndex++;
+
 					// Use %s for strings to avoid quotes, %o for everything else
-					return data.map((arg) => (typeof arg === "string" ? "%s" : "%o")).join(" ");
+					return typeof arg === "string" ? "%s" : "%o";
 				}
 				return renderPreparedSegment(ps, config);
 			})
