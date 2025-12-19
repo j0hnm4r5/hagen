@@ -3,6 +3,7 @@ import type { InternalConfig } from "./config";
 import { fixedWidthFormat, formatTimestamp } from "./format";
 import type {
 	AnsiFormatter,
+	BaseLabel,
 	Color,
 	Label,
 	LayoutItem,
@@ -194,7 +195,6 @@ function resolveSegmentStyle(
 /**
  * Resolve the actual text content for a label segment based on input.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-plus-operands */
 function resolveLabelContent(
 	label: Label,
 	index: number,
@@ -222,25 +222,23 @@ function resolveLabelContent(
 		return { text: item };
 	}
 
-	// It's a FormatterLabel or ColorLabel
+	// It's a FormatterLabel or ColorLabel (both extend BaseLabel)
+	const prefix = item.prefix ?? "";
+	const content = (item.label as string | undefined) ?? fallback;
+	const suffix = item.suffix ?? "";
+	const text = prefix + content + suffix;
+
 	if ("kind" in item && item.kind === "formatter") {
-		const text =
-			(item.prefix ?? "") + ((item.label as string | undefined) ?? fallback) + (item.suffix ?? "");
 		return { text, customFormatter: item.ansiFormatter };
 	}
 
-	const cl = item as any;
-
-	const text =
-		(cl.prefix ?? "") + ((cl.label as string | undefined) ?? fallback) + (cl.suffix ?? "");
-
+	// It's a ColorLabel
 	return {
 		text,
-		color: cl.fgColor,
-		bgColor: cl.bgColor,
+		color: item.fgColor,
+		bgColor: item.bgColor,
 	};
 }
-/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-plus-operands */
 
 /**
  * Step 1: Prepare a segment by resolving its content and styles.
@@ -296,15 +294,11 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 		}
 		case "timestamp":
 			text = formatTimestamp(context.config);
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-			if ((context.config as any).showTimestamp) {
-				text = `[${text}]`;
-			}
 			break;
 		case "icon": {
 			const firstLabel = Array.isArray(context.label) ? context.label[0] : context.label;
-			if (typeof firstLabel === "object" && firstLabel && "prefix" in firstLabel) {
-				text = firstLabel.prefix || "";
+			if (typeof firstLabel === "object" && firstLabel !== null && "prefix" in firstLabel) {
+				text = (firstLabel as BaseLabel).prefix || "";
 			}
 			break;
 		}
