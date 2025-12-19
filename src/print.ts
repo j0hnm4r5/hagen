@@ -86,9 +86,39 @@ export function print({ logger, label, data, config }: PrintParams): void {
 		}
 	}
 
-	// Pass 3: Rendering
-	const finalLabel = preparedSegments.map((ps) => renderPreparedSegment(ps, config)).join("");
+	// Check if we actually replaced the message token
+	// We need to know if the layout CONTAINED %m
+	const hasMessageToken = layoutItems.some(
+		(item) =>
+			item === "%m" || item === "%message" || (typeof item === "object" && item.type === "message")
+	);
 
-	// Log with data
-	logger(finalLabel, ...data);
+	let finalLabel: string;
+
+	if (hasMessageToken) {
+		// Re-render, but this time we substitute the format string for the message segment
+		// Wait, I can just map and join.
+		finalLabel = preparedSegments
+			.map((ps) => {
+				const isMessage =
+					ps.item === "%m" ||
+					ps.item === "%message" ||
+					(typeof ps.item === "object" && "type" in ps.item && ps.item.type === "message");
+
+				if (isMessage) {
+					if (data.length === 0) return "";
+					// Use %s for strings to avoid quotes, %o for everything else
+					return data.map((arg) => (typeof arg === "string" ? "%s" : "%o")).join(" ");
+				}
+				return renderPreparedSegment(ps, config);
+			})
+			.join("");
+
+		// Substituted logic: logger(format, ...args)
+		logger(finalLabel, ...data);
+	} else {
+		// Legacy logic: logger(label, ...args)
+		finalLabel = preparedSegments.map((ps) => renderPreparedSegment(ps, config)).join("");
+		logger(finalLabel, ...data);
+	}
 }

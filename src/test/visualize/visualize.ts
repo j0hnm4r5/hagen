@@ -91,9 +91,9 @@ export function visualizeLayoutTemplates() {
 	logger.error("Error", "Error with complex layout");
 
 	logger = createHagen({
-		layout: "%l%dot%m",
+		layout: "%l %dot %l %dot %m",
 	});
-	logger.log("Dot", "Template string with %dot separator");
+	logger.log(["Dot", "Dot Dot"], "Template string with %dot separator");
 
 	logger = createHagen({
 		layout: [
@@ -111,9 +111,9 @@ export function visualizeLayoutTemplates() {
 	logger = createHagen({
 		layout: [
 			{ type: "separator", preset: "%pl-right-rounded" },
-			{ type: "label", bgColor: "#00ffff", fgColor: "#000000" },
+			{ type: "label", bgColor: "#00ffff" },
 			{ type: "separator", preset: "%pl-left" },
-			{ type: "label", bgColor: "#ff00ff", fgColor: "#FFFFFF" },
+			{ type: "label", bgColor: "#550055" },
 			{ type: "separator", preset: "%pl-left-rounded" },
 			{ type: "message" },
 		],
@@ -122,15 +122,26 @@ export function visualizeLayoutTemplates() {
 
 	logger = createHagen({
 		layout: [
-			{ type: "separator", content: "\ue0be" },
-			{ type: "label", bgColor: "#00ffff", fgColor: "#000000" },
-			{ type: "separator", content: "\ue0b1" },
-			{ type: "label", bgColor: "#ff00ff", fgColor: "#FFFFFF" },
-			{ type: "separator", content: "\ue0b8" },
+			{ type: "separator", content: "\ue0be", fgColor: "#ff00ff" },
+			{ type: "label", bgColor: "#ff00ff" },
+			{ type: "separator", content: "\ue0b1", bgColor: "#ff00ff" },
+			{ type: "label", bgColor: "#ff00ff" },
+			{ type: "separator", content: "\ue0b8", fgColor: "#ff00ff" },
 			{ type: "message" },
 		],
 	});
-	logger.log(["Nerd", "Font"], "Forced Nerd Font glyphs (may look broken if font missing)");
+	logger.log(["Nerd", "Font"], "Manual Nerd Font glyphs (may look broken if font missing)");
+
+	logger = createHagen({
+		layout: "%l %dot %l %dot %l %dot %m",
+	});
+	logger.log(
+		["ABC", "DEF", "GHI"],
+		"Hello!",
+		12345,
+		{ JKL: "MNO", PQR: "STU" },
+		new Error("Test error")
+	);
 
 	console.log();
 }
