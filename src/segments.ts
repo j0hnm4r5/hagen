@@ -223,7 +223,7 @@ function resolveLabelContent(
 	}
 
 	// It's a FormatterLabel or ColorLabel (both extend BaseLabel)
-	const prefix = item.prefix ?? "";
+	const prefix = item.prefix ? `${item.prefix} ` : "";
 	const content = (item.label as string | undefined) ?? fallback;
 	const suffix = item.suffix ?? "";
 	const text = prefix + content + suffix;
