@@ -247,16 +247,22 @@ export function createAnsiFormatter({
  * @internal
  */
 export function getColorFromLabel(label: string): RGB {
-	// Generate a hash from the label
-	let hash = 0;
+	// FNV-1a Hash
+	let hash = 2166136261;
 	for (let i = 0; i < label.length; i++) {
-		hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
+		hash ^= label.charCodeAt(i);
+		hash = Math.imul(hash, 16777619);
 	}
 
-	// Generate RGB from hash (use different bits for each channel)
-	const r = hash & 0xff;
-	const g = (hash >> 8) & 0xff;
-	const b = (hash >> 16) & 0xff;
+	// Final mixing
+	hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+	hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+	hash ^= hash >>> 16;
+
+	// Generate RGB from hash
+	const r = (hash & 0xff0000) >>> 16;
+	const g = (hash & 0x00ff00) >>> 8;
+	const b = hash & 0x0000ff;
 
 	return [r, g, b];
 }

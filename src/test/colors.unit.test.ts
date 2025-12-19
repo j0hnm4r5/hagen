@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getContrastingTextColor, getLuminance, parseColor, quantizeColor } from "../colors.js";
+import {
+	getColorFromLabel,
+	getContrastingTextColor,
+	getLuminance,
+	parseColor,
+	quantizeColor,
+} from "../colors.js";
 
 describe("Colors Logic", () => {
 	describe("parseColor", () => {
@@ -81,6 +87,42 @@ describe("Colors Logic", () => {
 
 			// Red (0.2126) > 0.179 -> Black (Technically high enough luminance for black text by this formula)
 			expect(getContrastingTextColor([255, 0, 0])).toEqual([0, 0, 0]);
+		});
+	});
+	describe("getColorFromLabel", () => {
+		it("should return the same color for the same label (deterministic)", () => {
+			const color1 = getColorFromLabel("Test Label");
+			const color2 = getColorFromLabel("Test Label");
+			expect(color1).toEqual(color2);
+		});
+
+		it("should produce distinct colors for similar labels (hashing quality)", () => {
+			// These labels previously produced nearly identical colors (differing only by 1 in Red channel)
+			// with simple additive hashing. FNV-1a should spread them out widely.
+			const color0 = getColorFromLabel("Level 0");
+			const color1 = getColorFromLabel("Level 1");
+			const color2 = getColorFromLabel("Level 2");
+
+			// Check that they are not equal
+			expect(color0).not.toEqual(color1);
+			expect(color1).not.toEqual(color2);
+			expect(color0).not.toEqual(color2);
+
+			// Check that they are significantly different in at least one channel
+			// Calculating Euclidean distance would be precise, but simple channel diff is enough for this test
+			const diff01 =
+				Math.abs(color0[0] - color1[0]) +
+				Math.abs(color0[1] - color1[1]) +
+				Math.abs(color0[2] - color1[2]);
+
+			const diff12 =
+				Math.abs(color1[0] - color2[0]) +
+				Math.abs(color1[1] - color2[1]) +
+				Math.abs(color1[2] - color2[2]);
+
+			// With additive hash, diff was 1. With FNV-1a, it should be much larger (usually > 50 or 100)
+			expect(diff01).toBeGreaterThan(20);
+			expect(diff12).toBeGreaterThan(20);
 		});
 	});
 });
