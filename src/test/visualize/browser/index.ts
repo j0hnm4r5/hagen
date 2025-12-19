@@ -1,3 +1,7 @@
-import { test } from "../visualize";
+import { run } from "../visualize";
 
-test();
+// In browser, we can use URL params as a filter
+const urlParams = new URLSearchParams(window.location.search);
+const filter = urlParams.get("filter") || "all";
+
+run(filter);

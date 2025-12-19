@@ -1,26 +1,63 @@
-import hagen, { createHagen, type HagenInstance } from "../../index";
+import hagen, { createHagen, POWERLINE_SYMBOLS, type HagenInstance } from "../../index";
 
 /**
- * Main entrance point for basic logging features
+ * Registry of all available visualizations.
+ * Keys are short names that can be used as CLI arguments.
  */
-export function test() {
-	visualizeDefaultLoggers();
-	visualizePaletteLabels();
-	visualizeCustomColors();
-	visualizeComplexContent();
-	visualizeMultipleLabels();
-	visualizeStylingTransparency();
-	visualizeFixedWidth();
-	visualizeQuantization();
-	visualizeDefaultConfig();
-	visualizeFixedWidthConfig();
-	visualizeSpecialLabels();
-	visualizeMultiLineContent();
-	visualizeDataTypes();
-	visualizeCustomColorsEdge();
-	visualizeGroups();
-	visualizeLogMethodErrorHandling();
-	visualizeLayoutTemplates();
+export const VISUALIZATIONS = {
+	default: visualizeDefaultLoggers,
+	palette: visualizePaletteLabels,
+	colors: visualizeCustomColors,
+	complex: visualizeComplexContent,
+	multiple: visualizeMultipleLabels,
+	transparency: visualizeStylingTransparency,
+	width: visualizeFixedWidth,
+	quantization: visualizeQuantization,
+	config: visualizeDefaultConfig,
+	"fixed-width": visualizeFixedWidthConfig,
+	special: visualizeSpecialLabels,
+	multiline: visualizeMultiLineContent,
+	datatypes: visualizeDataTypes,
+	"custom-colors": visualizeCustomColorsEdge,
+	groups: visualizeGroups,
+	errors: visualizeLogMethodErrorHandling,
+	layout: visualizeLayoutTemplates,
+	powerline: visualizePowerlineSymbols,
+} as const;
+
+/** Available visualization names */
+export type VisualizationName = keyof typeof VISUALIZATIONS;
+
+/**
+ * Run visualizations based on filter.
+ * @param filter - Comma-separated list of visualization names, or "all" for all visualizations.
+ *                 If undefined/empty, runs all visualizations.
+ */
+export function run(filter?: string): void {
+	const names = Object.keys(VISUALIZATIONS) as VisualizationName[];
+
+	if (!filter || filter === "all") {
+		// Run all visualizations
+		for (const name of names) {
+			VISUALIZATIONS[name]();
+		}
+		return;
+	}
+
+	// Parse comma-separated filter
+	const requested = filter.split(",").map((s) => s.trim().toLowerCase());
+	const unknown = requested.filter((r) => !names.includes(r as VisualizationName));
+
+	if (unknown.length > 0) {
+		console.error(`Unknown visualization(s): ${unknown.join(", ")}`);
+		console.error(`Available: ${names.join(", ")}`);
+		process.exitCode = 1;
+		return;
+	}
+
+	for (const name of requested) {
+		VISUALIZATIONS[name as VisualizationName]();
+	}
 }
 
 export function visualizeDefaultLoggers() {
@@ -116,7 +153,7 @@ export function visualizeLayoutTemplates() {
 	logger = createHagen({
 		layout: [
 			{ type: "label", bgColor: "#333", fgColor: "#fff" },
-			{ type: "separator", preset: "%pll", fgColor: "#333" },
+			"\ue0b0", // Powerline left arrow
 			" ",
 			{ type: "message" },
 		],
@@ -124,15 +161,15 @@ export function visualizeLayoutTemplates() {
 			message: { padding: 0 },
 		},
 	});
-	logger.log("Power", "Powerline style separator (Unicode fallback)");
+	logger.log("Power", "Powerline style (manual Unicode)");
 
 	logger = createHagen({
 		layout: [
-			{ type: "separator", preset: "%pl-right-rounded" },
+			"\ue0b6", // Right rounded
 			{ type: "label", bgColor: "#00ffff" },
-			{ type: "separator", preset: "%pl-left" },
+			"\ue0b0", // Left hard divider
 			{ type: "label", bgColor: "#550055" },
-			{ type: "separator", preset: "%pl-left-rounded" },
+			"\ue0b4", // Left rounded
 			{ type: "message" },
 		],
 	});
@@ -140,11 +177,11 @@ export function visualizeLayoutTemplates() {
 
 	logger = createHagen({
 		layout: [
-			{ type: "separator", content: "\ue0be", fgColor: "#ff00ff" },
+			"\ue0be", // Upper right triangle
 			{ type: "label", bgColor: "#ff00ff" },
-			{ type: "separator", content: "\ue0b1", bgColor: "#ff00ff" },
+			"\ue0b1", // Soft divider
 			{ type: "label", bgColor: "#ff00ff" },
-			{ type: "separator", content: "\ue0b8", fgColor: "#ff00ff" },
+			"\ue0b8", // Lower left triangle
 			{ type: "message" },
 		],
 	});
@@ -409,4 +446,64 @@ export function visualizeLogMethodErrorHandling() {
 	testLogMethodVariants("debug", logger.debug);
 
 	console.log();
+}
+
+export function visualizePowerlineSymbols() {
+	console.log("--- POWERLINE SYMBOLS ---\n");
+	console.log("All available Nerd Font powerline symbols (requires Nerd Font):\n");
+
+	const logger = createHagen({
+		layout: "%l %m",
+		labelOptions: { fixedWidth: 30 },
+	});
+
+	// Group symbols by category for display
+	const categories = {
+		"Basic Dividers": [
+			"leftHardDivider",
+			"rightHardDivider",
+			"leftSoftDivider",
+			"rightSoftDivider",
+		],
+		"Rounded Dividers": [
+			"leftHardDividerRounded",
+			"rightHardDividerRounded",
+			"leftSoftDividerRounded",
+			"rightSoftDividerRounded",
+		],
+		Triangles: [
+			"upperLeftTriangle",
+			"upperRightTriangle",
+			"lowerLeftTriangle",
+			"lowerRightTriangle",
+		],
+		Flames: ["flameThick", "flameThin", "flameThickMirrored", "flameThinMirrored"],
+		"Ice Waveform": ["iceWaveform", "iceWaveformMirrored"],
+		Honeycomb: ["honeycomb", "honeycombOutline"],
+		Trapezoid: ["trapezoidTopBottom", "trapezoidTopBottomMirrored"],
+		"Lego Blocks": ["legoBlockFacing", "legoBlockSideways", "legoSeparatorThin", "legoSeparator"],
+		Slashes: [
+			"backslashSeparator",
+			"forwardslashSeparator",
+			"backslashSeparatorRedundant",
+			"forwardslashSeparatorRedundant",
+		],
+		"Pixelated Squares": [
+			"pixelatedSquaresBig",
+			"pixelatedSquaresSmall",
+			"pixelatedSquaresBigMirrored",
+			"pixelatedSquaresSmallMirrored",
+		],
+		"Inverse Dividers": ["leftHardDividerInverse", "rightHardDividerInverse"],
+		Other: ["columnNumber"],
+	} as const;
+
+	for (const [categoryName, symbolKeys] of Object.entries(categories)) {
+		console.log(`  ${categoryName}:`);
+		for (const key of symbolKeys) {
+			const symbol = POWERLINE_SYMBOLS[key as keyof typeof POWERLINE_SYMBOLS];
+			logger.log(key, symbol);
+		}
+		console.log();
+	}
 }
