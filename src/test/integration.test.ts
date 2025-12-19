@@ -27,10 +27,7 @@ describe("Integration Tests", () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
 			enableColor: true,
-			showTimestamp: true,
-
-			labelPrefix: ">>",
-			labelSuffix: "<<",
+			layout: "[%t] >>%l<<",
 		});
 
 		logger.log("TEST", "message");
@@ -65,10 +62,7 @@ describe("Integration Tests", () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
 			enableColor: false,
-			showTimestamp: true,
-
-			labelPrefix: ">>",
-			labelSuffix: "<<",
+			layout: ">>[%t] %l<<",
 		});
 
 		logger.log("TEST", "message");
@@ -88,8 +82,8 @@ describe("Integration Tests", () => {
 	it("should maintain consistency across multiple loggers", async () => {
 		const { createHagen } = await import("../index.js");
 
-		const logger1 = createHagen({ enableColor: true, labelPrefix: "A:" });
-		const logger2 = createHagen({ enableColor: false, labelPrefix: "B:" });
+		const logger1 = createHagen({ enableColor: true, layout: "A:%l" });
+		const logger2 = createHagen({ enableColor: false, layout: "B:%l" });
 
 		logger1.log("TEST1", "msg1");
 		logger2.log("TEST2", "msg2");
@@ -114,10 +108,7 @@ describe("Integration Tests", () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
 			enableColor: true,
-			showTimestamp: true,
-
-			labelPrefix: ">>",
-			labelSuffix: "<<",
+			layout: "[%t] >>%l<<",
 		});
 
 		logger.log(
@@ -151,7 +142,7 @@ describe("Integration Tests", () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
 			enableColor: true,
-			showTimestamp: true,
+			layout: "[%t] %l",
 
 			fixedWidth: {
 				width: 10,
@@ -181,7 +172,7 @@ describe("Integration Tests", () => {
 
 		const logger = createHagen({
 			enableColor: true,
-			showTimestamp: true,
+			layout: "[%t] %l",
 		});
 
 		logger.log("LOG", "msg");
@@ -215,9 +206,7 @@ describe("Integration Tests", () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
 			enableColor: true,
-			showTimestamp: true,
-			labelPrefix: ">>",
-			labelSuffix: "<<",
+			layout: "[%t] >>%l<<",
 		});
 
 		const complexData = {

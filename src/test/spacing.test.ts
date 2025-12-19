@@ -130,7 +130,7 @@ describe("Spacing and Margins", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: true,
-				labelPrefix: ">>",
+				layout: " >>%l",
 			});
 
 			logger.log("TEST", "msg");
@@ -149,7 +149,7 @@ describe("Spacing and Margins", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: true,
-				labelSuffix: "<<",
+				layout: " %l<< ",
 			});
 
 			logger.log("TEST", "msg");
@@ -167,8 +167,7 @@ describe("Spacing and Margins", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: true,
-				labelPrefix: ">>",
-				labelSuffix: "<<",
+				layout: " >>%l<< ",
 			});
 
 			logger.log("TEST", "msg");

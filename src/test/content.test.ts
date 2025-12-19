@@ -201,12 +201,12 @@ describe("Content Validation", () => {
 		});
 	});
 
-	describe("Prefix and Suffix", () => {
-		it("should apply global labelPrefix", async () => {
+	describe("Layout Decorations (replacing legacy globals)", () => {
+		it("should apply prefix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				labelPrefix: ">>",
+				layout: ">>%l",
 			});
 
 			logger.log("TEST", "msg");
@@ -216,11 +216,11 @@ describe("Content Validation", () => {
 			expect(label).toContain("TEST");
 		});
 
-		it("should apply global labelSuffix", async () => {
+		it("should apply suffix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				labelSuffix: "<<",
+				layout: "%l<<",
 			});
 
 			logger.log("TEST", "msg");
@@ -230,12 +230,11 @@ describe("Content Validation", () => {
 			expect(label).toContain("TEST");
 		});
 
-		it("should apply both global prefix and suffix", async () => {
+		it("should apply both prefix and suffix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				labelPrefix: ">>",
-				labelSuffix: "<<",
+				layout: ">>%l<<",
 			});
 
 			logger.log("TEST", "msg");
@@ -246,11 +245,10 @@ describe("Content Validation", () => {
 			expect(label).toContain("<<");
 		});
 
-		it("should override global prefix with label-specific prefix", async () => {
+		it("should still honor label-specific prefix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				labelPrefix: ">>",
 			});
 
 			const label: Label = {
@@ -262,14 +260,12 @@ describe("Content Validation", () => {
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 			expect(output).toContain("**");
-			expect(output).not.toContain(">>");
 		});
 
-		it("should override global suffix with label-specific suffix", async () => {
+		it("should still honor label-specific suffix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				labelSuffix: "<<",
 			});
 
 			const label: Label = {
@@ -281,16 +277,15 @@ describe("Content Validation", () => {
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 			expect(output).toContain("**");
-			expect(output).not.toContain("<<");
 		});
 	});
 
 	describe("Timestamps", () => {
-		it("should use ISO format", async () => {
+		it("should use ISO format via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				showTimestamp: true,
+				layout: "%t %l",
 			});
 
 			logger.log("TEST", "msg");
@@ -301,12 +296,12 @@ describe("Content Validation", () => {
 			expect(label).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
 		});
 
-		it("should use custom date format function", async () => {
+		it("should use custom date format function via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const customFormat = (date: Date) => `CUSTOM-${date.getFullYear()}`;
 			const logger = createHagen({
 				enableColor: false,
-				showTimestamp: true,
+				layout: "%t %l",
 				timestampFormatter: customFormat,
 			});
 
@@ -318,11 +313,11 @@ describe("Content Validation", () => {
 			expect(label).toMatch(/CUSTOM-\d{4}/);
 		});
 
-		it("should not include timestamp when disabled", async () => {
+		it("should not include timestamp when not in layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				enableColor: false,
-				showTimestamp: false,
+				layout: "%l",
 			});
 
 			logger.log("TEST", "msg");

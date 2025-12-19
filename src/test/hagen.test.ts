@@ -20,18 +20,15 @@ describe("Hagen Logger", () => {
 
 		it("should create a logger instance with custom config", () => {
 			const logger = createHagen({
-				showTimestamp: true,
+				layout: "[%t] %l %m",
 			});
 			expect(logger).toBeDefined();
 		});
 
 		it("should accept all config options", () => {
 			const config: Partial<LoggerConfig> = {
-				showTimestamp: true,
+				layout: "<%l> %m",
 				enableColor: true,
-
-				labelPrefix: "<",
-				labelSuffix: ">",
 			};
 			const logger = createHagen(config);
 			expect(logger).toBeDefined();
@@ -93,9 +90,7 @@ describe("Hagen Logger", () => {
 
 			it("should log with Label object", () => {
 				const logger = createHagen({
-					labelPrefix: ">>", // Adding prefix from previous config not visible but assumed based on context? No, wait.
-					// Ah, earlier I saw strict type error for { label, bgColor }.
-					// Let's just fix the object.
+					layout: ">>%l %m",
 				});
 				const label: Label = { kind: "color", label: "TEST", bgColor: [100, 50, 150] };
 				logger.log(label, "message");
@@ -116,7 +111,7 @@ describe("Hagen Logger", () => {
 			});
 
 			it("should log with timestamp when enabled", () => {
-				const logger = createHagen({ showTimestamp: true });
+				const logger = createHagen({ layout: "[%t] %l %m" });
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 			});
@@ -194,15 +189,17 @@ describe("Hagen Logger", () => {
 			consoleLogSpy.mockRestore();
 		});
 
-		describe("showTimestamp", () => {
+		describe("layout timestamps", () => {
 			it("should not show timestamp by default", () => {
 				const logger = createHagen();
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
+				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+				expect(output).not.toContain(":");
 			});
 
-			it("should show timestamp when enabled", () => {
-				const logger = createHagen({ showTimestamp: true });
+			it("should show timestamp when in layout", () => {
+				const logger = createHagen({ layout: "[%t] %l" });
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -236,7 +233,7 @@ describe("Hagen Logger", () => {
 		describe("dateFormat", () => {
 			it("should use iso format", () => {
 				const logger = createHagen({
-					showTimestamp: true,
+					layout: "%t %l",
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -245,7 +242,7 @@ describe("Hagen Logger", () => {
 			it("should use custom date format function", () => {
 				const customFormat = (date: Date) => `CUSTOM:${date.getFullYear()}`;
 				const logger = createHagen({
-					showTimestamp: true,
+					layout: "%t %l",
 					timestampFormatter: customFormat,
 				});
 				logger.log("TEST", "message");
@@ -255,8 +252,8 @@ describe("Hagen Logger", () => {
 			});
 		});
 
-		describe("labelPrefix and labelSuffix", () => {
-			it("should use default brackets", () => {
+		describe("label customization in layout", () => {
+			it("should use default brackets in colorless mode", () => {
 				const logger = createHagen({ enableColor: false });
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -265,11 +262,10 @@ describe("Hagen Logger", () => {
 				expect(output).toContain("]");
 			});
 
-			it("should use custom prefix and suffix", () => {
+			it("should use custom literals in layout", () => {
 				const logger = createHagen({
 					enableColor: false,
-					labelPrefix: "<<",
-					labelSuffix: ">>",
+					layout: "<<%l>>",
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -278,11 +274,9 @@ describe("Hagen Logger", () => {
 				expect(output).toContain(">>");
 			});
 
-			it("should override global prefix/suffix with label-specific ones", () => {
+			it("should still honor per-label prefix/suffix", () => {
 				const logger = createHagen({
 					enableColor: false,
-					labelPrefix: "[",
-					labelSuffix: "]",
 				});
 				const label: Label = {
 					kind: "color",
@@ -404,8 +398,8 @@ describe("Hagen Logger", () => {
 		});
 
 		it("should create independent instances", () => {
-			const logger1 = createHagen({ showTimestamp: true });
-			const logger2 = createHagen({ showTimestamp: false });
+			const logger1 = createHagen({ layout: "[%t] %l" });
+			const logger2 = createHagen({ layout: "%l" });
 
 			logger1.log("TEST", "with timestamp");
 			const output1 = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -419,8 +413,8 @@ describe("Hagen Logger", () => {
 		});
 
 		it("should not share state between instances", () => {
-			const logger1 = createHagen({ labelPrefix: "<<" });
-			const logger2 = createHagen({ labelPrefix: "[" });
+			const logger1 = createHagen({ layout: "<<%l" });
+			const logger2 = createHagen({ layout: "[%l" });
 
 			logger1.log("TEST", "first");
 			logger2.log("TEST", "second");
