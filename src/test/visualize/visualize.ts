@@ -15,7 +15,6 @@ export function test() {
 	visualizeQuantization();
 	visualizeDefaultConfig();
 	visualizeFixedWidthConfig();
-	visualizeLegacyConfig();
 	visualizeSpecialLabels();
 	visualizeMultiLineContent();
 	visualizeDataTypes();
@@ -267,16 +266,6 @@ export function visualizeFixedWidthConfig() {
 	logger.log("API", "Short label");
 	logger.log("VeryLongLabelName", "Long label truncated");
 	logger.log("ABCDEFGHIJKLMNOP", "Very long label");
-
-	console.log();
-}
-
-export function visualizeLegacyConfig() {
-	console.log("--- WITH PREFIX/SUFFIX (Legacy) ---\n");
-
-	const logger = createHagen({ labelPrefix: ">>", labelSuffix: "<<" } as any);
-	logger.log("API", "With prefix and suffix");
-	logger.info("Info", "Info with prefix and suffix");
 
 	console.log();
 }
