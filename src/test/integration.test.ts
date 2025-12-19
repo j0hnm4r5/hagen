@@ -26,7 +26,7 @@ describe("Integration Tests", () => {
 	it("should handle colors + timestamps + prefix/suffix together", async () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
-			enableColor: true,
+			colorOptions: { enabled: true },
 			layout: "[%t] >>%l<<",
 		});
 
@@ -61,7 +61,7 @@ describe("Integration Tests", () => {
 	it("should work with colorless mode + timestamps + prefix/suffix", async () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
-			enableColor: false,
+			colorOptions: { enabled: false },
 			layout: ">>[%t] %l<<",
 		});
 
@@ -82,8 +82,8 @@ describe("Integration Tests", () => {
 	it("should maintain consistency across multiple loggers", async () => {
 		const { createHagen } = await import("../index.js");
 
-		const logger1 = createHagen({ enableColor: true, layout: "A:%l" });
-		const logger2 = createHagen({ enableColor: false, layout: "B:%l" });
+		const logger1 = createHagen({ colorOptions: { enabled: true }, layout: "A:%l" });
+		const logger2 = createHagen({ colorOptions: { enabled: false }, layout: "B:%l" });
 
 		logger1.log("TEST1", "msg1");
 		logger2.log("TEST2", "msg2");
@@ -107,7 +107,7 @@ describe("Integration Tests", () => {
 	it("should handle custom colors with timestamps and prefix/suffix", async () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
-			enableColor: true,
+			colorOptions: { enabled: true },
 			layout: "[%t] >>%l<<",
 		});
 
@@ -141,11 +141,11 @@ describe("Integration Tests", () => {
 	it("should handle fixed width + colors + timestamps", async () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
-			enableColor: true,
+			colorOptions: { enabled: true },
 			layout: "[%t] %l",
 
-			fixedWidth: {
-				width: 10,
+			labelOptions: {
+				fixedWidth: 10,
 				truncationMethod: "end",
 			},
 		});
@@ -171,7 +171,7 @@ describe("Integration Tests", () => {
 		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		const logger = createHagen({
-			enableColor: true,
+			colorOptions: { enabled: true },
 			layout: "[%t] %l",
 		});
 
@@ -205,7 +205,7 @@ describe("Integration Tests", () => {
 	it("should handle complex nested data with all features", async () => {
 		const { createHagen } = await import("../index.js");
 		const logger = createHagen({
-			enableColor: true,
+			colorOptions: { enabled: true },
 			layout: "[%t] >>%l<<",
 		});
 

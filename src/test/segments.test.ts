@@ -123,7 +123,7 @@ describe("Segments Logic", () => {
 		const mockContext: SegmentContext = {
 			label: "TEST",
 			data: ["message"],
-			config: { ...defaultConfig, enableColor: true } as any,
+			config: { ...defaultConfig, colorOptions: { enabled: true } } as any,
 			segmentIndex: 0,
 			totalSegments: 1,
 			labelIndex: 0,
@@ -144,7 +144,7 @@ describe("Segments Logic", () => {
 			const prepared = prepareSegment(item, mockContext);
 
 			expect(prepared.text).toMatch(/\d{4}-\d{2}-\d{2}T/);
-			expect(prepared.fgColor).toBe("gray");
+			expect(prepared.fgColor).toBeUndefined(); // Inherits normal text color by default
 		});
 
 		it("should prepare message segment", () => {

@@ -84,7 +84,18 @@ export function visualizeLayoutTemplates() {
 	logger.log("Pipe", "Pipe layout with string literal separator");
 
 	logger = createHagen({
-		layout: "[%i] %l (%t): %m",
+		layout: [
+			{ type: "label" },
+			" ",
+			{ type: "timestamp", fgColor: "#ffff00" },
+			" ",
+			{ type: "message" },
+		],
+	});
+	logger.log("Time", "Timestamp layout");
+
+	logger = createHagen({
+		layout: "[%i] %l ( %t ) : %m",
 	});
 	logger.info("Complex", "Layout with icon, timestamp, and styling");
 	logger.error("Error", "Error with complex layout");
@@ -93,6 +104,14 @@ export function visualizeLayoutTemplates() {
 		layout: "%l %dot %l %dot %m",
 	});
 	logger.log(["Dot", "Dot Dot"], "Template string with %dot separator");
+
+	logger = createHagen({
+		layout: "%l %l %l %m",
+		segmentStyles: {
+			label: { padding: 4, bgColor: "#ff0000" },
+		},
+	});
+	logger.log(["ABC", "DEF", "GHI"], "Segment styles");
 
 	logger = createHagen({
 		layout: [
@@ -192,16 +211,16 @@ export function visualizeFixedWidth() {
 	console.log("--- FIXED WIDTH (Legacy) ---\n");
 
 	let logger = createHagen({
-		fixedWidth: {
-			width: 12,
+		labelOptions: {
+			fixedWidth: 12,
 			truncationMethod: "end",
 		},
 	});
 	logger.log("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Width: 12; Truncation: end");
 
 	logger = createHagen({
-		fixedWidth: {
-			width: 12,
+		labelOptions: {
+			fixedWidth: 12,
 			truncationMethod: "middle",
 		},
 	});
@@ -218,10 +237,10 @@ export function visualizeQuantization() {
 
 	const loggers = [
 		{ name: "Full", instance: createHagen() },
-		{ name: "216", instance: createHagen({ paletteSize: 216 }) },
-		{ name: "64", instance: createHagen({ paletteSize: 64 }) },
-		{ name: "27", instance: createHagen({ paletteSize: 27 }) },
-		{ name: "8", instance: createHagen({ paletteSize: 8 }) },
+		{ name: "216", instance: createHagen({ colorOptions: { paletteSize: 216 } }) },
+		{ name: "64", instance: createHagen({ colorOptions: { paletteSize: 64 } }) },
+		{ name: "27", instance: createHagen({ colorOptions: { paletteSize: 27 } }) },
+		{ name: "8", instance: createHagen({ colorOptions: { paletteSize: 8 } }) },
 	];
 
 	const comparePalettes = (header: string, action: (logger: HagenInstance) => void) => {
@@ -271,7 +290,7 @@ export function visualizeFixedWidthConfig() {
 	console.log("--- FIXED WIDTH (12 chars) ---\n");
 
 	const logger = createHagen({
-		fixedWidth: { width: 12, truncationMethod: "middle" },
+		labelOptions: { fixedWidth: 12, truncationMethod: "middle" },
 	});
 	logger.log("API", "Short label");
 	logger.log("VeryLongLabelName", "Long label truncated");
@@ -287,7 +306,7 @@ export function visualizeSpecialLabels() {
 	logger.log(null, "Null label (defaults to *)");
 	logger.log(undefined, "Undefined label (defaults to *)");
 
-	logger = createHagen({ defaultLabelText: "@" });
+	logger = createHagen({ labelOptions: { defaultText: "@" } });
 	logger.log(null, "Null label (custom fallback)");
 
 	logger = createHagen();

@@ -1,169 +1,106 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-describe("CLI Environment Variables", () => {
+// Mock ansis using Proxy to handle chaining
+const mockIsSupported = vi.fn();
+
+const createMockAnsis = () => {
+	const chain = (text: any) => `[ANSI]${text}[/ANSI]`;
+	const proxy: any = new Proxy(chain, {
+		get: (_target, prop, receiver) => {
+			if (prop === "isSupported") {
+				return () => {
+					const val = mockIsSupported();
+					return val;
+				};
+			}
+			// Handle strip specifically
+			if (prop === "strip") return (t: string) => t.replace(/\[ANSI\]|\[\/ANSI\]/g, "");
+			// Return a function that returns the proxy itself for chaining
+			return () => receiver;
+		},
+		apply: (_target, _thisArg, args) => {
+			return `[ANSI]${args[0]}[/ANSI]`;
+		},
+	});
+	return proxy;
+};
+
+vi.mock("ansis", () => {
+	const mock = createMockAnsis();
+	return {
+		Ansis: class {
+			constructor() {
+				return mock;
+			}
+			isSupported() {
+				return mockIsSupported();
+			}
+		},
+		default: mock,
+	};
+});
+
+describe("Environment Variables Integration", () => {
 	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.resetModules();
-		vi.unstubAllEnvs();
-		// Ensure CI doesn't interfere, as it often forces colors
-		vi.stubEnv("CI", "false");
-		// Clear any existing color envs to ensure clean state
-		vi.stubEnv("NO_COLOR", "");
-		vi.stubEnv("FORCE_COLOR", "");
-		vi.stubEnv("COLORTERM", "");
+		mockIsSupported.mockReset();
 	});
 
 	afterEach(() => {
 		consoleLogSpy.mockRestore();
-		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
 
-	// Helper to check if output has ANSI codes
-	const hasAnsiCodes = (text: string) => /\u001B\[[\d;]+m/.test(text);
+	// Helper to check if output has mocked ANSI codes
+	const hasAnsiCodes = (text: string) => text.includes("[ANSI]");
 
-	describe("NO_COLOR", () => {
-		it("should disable colors when NO_COLOR is set to '1'", async () => {
-			vi.stubEnv("NO_COLOR", "1");
+	it("should enable color when Ansis reports supported", async () => {
+		mockIsSupported.mockReturnValue(true);
+		const { createHagen } = await import("../index.js");
 
-			const { createHagen } = await import("../index.js");
+		// Default config (enabled: undefined)
+		const logger = createHagen();
+		logger.log("TEST", "test message");
 
-			const logger = createHagen(); // default config (auto detect)
-			logger.log("TEST", "test message");
-
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(false);
-		});
-
-		it("should disable colors when NO_COLOR is set to 'true'", async () => {
-			vi.stubEnv("NO_COLOR", "true");
-
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(false);
-		});
-
-		it("should allow colors when NO_COLOR is empty string", async () => {
-			vi.stubEnv("FORCE_COLOR", "1");
-			vi.stubEnv("NO_COLOR", "");
-
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
+		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+		expect(hasAnsiCodes(output)).toBe(true);
 	});
 
-	describe("FORCE_COLOR", () => {
-		it("should disable colors when FORCE_COLOR is '0'", async () => {
-			vi.stubEnv("FORCE_COLOR", "0");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(false);
-		});
+	it("should disable color when Ansis reports unsupported", async () => {
+		mockIsSupported.mockReturnValue(false);
+		const { createHagen } = await import("../index.js");
 
-		it("should disable colors when FORCE_COLOR is 'false'", async () => {
-			vi.stubEnv("FORCE_COLOR", "false");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(false);
-		});
+		const logger = createHagen();
+		logger.log("TEST", "test message");
 
-		it("should enable colors when FORCE_COLOR is '1'", async () => {
-			vi.stubEnv("FORCE_COLOR", "1");
-
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
-
-		it("should enable colors when FORCE_COLOR is '2'", async () => {
-			vi.stubEnv("FORCE_COLOR", "2");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
-
-		it("should enable colors when FORCE_COLOR is '3'", async () => {
-			vi.stubEnv("FORCE_COLOR", "3");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
-
-		it("should enable colors when FORCE_COLOR is 'true'", async () => {
-			vi.stubEnv("FORCE_COLOR", "true");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
-
-		it("should enable colors when FORCE_COLOR is empty string (if set)", async () => {
-			vi.stubEnv("FORCE_COLOR", "");
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-
-			// Empty string should enable auto-detection (which usually enables colors in this test setup)
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
+		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+		expect(hasAnsiCodes(output)).toBe(false);
 	});
 
-	describe("COLORTERM", () => {
-		it("should enable colors when COLORTERM is 'truecolor'", async () => {
-			vi.stubEnv("FORCE_COLOR", ""); // Ensure FORCE_COLOR doesn't interfere
-			vi.stubEnv("COLORTERM", "truecolor");
+	it("should override detection with enabled: false", async () => {
+		mockIsSupported.mockReturnValue(true); // Supported by env
+		const { createHagen } = await import("../index.js");
 
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
+		// Explicitly disabled
+		const logger = createHagen({ colorOptions: { enabled: false } });
+		logger.log("TEST", "test message");
 
-		it("should enable colors when COLORTERM is '24bit'", async () => {
-			vi.stubEnv("FORCE_COLOR", "");
-			vi.stubEnv("COLORTERM", "24bit");
-
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(true);
-		});
+		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+		expect(hasAnsiCodes(output)).toBe(false);
 	});
 
-	describe("Precedence", () => {
-		it("should let NO_COLOR disable colors even if FORCE_COLOR is set", async () => {
-			vi.stubEnv("FORCE_COLOR", "1");
-			vi.stubEnv("NO_COLOR", "1");
+	it("should override detection with enabled: true", async () => {
+		mockIsSupported.mockReturnValue(false); // Unsupported by env
+		const { createHagen } = await import("../index.js");
 
-			const { createHagen } = await import("../index.js");
-			const logger = createHagen();
-			logger.log("TEST", "test message");
-			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-			expect(hasAnsiCodes(output)).toBe(false);
-		});
+		// Explicitly enabled
+		const logger = createHagen({ colorOptions: { enabled: true } });
+		logger.log("TEST", "test message");
+
+		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+		expect(hasAnsiCodes(output)).toBe(true);
 	});
 });

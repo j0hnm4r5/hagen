@@ -64,8 +64,8 @@ export function fixedWidthFormat(
 export function formatTimestamp(config: LoggerConfig): string {
 	const date = new Date();
 
-	if (typeof config.timestampFormatter === "function") {
-		return config.timestampFormatter(date);
+	if (typeof config.timestampOptions?.formatter === "function") {
+		return config.timestampOptions.formatter(date);
 	}
 
 	return date.toISOString();

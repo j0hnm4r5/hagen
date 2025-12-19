@@ -33,7 +33,7 @@ describe("Content Validation", () => {
 	describe("Label Text", () => {
 		it("should output exact label text", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("EXACT_LABEL", "msg");
 
@@ -45,7 +45,7 @@ describe("Content Validation", () => {
 
 		it("should handle empty label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("", "msg");
 
@@ -55,7 +55,7 @@ describe("Content Validation", () => {
 
 		it("should handle undefined label with default fallback", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log(undefined as unknown as Label, "msg");
 
@@ -66,7 +66,7 @@ describe("Content Validation", () => {
 
 		it("should handle null label with default fallback", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log(null as unknown as Label, "msg");
 
@@ -77,7 +77,7 @@ describe("Content Validation", () => {
 
 		it("should handle array with empty label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log({ kind: "color", label: "" }, "msg");
 
@@ -88,7 +88,7 @@ describe("Content Validation", () => {
 
 		it("should handle object with undefined label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log({ kind: "color", label: undefined as unknown as string }, "msg");
 
@@ -99,7 +99,10 @@ describe("Content Validation", () => {
 
 		it("should use custom default label when configured", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true, defaultLabelText: "◆" });
+			const logger = createHagen({
+				colorOptions: { enabled: true },
+				labelOptions: { defaultText: "◆" },
+			});
 
 			logger.log(undefined as unknown as string, "msg");
 
@@ -110,7 +113,7 @@ describe("Content Validation", () => {
 
 		it("should handle very long labels", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			const longLabel = "A".repeat(100);
 			logger.log(longLabel, "msg");
@@ -123,7 +126,7 @@ describe("Content Validation", () => {
 
 		it("should handle special characters in labels", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("🚀 TEST 🎉", "msg");
 
@@ -137,7 +140,7 @@ describe("Content Validation", () => {
 	describe("Message Content", () => {
 		it("should output exact message text", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("LABEL", "exact message text");
 
@@ -147,7 +150,7 @@ describe("Content Validation", () => {
 
 		it("should handle multiple message arguments", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("LABEL", "msg1", "msg2", "msg3");
 
@@ -159,7 +162,7 @@ describe("Content Validation", () => {
 
 		it("should handle objects as messages", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			const obj = { key: "value", num: 42 };
 			logger.log("LABEL", obj);
@@ -170,7 +173,7 @@ describe("Content Validation", () => {
 
 		it("should handle arrays as messages", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			const arr = [1, 2, 3, "four"];
 			logger.log("LABEL", arr);
@@ -181,7 +184,7 @@ describe("Content Validation", () => {
 
 		it("should handle multiline messages", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("LABEL", "line1\nline2\nline3");
 
@@ -192,7 +195,7 @@ describe("Content Validation", () => {
 
 		it("should handle empty message", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("LABEL", "");
 
@@ -205,7 +208,7 @@ describe("Content Validation", () => {
 		it("should apply prefix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: ">>%l",
 			});
 
@@ -219,7 +222,7 @@ describe("Content Validation", () => {
 		it("should apply suffix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: "%l<<",
 			});
 
@@ -233,7 +236,7 @@ describe("Content Validation", () => {
 		it("should apply both prefix and suffix via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: ">>%l<<",
 			});
 
@@ -248,7 +251,7 @@ describe("Content Validation", () => {
 		it("should still honor label-specific prefix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 			});
 
 			const label: Label = {
@@ -265,7 +268,7 @@ describe("Content Validation", () => {
 		it("should still honor label-specific suffix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 			});
 
 			const label: Label = {
@@ -284,7 +287,7 @@ describe("Content Validation", () => {
 		it("should use ISO format via layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: "%t %l",
 			});
 
@@ -300,9 +303,9 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const customFormat = (date: Date) => `CUSTOM-${date.getFullYear()}`;
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: "%t %l",
-				timestampFormatter: customFormat,
+				timestampOptions: { formatter: customFormat },
 			});
 
 			logger.log("TEST", "msg");
@@ -316,7 +319,7 @@ describe("Content Validation", () => {
 		it("should not include timestamp when not in layout", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: "%l",
 			});
 
@@ -333,7 +336,7 @@ describe("Content Validation", () => {
 	describe("Log Levels", () => {
 		it("should use console.log for log()", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("TEST", "msg");
 
@@ -344,7 +347,7 @@ describe("Content Validation", () => {
 
 		it("should use console.info for info()", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.info("TEST", "msg");
 
@@ -356,7 +359,7 @@ describe("Content Validation", () => {
 
 		it("should use console.warn for warn()", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.warn("TEST", "msg");
 
@@ -367,7 +370,7 @@ describe("Content Validation", () => {
 
 		it("should use console.error for error()", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.error("TEST", "msg");
 

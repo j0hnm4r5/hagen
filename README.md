@@ -61,7 +61,7 @@ log("API", "Hello");
 
 // 3. Custom instance (recommended for apps)
 import { createHagen } from "hagen";
-const logger = createHagen({ showTimestamp: true });
+const logger = createHagen({ layout: "%t %l %m" });
 logger.log("API", "Hello");
 ```
 
@@ -119,20 +119,20 @@ import { createHagen } from "hagen";
 
 // API logger with timestamps
 const apiLogger = createHagen({
-  showTimestamp: true,
-  dateFormat: "time",
-  timeFormat: "12h"
+  layout: "%t %l %m",
+  timestampOptions: {
+    formatter: (date) => date.toLocaleTimeString()
+  }
 });
 
 // Database logger with custom prefixes
 const dbLogger = createHagen({
-  labelPrefix: "[DB]",
-  labelSuffix: ""
+  layout: "[DB] %l %m"
 });
 
 // Test logger with colors disabled
 const testLogger = createHagen({
-  enableColor: false
+  colorOptions: { enabled: false }
 });
 ```
 
@@ -140,23 +140,32 @@ const testLogger = createHagen({
 
 ```typescript
 interface LoggerConfig {
-  // Timestamps
-  showTimestamp?: boolean;              // Default: false
-  dateFormat?: "iso" | "locale" | "time" | ((date: Date) => string); // Default: "iso"
-  timeFormat?: "12h" | "24h";           // Default: "24h"
-  
-  // Colors
-  enableColor?: boolean;                // Default: true (false in CI)
-  
-  // Label formatting
-  labelPrefix?: string;                 // Default: none
-  labelSuffix?: string;                 // Default: none
-  
-  // Advanced: Fixed-width labels
-  fixedWidth?: {
-    width: number;
+  /** Output layout. Default: "%l %m" */
+  layout?: string; // e.g. "%t [%l] %m"
+
+  labelOptions?: {
+    /** Fixed width for labels */
+    fixedWidth?: number;
+    /** Truncation strategy */
     truncationMethod?: "start" | "end" | "middle";
+    /** Default label text. Default: "*" */
+    defaultText?: string;
   };
+
+  colorOptions?: {
+    /** Enable/disable colors. Default: auto-detect */
+    enabled?: boolean;
+    /** Quantize colors to a reduced palette (e.g. 8, 256) */
+    paletteSize?: number;
+  };
+
+  timestampOptions?: {
+    /** Custom timestamp formatter */
+    formatter?: (date: Date) => string;
+  };
+
+  /** Default styles for segments */
+  segmentStyles?: Record<string, SegmentStyle>;
 }
 ```
 
@@ -169,17 +178,15 @@ Perfect for large applications:
 import { createHagen } from "hagen";
 
 export const apiLogger = createHagen({
-  showTimestamp: true,
-  labelPrefix: "[API]"
+  layout: "[API] %t %l %m"
 });
 
-export const dbLogger = createHagen({
-  showTimestamp: true,
-  labelPrefix: "[DB]"
+export const logger = createHagen({
+  layout: process.env.NODE_ENV === "production" ? "%t %l %m" : "%l %m"
 });
 
 export const cacheLogger = createHagen({
-  labelPrefix: "[CACHE]"
+  layout: "[CACHE] %l %m"
 });
 ```
 
@@ -211,10 +218,12 @@ v4.0.0 introduces **breaking changes** for a better, more modern API:
 ```typescript
 import hagen, { setConfig } from "hagen";
 
-// Global configuration
-setConfig({ showTimestamp: true });
-
-hagen.log("API", "Hello");
+// Glconst config: Partial<LoggerConfig> = {
+  layout: "%t %l %m",
+  timestampOptions: {
+      formatter: (date) => date.toISOString()
+  }
+};
 ```
 
 **v4.x (New)**
@@ -222,7 +231,7 @@ hagen.log("API", "Hello");
 import { createHagen } from "hagen";
 
 // Instance configuration
-const logger = createHagen({ showTimestamp: true });
+const logger = createHagen({ layout: "%t %l %m" });
 
 logger.log("API", "Hello");
 ```
@@ -231,7 +240,7 @@ logger.log("API", "Hello");
 ```typescript
 // Create a configured instance once
 import { createHagen } from "hagen";
-const hagen = createHagen({ showTimestamp: true });
+const hagen = createHagen({ layout: "%t %l %m" });
 
 // Export and use everywhere
 export default hagen;

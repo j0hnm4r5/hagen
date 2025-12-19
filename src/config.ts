@@ -27,48 +27,54 @@ export interface LoggerConfig {
 	 * Whether to enable colored output.
 	 * Automatically detects terminal color support.
 	 */
-	enableColor?: boolean;
-
-	/**
-	 * Palette size for color quantization.
-	 *
-	 * When specified, colors are quantized to this many distinct colors.
-	 * The quantization divides each RGB channel into equal steps.
-	 *
-	 * Common values:
-	 * - 8: Very limited palette (2 levels per channel)
-	 * - 27: 3×3×3 cube
-	 * - 64: 4×4×4 cube
-	 * - 216: 6×6×6 cube (similar to ANSI-256 color cube)
-	 * - undefined: No quantization (full 24-bit color)
-	 *
-	 * Default: undefined (no quantization)
-	 */
-	paletteSize?: number | undefined;
-
-	/** Fixed width configuration for labels */
-	fixedWidth?: {
-		/** Target width in characters */
-		width: number;
+	labelOptions?: {
+		/** Fixed width configuration for labels */
+		fixedWidth?: number;
 		/** Where to truncate if label exceeds width */
 		truncationMethod?: "start" | "end" | "middle";
+		/**
+		 * Default label to use when label is empty, undefined, or null.
+		 * Default: "*"
+		 */
+		defaultText?: string;
 	};
 
-	/**
-	 * Date/time format for timestamps.
-	 *
-	 * Default: ISO 8601
-	 *
-	 * For complex formatting, use a custom function with your preferred library
-	 * (e.g. date-fns, moment, or Intl.DateTimeFormat).
-	 */
-	timestampFormatter?: (date: Date) => string;
+	colorOptions?: {
+		/**
+		 * Whether to enable colored output.
+		 * Automatically detects terminal color support.
+		 */
+		enabled?: boolean;
 
-	/**
-	 * Default label to use when label is empty, undefined, or null.
-	 * Default: "*"
-	 */
-	defaultLabelText?: string;
+		/**
+		 * Palette size for color quantization.
+		 *
+		 * When specified, colors are quantized to this many distinct colors.
+		 * The quantization divides each RGB channel into equal steps.
+		 *
+		 * Common values:
+		 * - 8: Very limited palette (2 levels per channel)
+		 * - 27: 3×3×3 cube
+		 * - 64: 4×4×4 cube
+		 * - 216: 6×6×6 cube (similar to ANSI-256 color cube)
+		 * - undefined: No quantization (full 24-bit color)
+		 *
+		 * Default: undefined (no quantization)
+		 */
+		paletteSize?: number | undefined;
+	};
+
+	timestampOptions?: {
+		/**
+		 * Date/time format for timestamps.
+		 *
+		 * Default: ISO 8601
+		 *
+		 * For complex formatting, use a custom function with your preferred library
+		 * (e.g. date-fns, moment, or Intl.DateTimeFormat).
+		 */
+		formatter?: (date: Date) => string;
+	};
 }
 
 /** Internal config with resolved defaults */
@@ -81,9 +87,15 @@ export interface InternalConfig extends LoggerConfig {
 
 /** Default configuration values */
 export const defaultConfig: LoggerConfig = {
-	paletteSize: undefined,
-	timestampFormatter: (date: Date) => date.toISOString(),
-	defaultLabelText: "*",
+	labelOptions: {
+		defaultText: "*",
+	},
+	colorOptions: {
+		paletteSize: undefined,
+	},
+	timestampOptions: {
+		formatter: (date: Date) => date.toISOString(),
+	},
 	layout: "%l",
 	segmentStyles: {},
 };

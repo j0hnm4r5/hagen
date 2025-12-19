@@ -43,7 +43,7 @@ describe("Format Logic", () => {
 
 		it("should use custom formatter if provided", () => {
 			const config = {
-				timestampFormatter: (_d: Date) => "CUSTOM",
+				timestampOptions: { formatter: (_d: Date) => "CUSTOM" },
 			} as any;
 			expect(formatTimestamp(config)).toBe("CUSTOM");
 		});

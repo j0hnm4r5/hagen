@@ -53,7 +53,6 @@ export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDe
 	},
 	timestamp: {
 		bgColor: null, // Transparent
-		fgColor: "gray", // Terminal Gray
 		padding: 0,
 	},
 	message: {
@@ -182,12 +181,12 @@ function resolveSegmentStyle(
 			def.fixedWidth ??
 			configStyle.fixedWidth ??
 			defaults.fixedWidth ??
-			(type === "label" ? config.fixedWidth?.width : undefined),
+			(type === "label" ? config.labelOptions?.fixedWidth : undefined),
 		truncationMethod:
 			def.truncationMethod ??
 			configStyle.truncationMethod ??
 			defaults.truncationMethod ??
-			(type === "label" ? config.fixedWidth?.truncationMethod : undefined),
+			(type === "label" ? config.labelOptions?.truncationMethod : undefined),
 		ansiFormatter: def.ansiFormatter ?? configStyle.ansiFormatter ?? defaults.ansiFormatter,
 	};
 }
@@ -206,7 +205,7 @@ function resolveLabelContent(
 	customFormatter?: AnsiFormatter | undefined;
 } {
 	// Fallback text
-	const fallback = config.defaultLabelText ?? "*";
+	const fallback = config.labelOptions?.defaultText ?? "*";
 
 	// Normalize to array
 	const labels = Array.isArray(label) ? label : [label];
@@ -334,7 +333,7 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 export function renderPreparedSegment(prepared: PreparedSegment, config: InternalConfig): string {
 	const { text, bgColor, fgColor, padding, ansiFormatter } = prepared;
 
-	if (config.enableColor) {
+	if (config.colorOptions?.enabled) {
 		if (ansiFormatter) {
 			const padded = " ".repeat(padding) + text + " ".repeat(padding);
 			return ansiFormatter(padded);
@@ -343,7 +342,7 @@ export function renderPreparedSegment(prepared: PreparedSegment, config: Interna
 		const fmt = createAnsiFormatter({
 			bgColor: bgColor ?? null, // Default to transparent if still undefined
 			fgColor: fgColor,
-			paletteSize: config.paletteSize,
+			paletteSize: config.colorOptions.paletteSize,
 			ansisInstance: config.ansisInstance,
 			forceNoColor: false,
 		});

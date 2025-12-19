@@ -16,7 +16,7 @@ describe("Prefix Spacing Regression", () => {
 
 	it("should add a space after the default prefix (e.g. 'i' for info)", async () => {
 		const { createHagen } = await import("../index");
-		const logger = createHagen({ enableColor: false, layout: ">>%l<<" });
+		const logger = createHagen({ colorOptions: { enabled: false }, layout: ">>%l<<" });
 
 		logger.info("TEST", "message");
 
@@ -32,7 +32,10 @@ describe("Prefix Spacing Regression", () => {
 
 	it("should add a space after a custom prefix", async () => {
 		const { createHagen } = await import("../index");
-		const logger = createHagen({ enableColor: false, segmentStyles: { label: { padding: 0 } } });
+		const logger = createHagen({
+			colorOptions: { enabled: false },
+			segmentStyles: { label: { padding: 0 } },
+		});
 
 		logger.log(
 			{
@@ -50,7 +53,10 @@ describe("Prefix Spacing Regression", () => {
 
 	it("should not add a space if prefix is empty", async () => {
 		const { createHagen } = await import("../index");
-		const logger = createHagen({ enableColor: false, segmentStyles: { label: { padding: 0 } } });
+		const logger = createHagen({
+			colorOptions: { enabled: false },
+			segmentStyles: { label: { padding: 0 } },
+		});
 
 		logger.log(
 			{

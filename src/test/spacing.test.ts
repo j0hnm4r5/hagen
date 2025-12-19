@@ -23,7 +23,7 @@ describe("Spacing and Margins", () => {
 	describe("Colored Mode", () => {
 		it("should have space before label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("X", "msg");
 
@@ -36,7 +36,7 @@ describe("Spacing and Margins", () => {
 
 		it("should have space after label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("X", "msg");
 
@@ -49,7 +49,7 @@ describe("Spacing and Margins", () => {
 
 		it("should have exactly one space before and after for single char", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("X", "msg");
 
@@ -61,7 +61,7 @@ describe("Spacing and Margins", () => {
 
 		it("should maintain spacing for multi-char labels", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("TEST", "msg");
 
@@ -73,7 +73,7 @@ describe("Spacing and Margins", () => {
 
 		it("should maintain spacing with long labels", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			const longLabel = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			logger.log(longLabel, "msg");
@@ -90,7 +90,7 @@ describe("Spacing and Margins", () => {
 	describe("Colorless Mode", () => {
 		it("should have proper spacing in brackets", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: false });
+			const logger = createHagen({ colorOptions: { enabled: false } });
 
 			logger.log("X", "msg");
 
@@ -102,7 +102,7 @@ describe("Spacing and Margins", () => {
 
 		it("should maintain spacing for various label lengths", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: false });
+			const logger = createHagen({ colorOptions: { enabled: false } });
 
 			// Single char
 			logger.log("X", "msg");
@@ -129,7 +129,7 @@ describe("Spacing and Margins", () => {
 		it("should maintain spacing with prefix in colored mode", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
+				colorOptions: { enabled: true },
 				layout: " >>%l",
 			});
 
@@ -148,7 +148,7 @@ describe("Spacing and Margins", () => {
 		it("should maintain spacing with suffix in colored mode", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
+				colorOptions: { enabled: true },
 				layout: " %l<< ",
 			});
 
@@ -166,7 +166,7 @@ describe("Spacing and Margins", () => {
 		it("should maintain spacing with both prefix and suffix", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
+				colorOptions: { enabled: true },
 				layout: " >>%l<< ",
 			});
 
@@ -186,7 +186,7 @@ describe("Spacing and Margins", () => {
 	describe("Edge Cases", () => {
 		it("should handle empty label with proper spacing", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("", "msg");
 
@@ -199,7 +199,7 @@ describe("Spacing and Margins", () => {
 
 		it("should handle label with internal spaces", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("TEST LABEL", "msg");
 
@@ -212,7 +212,7 @@ describe("Spacing and Margins", () => {
 
 		it("should handle label with leading/trailing spaces", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("  TEST  ", "msg");
 
@@ -225,7 +225,7 @@ describe("Spacing and Margins", () => {
 
 		it("should maintain consistent spacing across multiple logs", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("A", "msg1");
 			logger.log("BB", "msg2");

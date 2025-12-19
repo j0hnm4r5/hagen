@@ -39,8 +39,7 @@ import hagen, { setConfig, getConfig, resetConfig } from "hagen";
 
 // Global configuration
 setConfig({
-  showTimestamp: true,
-  fixedWidth: { width: 15 }
+  layout: "%t [%l:%15] %m"
 });
 
 // Get current config
@@ -59,8 +58,8 @@ import { createHagen } from "hagen";
 
 // Create configured instance
 const logger = createHagen({
-  showTimestamp: true,
-  fixedWidth: { width: 15 }
+  layout: "%t [%l] %m",
+  labelOptions: { fixedWidth: 15 }
 });
 
 // Each instance has its own config - no global state!
@@ -89,6 +88,36 @@ logger.log({
   prefix: ">>",  // NEW!
   suffix: "<<"   // NEW!
 }, "message");
+```
+
+### 4. Configuration Structure Refactored
+
+Configuration options have been grouped into logical objects:
+
+#### v3.x (Old)
+```typescript
+createHagen({
+  enableColor: true,
+  fixedWidth: 15,
+  timestampFormatter: (d) => d.toISOString(),
+  paletteSize: 8
+});
+```
+
+#### v4.x (New)
+```typescript
+createHagen({
+  colorOptions: {
+    enabled: true,
+    paletteSize: 8
+  },
+  labelOptions: {
+    fixedWidth: 15
+  },
+  timestampOptions: {
+    formatter: (d) => d.toISOString()
+  }
+});
 ```
 
 ## Migration Strategies
@@ -129,9 +158,10 @@ Create a shared logger module for your entire application:
 import { createHagen } from "hagen";
 
 export const logger = createHagen({
-  showTimestamp: true,
-  dateFormat: "time",
-  timeFormat: "12h"
+  layout: "%t %l %m",
+  timestampOptions: {
+    formatter: (date) => date.toLocaleTimeString()
+  }
 });
 ```
 
@@ -154,17 +184,15 @@ Create specialized loggers for different subsystems:
 import { createHagen } from "hagen";
 
 export const apiLogger = createHagen({
-  showTimestamp: true,
-  labelPrefix: "[API]"
+  layout: "[API] %t %l %m"
 });
 
 export const dbLogger = createHagen({
-  showTimestamp: true,
-  labelPrefix: "[DB]"
+  layout: "[DB] %t %l %m"
 });
 
 export const cacheLogger = createHagen({
-  labelPrefix: "[CACHE]"
+  layout: "[CACHE] %l %m"
 });
 ```
 
@@ -194,13 +222,13 @@ All v3 configuration options are still available in v4:
 
 | v3.x `setConfig()` | v4.x `createHagen()` |
 |-------------------|---------------------|
-| `showTimestamp` | ✅ Same |
-| `enableColor` | ✅ Same |
-| `dateFormat` | ✅ Same |
-| `timeFormat` | ✅ Same |
-| `labelPrefix` | ✅ Same |
-| `labelSuffix` | ✅ Same |
-| `fixedWidth` | ✅ Same |
+| `showTimestamp` | 🔄 `layout: "%t ..."` |
+| `enableColor` | 🔄 `colorOptions: { enabled }` |
+| `dateFormat` | 🔄 `timestampOptions: { formatter }` |
+| `timeFormat` | 🗑️ Removed (use formatter) |
+| `labelPrefix` | 🔄 `layout: "PREFIX %l"` |
+| `labelSuffix` | 🔄 `layout: "%l SUFFIX"` |
+| `fixedWidth` | 🔄 `labelOptions: { fixedWidth }` |
 | `colors` | ✅ Same (advanced) |
 
 ## Testing Considerations
@@ -214,7 +242,7 @@ beforeEach(() => {
 });
 
 test("logs with timestamp", () => {
-  setConfig({ showTimestamp: true });
+  setConfig({ layout: "%t %l %m" });
   hagen.log("TEST", "message");
 });
 ```
@@ -225,7 +253,7 @@ import { createHagen } from "hagen";
 
 test("logs with timestamp", () => {
   // Each test gets its own instance - no shared state!
-  const logger = createHagen({ showTimestamp: true });
+  const logger = createHagen({ layout: "%t %l %m" });
   logger.log("TEST", "message");
 });
 ```
@@ -239,7 +267,7 @@ test("logs with timestamp", () => {
 import hagen, { setConfig } from "hagen";
 
 if (process.env.NODE_ENV === "production") {
-  setConfig({ showTimestamp: true });
+  setConfig({ layout: "%t %l %m" });
 }
 ```
 
@@ -248,7 +276,7 @@ if (process.env.NODE_ENV === "production") {
 import { createHagen } from "hagen";
 
 export const logger = createHagen({
-  showTimestamp: process.env.NODE_ENV === "production"
+  layout: process.env.NODE_ENV === "production" ? "%t %l %m" : "%l %m"
 });
 ```
 
@@ -269,7 +297,7 @@ function debugLog(label: string, ...data: unknown[]) {
 ```typescript
 import { createHagen } from "hagen";
 
-const logger = createHagen({ enableColor: !!process.env.DEBUG });
+const logger = createHagen({ colorOptions: { enabled: !!process.env.DEBUG } });
 
 function debugLog(label: string, ...data: unknown[]) {
   if (process.env.DEBUG) {

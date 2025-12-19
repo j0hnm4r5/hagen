@@ -28,7 +28,7 @@ describe("Hagen Logger", () => {
 		it("should accept all config options", () => {
 			const config: Partial<LoggerConfig> = {
 				layout: "<%l> %m",
-				enableColor: true,
+				colorOptions: { enabled: true },
 			};
 			const logger = createHagen(config);
 			expect(logger).toBeDefined();
@@ -37,7 +37,7 @@ describe("Hagen Logger", () => {
 		it("should accept custom date format function", () => {
 			const customDateFormat = (date: Date) => date.toISOString();
 			const logger = createHagen({
-				timestampFormatter: customDateFormat,
+				timestampOptions: { formatter: customDateFormat },
 			});
 			expect(logger).toBeDefined();
 		});
@@ -214,7 +214,7 @@ describe("Hagen Logger", () => {
 			});
 
 			it("should disable color when set to false", () => {
-				const logger = createHagen({ enableColor: false });
+				const logger = createHagen({ colorOptions: { enabled: false } });
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -222,7 +222,7 @@ describe("Hagen Logger", () => {
 			});
 
 			it("should format colorless output with proper spacing", () => {
-				const logger = createHagen({ enableColor: false });
+				const logger = createHagen({ colorOptions: { enabled: false } });
 				logger.log("API", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -243,7 +243,7 @@ describe("Hagen Logger", () => {
 				const customFormat = (date: Date) => `CUSTOM:${date.getFullYear()}`;
 				const logger = createHagen({
 					layout: "%t %l",
-					timestampFormatter: customFormat,
+					timestampOptions: { formatter: customFormat },
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -254,7 +254,7 @@ describe("Hagen Logger", () => {
 
 		describe("label customization in layout", () => {
 			it("should use default brackets in colorless mode", () => {
-				const logger = createHagen({ enableColor: false });
+				const logger = createHagen({ colorOptions: { enabled: false } });
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -264,7 +264,7 @@ describe("Hagen Logger", () => {
 
 			it("should use custom literals in layout", () => {
 				const logger = createHagen({
-					enableColor: false,
+					colorOptions: { enabled: false },
 					layout: "<<%l>>",
 				});
 				logger.log("TEST", "message");
@@ -276,7 +276,7 @@ describe("Hagen Logger", () => {
 
 			it("should still honor per-label prefix/suffix", () => {
 				const logger = createHagen({
-					enableColor: false,
+					colorOptions: { enabled: false },
 				});
 				const label: Label = {
 					kind: "color",

@@ -76,10 +76,17 @@ function determineColorSupport(userSetting?: boolean): boolean {
 
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	// Merge with defaults
-	const mergedConfig: LoggerConfig = { ...defaultConfig, ...config };
+	const mergedConfig: LoggerConfig = {
+		...defaultConfig,
+		...config,
+		labelOptions: { ...defaultConfig.labelOptions, ...config?.labelOptions },
+		colorOptions: { ...defaultConfig.colorOptions, ...config?.colorOptions },
+		timestampOptions: { ...defaultConfig.timestampOptions, ...config?.timestampOptions },
+		segmentStyles: { ...defaultConfig.segmentStyles, ...config?.segmentStyles },
+	};
 
 	// Determine final color support
-	const enableColor = determineColorSupport(mergedConfig.enableColor);
+	const enableColor = determineColorSupport(mergedConfig.colorOptions?.enabled);
 
 	// Create appropriate ansis instance
 	// Use the same ansis instance but handle no-color mode in formatters
@@ -98,10 +105,12 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 		}
 	}
 
+	// Create the final configuration object
 	const instanceConfig: InternalConfig = {
 		...mergedConfig,
-		enableColor: enableColor, // Final resolved value
-		ansisInstance,
+		colorOptions: { ...mergedConfig.colorOptions, enabled: enableColor },
+		ansisInstance: ansisInstance,
+		// Ensure layout is compiled
 		layout: finalLayout,
 		segmentStyles: mergedConfig.segmentStyles || {},
 	};

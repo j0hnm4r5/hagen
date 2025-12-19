@@ -35,7 +35,7 @@ describe("Output Format", () => {
 
 			// Import AFTER setting env vars
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("TEST", "message");
 
@@ -64,7 +64,7 @@ describe("Output Format", () => {
 		it("should have colored label without bold formatting", async () => {
 			vi.stubEnv("CI", "");
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("X", "msg");
 
@@ -83,7 +83,7 @@ describe("Output Format", () => {
 		it("should format correctly for different label lengths", async () => {
 			vi.stubEnv("CI", "");
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			// Short label
 			logger.log("X", "msg1");
@@ -110,7 +110,7 @@ describe("Output Format", () => {
 			vi.resetModules();
 			const { createHagen } = await import("../index.js");
 
-			const logger = createHagen({ enableColor: false });
+			const logger = createHagen({ colorOptions: { enabled: false } });
 			logger.log("TEST", "message");
 
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -131,7 +131,7 @@ describe("Output Format", () => {
 			vi.resetModules();
 			const { createHagen } = await import("../index.js");
 
-			const logger = createHagen({ enableColor: false });
+			const logger = createHagen({ colorOptions: { enabled: false } });
 
 			// Test various labels
 			logger.log("X", "msg");
@@ -149,7 +149,7 @@ describe("Output Format", () => {
 			vi.resetModules();
 			const { createHagen } = await import("../index.js");
 
-			const logger = createHagen({ enableColor: false });
+			const logger = createHagen({ colorOptions: { enabled: false } });
 
 			logger.log("LOG", "msg");
 			expect(hasAnsiCodes(consoleLogSpy.mock.calls[0]?.[0] as string)).toBe(false);
@@ -169,7 +169,7 @@ describe("Output Format", () => {
 			const { createHagen } = await import("../index.js");
 
 			const logger = createHagen({
-				enableColor: true,
+				colorOptions: { enabled: true },
 				layout: "[%t] %l",
 			});
 
@@ -199,7 +199,7 @@ describe("Output Format", () => {
 			const { createHagen } = await import("../index.js");
 
 			const logger = createHagen({
-				enableColor: false,
+				colorOptions: { enabled: false },
 				layout: "[%t] %l",
 			});
 

@@ -29,9 +29,9 @@ describe("Edge Cases", () => {
 		it("should handle label exactly matching fixed width", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
-				fixedWidth: {
-					width: 10,
+				colorOptions: { enabled: true },
+				labelOptions: {
+					fixedWidth: 10,
 					truncationMethod: "end",
 				},
 			});
@@ -49,9 +49,9 @@ describe("Edge Cases", () => {
 		it("should handle start truncation method", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
-				fixedWidth: {
-					width: 10,
+				colorOptions: { enabled: true },
+				labelOptions: {
+					fixedWidth: 10,
 					truncationMethod: "start",
 				},
 			});
@@ -69,9 +69,9 @@ describe("Edge Cases", () => {
 		it("should handle middle truncation method", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
-				fixedWidth: {
-					width: 10,
+				colorOptions: { enabled: true },
+				labelOptions: {
+					fixedWidth: 10,
 					truncationMethod: "middle",
 				},
 			});
@@ -90,9 +90,9 @@ describe("Edge Cases", () => {
 		it("should handle short label with padding", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
-				enableColor: true,
-				fixedWidth: {
-					width: 20,
+				colorOptions: { enabled: true },
+				labelOptions: {
+					fixedWidth: 20,
 					truncationMethod: "end",
 				},
 			});
@@ -111,7 +111,7 @@ describe("Edge Cases", () => {
 	describe("Specialized log method behavior", () => {
 		it("should handle info with custom prefix and suffix", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.info(
 				{
@@ -136,7 +136,7 @@ describe("Edge Cases", () => {
 			const { createHagen } = await import("../index.js");
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.warn(
 				{
@@ -168,7 +168,7 @@ describe("Edge Cases", () => {
 			const { createHagen } = await import("../index.js");
 			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.error(
 				{
@@ -198,7 +198,7 @@ describe("Edge Cases", () => {
 
 		it("should handle info with custom color instance", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
 
 			logger.info(
@@ -222,7 +222,7 @@ describe("Edge Cases", () => {
 			const { createHagen } = await import("../index.js");
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
 
 			logger.warn(
@@ -250,7 +250,7 @@ describe("Edge Cases", () => {
 			const { createHagen } = await import("../index.js");
 			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
 
 			logger.error(

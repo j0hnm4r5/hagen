@@ -32,7 +32,7 @@ describe("Color Formatting", () => {
 	describe("Hash-based Color Generation", () => {
 		it("should generate colors from label hash", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("API", "test");
 
@@ -48,7 +48,7 @@ describe("Color Formatting", () => {
 
 		it("should generate consistent colors for the same label", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("CONSISTENT", "first call");
 			const output1 = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -67,7 +67,7 @@ describe("Color Formatting", () => {
 
 		it("should generate different colors for different labels", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("LABEL_A", "test");
 			const output1 = consoleLogSpy.mock.calls[0]?.[0] as string;
@@ -88,7 +88,7 @@ describe("Color Formatting", () => {
 
 		it("should NOT apply bold to all labels (removed to fix color issues)", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log("TEST", "test");
 
@@ -101,7 +101,7 @@ describe("Color Formatting", () => {
 	describe("Specialized Log Levels", () => {
 		it("should use correct RGB codes for WARN (Orange with black text)", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.warn("WARN", "warning message");
 
@@ -117,7 +117,7 @@ describe("Color Formatting", () => {
 
 		it("should use correct RGB codes for ERROR (Crimson with white text)", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.error("ERROR", "error message");
 
@@ -133,7 +133,7 @@ describe("Color Formatting", () => {
 
 		it("should use correct RGB codes for INFO (Royal Blue with white text)", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.info("INFO", "info message");
 
@@ -151,7 +151,7 @@ describe("Color Formatting", () => {
 	describe("Custom Colors", () => {
 		it("should support hex color strings with auto-calculated text", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			// Use a light color that should get black text
 			logger.log({ kind: "color", label: "CUSTOM", bgColor: "#FFFF00" }, "test");
@@ -167,7 +167,7 @@ describe("Color Formatting", () => {
 
 		it("should support RGB tuple colors with auto-calculated text", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			// Use a dark color that should get white text
 			logger.log({ kind: "color", label: "CUSTOM", bgColor: [20, 20, 80] }, "test");
@@ -183,7 +183,7 @@ describe("Color Formatting", () => {
 
 		it("should auto-calculate black text for light backgrounds", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log({ kind: "color", label: "LIGHT", bgColor: "#FFFFFF" }, "test");
 
@@ -196,7 +196,7 @@ describe("Color Formatting", () => {
 
 		it("should auto-calculate white text for dark backgrounds", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log({ kind: "color", label: "DARK", bgColor: "#000000" }, "test");
 
@@ -213,7 +213,7 @@ describe("Color Formatting", () => {
 			const { createHagen } = await import("../index.js");
 
 			// With 8 colors (2 levels per channel), RGB values snap to 0 or 255
-			const logger = createHagen({ enableColor: true, paletteSize: 8 });
+			const logger = createHagen({ colorOptions: { enabled: true, paletteSize: 8 } });
 
 			logger.log({ kind: "color", label: "QUANT", bgColor: [100, 150, 200] }, "test");
 
@@ -226,7 +226,7 @@ describe("Color Formatting", () => {
 
 		it("should not quantize when paletteSize is undefined", async () => {
 			const { createHagen } = await import("../index.js");
-			const logger = createHagen({ enableColor: true });
+			const logger = createHagen({ colorOptions: { enabled: true } });
 
 			logger.log({ kind: "color", label: "FULL", bgColor: [100, 150, 200] }, "test");
 
@@ -240,7 +240,7 @@ describe("Color Formatting", () => {
 			const { createHagen } = await import("../index.js");
 
 			// With small palette, colors should be quantized
-			const logger = createHagen({ enableColor: true, paletteSize: 8 });
+			const logger = createHagen({ colorOptions: { enabled: true, paletteSize: 8 } });
 
 			logger.warn("WARN", "test");
 
