@@ -73,8 +73,6 @@ export interface LoggerConfig {
 
 /** Internal config with resolved defaults */
 export interface InternalConfig extends LoggerConfig {
-	// /** Final resolved color support */
-	// enableColor: boolean;
 	/** Ansis instance for generating codes */
 	ansisInstance: Ansis;
 	layout: Layout;

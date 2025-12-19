@@ -86,8 +86,7 @@ export function print({ logger, label, data, config }: PrintParams): void {
 		}
 	}
 
-	// Check if we actually replaced the message token
-	// We need to know if the layout CONTAINED %m
+	// Check if the layout contains the message token
 	const messageAliases = TOKEN_CONFIG.find((t) => t.type === "message")?.aliases || [];
 	const hasMessageToken = layoutItems.some(
 		(item) =>
@@ -120,10 +119,8 @@ export function print({ logger, label, data, config }: PrintParams): void {
 			})
 			.join("");
 
-		// Substituted logic: logger(format, ...args)
 		logger(finalLabel, ...data);
 	} else {
-		// Legacy logic: logger(label, ...args)
 		finalLabel = preparedSegments.map((ps) => renderPreparedSegment(ps, config)).join("");
 		logger(finalLabel, ...data);
 	}
