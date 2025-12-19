@@ -63,12 +63,12 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
 	const result: LayoutItem[] = [];
 	let currentIndex = 0;
 
-	// Improved regex to capture % followed by word characters or specific alias symbols
-	const regex = /%(?:[a-zA-Z0-9_-]+|->|>>|%)/g;
+	// Regex to capture % followed by word characters
+	const regex = /%(?:[a-zA-Z0-9_-]+|%)/g;
 	let match;
 
 	while ((match = regex.exec(template)) !== null) {
-		// Add text before the match as a literal string separator
+		// Add text before the match as a literal string
 		if (match.index > currentIndex) {
 			result.push(template.substring(currentIndex, match.index));
 		}
@@ -85,8 +85,7 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
 		} else if (token === "%%") {
 			result.push("%");
 		} else {
-			// It might be a separator preset like %dot or %pl-left
-			// We store it as a string literal and let renderSegment resolve it
+			// Unknown token, keep as literal string
 			result.push(token);
 		}
 

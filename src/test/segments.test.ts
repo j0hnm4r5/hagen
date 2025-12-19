@@ -112,10 +112,10 @@ describe("Segments Logic", () => {
 			expect(items[4]).toBe("<<");
 		});
 
-		it("should handle mixed presets and literals", () => {
-			const items = parseTemplateLayout("%t%pl%l");
+		it("should keep unknown tokens as literal strings", () => {
+			const items = parseTemplateLayout("%t%unknown%l");
 			expect(items).toHaveLength(3);
-			expect(items[1]).toBe("%pl");
+			expect(items[1]).toBe("%unknown");
 		});
 	});
 
@@ -154,16 +154,16 @@ describe("Segments Logic", () => {
 			expect(prepared.text).toBe("");
 		});
 
-		it("should prepare literal separator", () => {
-			const item: LayoutItem = { type: "separator", content: " | " };
+		it("should prepare literal string", () => {
+			const item: LayoutItem = " | ";
 			const prepared = prepareSegment(item, mockContext);
 
 			expect(prepared.text).toBe(" | ");
 			expect(prepared.bgColor).toBeUndefined(); // Transparent by default
 		});
 
-		it("should prepare powerline separator", () => {
-			const item: LayoutItem = { type: "separator", preset: "%pl" };
+		it("should prepare powerline symbol as literal string", () => {
+			const item: LayoutItem = "\ue0b0"; // Left hard divider
 			const prepared = prepareSegment(item, mockContext);
 
 			expect(prepared.text).toBe("\ue0b0");
