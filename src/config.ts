@@ -69,13 +69,6 @@ export interface LoggerConfig {
 	 * Default: "*"
 	 */
 	defaultLabelText?: string;
-
-	/** @deprecated Use layouts instead */
-	showTimestamp?: boolean;
-	/** @deprecated Use layouts instead */
-	labelPrefix?: string;
-	/** @deprecated Use layouts instead */
-	labelSuffix?: string;
 }
 
 /** Internal config with resolved defaults */
