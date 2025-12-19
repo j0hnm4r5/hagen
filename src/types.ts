@@ -111,59 +111,87 @@ export const TOKEN_CONFIG = [
 		type: "message",
 		aliases: ["%m", "%message"],
 	},
-	{
-		type: "icon",
-		aliases: ["%i", "%icon"],
-	},
-] as const;
-
-/** Separator preset names */
-/** Configuration for separator presets and their aliases */
-export const SEPARATOR_CONFIG = [
-	{
-		name: "pl-left",
-		aliases: ["pl", "powerline", "pll"],
-		symbol: "\ue0b0",
-	},
-	{
-		name: "pl-right",
-		aliases: ["plr"],
-		symbol: "\ue0b2",
-	},
-	{
-		name: "pl-left-rounded",
-		aliases: ["pllo"],
-		symbol: "\ue0b4",
-	},
-	{
-		name: "pl-right-rounded",
-		aliases: ["plro"],
-		symbol: "\ue0b6",
-	},
-	{
-		name: "arrow",
-		aliases: ["->"],
-		symbol: "→",
-	},
-	{
-		name: "arrow-double",
-		aliases: [">>"],
-		symbol: "»",
-	},
-	{
-		name: "dot",
-		aliases: ["."],
-		symbol: "•",
-	},
 ] as const;
 
 /**
- * Presets for separator glyphs.
- * Programmatically derived from SEPARATOR_CONFIG names and aliases.
+ * All available Powerline / Nerd Font symbols.
+ * These can be used in layouts via their codepoint or by reference.
+ * @see https://www.nerdfonts.com/cheat-sheet (filter by "ple-")
  */
-export type SeparatorPreset =
-	| `%${(typeof SEPARATOR_CONFIG)[number]["name"]}`
-	| `%${(typeof SEPARATOR_CONFIG)[number]["aliases"][number]}`;
+export const POWERLINE_SYMBOLS = {
+	// Basic powerline arrows
+	leftHardDivider: "\ue0b0",
+	rightHardDivider: "\ue0b2",
+	leftSoftDivider: "\ue0b1",
+	rightSoftDivider: "\ue0b3",
+
+	// Rounded variants
+	leftHardDividerRounded: "\ue0b4",
+	rightHardDividerRounded: "\ue0b6",
+	leftSoftDividerRounded: "\ue0b5",
+	rightSoftDividerRounded: "\ue0b7",
+
+	// Triangles
+	upperLeftTriangle: "\ue0bc",
+	upperRightTriangle: "\ue0be",
+	lowerLeftTriangle: "\ue0b8",
+	lowerRightTriangle: "\ue0ba",
+
+	// Flame variants
+	flameThick: "\ue0c0",
+	flameThin: "\ue0c1",
+	flameThickMirrored: "\ue0c2",
+	flameThinMirrored: "\ue0c3",
+
+	// Ice waveform
+	iceWaveform: "\ue0c8",
+	iceWaveformMirrored: "\ue0ca",
+
+	// Honeycomb
+	honeycomb: "\ue0cc",
+	honeycombOutline: "\ue0cd",
+
+	// Trapezoid
+	trapezoidTopBottom: "\ue0d2",
+	trapezoidTopBottomMirrored: "\ue0d4",
+
+	// Half circles
+	leftHalfCircleThick: "\ue0b4",
+	rightHalfCircleThick: "\ue0b6",
+	leftHalfCircleThin: "\ue0b5",
+	rightHalfCircleThin: "\ue0b7",
+
+	// Lego blocks
+	legoBlockFacing: "\ue0d0",
+	legoBlockSideways: "\ue0d1",
+	legoSeparatorThin: "\ue0cf",
+
+	// Column/Current indicators
+	columnNumber: "\ue0a3",
+	currentColumn: "\ue0a3",
+
+	// Slashes
+	backslashSeparator: "\ue0b9",
+	forwardslashSeparator: "\ue0bb",
+	backslashSeparatorRedundant: "\ue0bf",
+	forwardslashSeparatorRedundant: "\ue0bd",
+
+	// Pixelated squares
+	pixelatedSquaresBig: "\ue0c4",
+	pixelatedSquaresSmall: "\ue0c6",
+	pixelatedSquaresBigMirrored: "\ue0c5",
+	pixelatedSquaresSmallMirrored: "\ue0c7",
+
+	// Inverse dividers
+	leftHardDividerInverse: "\ue0d6",
+	rightHardDividerInverse: "\ue0d7",
+
+	// Lego separator (from image)
+	legoSeparator: "\ue0ce",
+} as const;
+
+/** Type for powerline symbol keys */
+export type PowerlineSymbol = keyof typeof POWERLINE_SYMBOLS;
 
 /** Full segment definition */
 export interface SegmentDefinition {

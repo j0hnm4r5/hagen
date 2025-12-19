@@ -8,7 +8,8 @@
  */
 
 // ========= TYPE EXPORTS =========
-export type { AnsiFormatter, Color, HagenInstance, Label, RGB } from "./types";
+export { POWERLINE_SYMBOLS } from "./types";
+export type { AnsiFormatter, Color, HagenInstance, Label, PowerlineSymbol, RGB } from "./types";
 
 // ========= CONFIG EXPORTS =========
 export { defaultConfig } from "./config";
