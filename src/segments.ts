@@ -10,7 +10,7 @@ import type {
 	SegmentDefinition,
 	SegmentType,
 } from "./types";
-import { SEPARATOR_CONFIG } from "./types";
+import { SEPARATOR_CONFIG, TOKEN_CONFIG } from "./types";
 
 /**
  * Context for rendering a single segment.
@@ -133,14 +133,14 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
 		}
 
 		const token = match[0];
-		if (token === "%l" || token === "%label") {
-			result.push({ type: "label" });
-		} else if (token === "%t" || token === "%timestamp") {
-			result.push({ type: "timestamp" });
-		} else if (token === "%m" || token === "%message") {
-			result.push({ type: "message" });
-		} else if (token === "%i" || token === "%icon") {
-			result.push({ type: "icon" });
+
+		// Handle generic tokens from config
+		const matchedTokenConfig = TOKEN_CONFIG.find((c) =>
+			(c.aliases as readonly string[]).includes(token)
+		);
+
+		if (matchedTokenConfig) {
+			result.push({ type: matchedTokenConfig.type });
 		} else if (token === "%%") {
 			result.push("%");
 		} else {

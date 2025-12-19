@@ -97,6 +97,26 @@ export interface ColorLabel extends BaseLabel {
 /** Segment type identifiers */
 export type SegmentType = "icon" | "label" | "timestamp" | "message";
 
+/** Configuration for segment tokens and their aliases */
+export const TOKEN_CONFIG = [
+	{
+		type: "label",
+		aliases: ["%l", "%label"],
+	},
+	{
+		type: "timestamp",
+		aliases: ["%t", "%timestamp"],
+	},
+	{
+		type: "message",
+		aliases: ["%m", "%message"],
+	},
+	{
+		type: "icon",
+		aliases: ["%i", "%icon"],
+	},
+] as const;
+
 /** Separator preset names */
 /** Configuration for separator presets and their aliases */
 export const SEPARATOR_CONFIG = [

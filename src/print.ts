@@ -11,7 +11,7 @@ import {
 	renderPreparedSegment,
 	type SegmentContext,
 } from "./segments";
-import type { Label } from "./types";
+import { type Label, TOKEN_CONFIG } from "./types";
 
 /** Parameters for the print function */
 export interface PrintParams {
