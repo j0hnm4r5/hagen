@@ -81,12 +81,6 @@ async function main() {
 	}
 
 	if (!message && !label) {
-		// If no message and no label, show help implicitly or just exit?
-		// User didn't specify behavior for empty args, but usually CLI tools show help.
-		// However, hagen might support empty logs? calling hagen.log() prints nothing visible?
-		// Let's defer to Hagen's behavior but ensure we at least try to log something if provided.
-		// Actually, standard practice: if empty args, show help.
-		// check default behavior: "If 0 positional args: print usage instructions" from my plan.
 		console.log("Usage: hagen [options] <message...>. Use --help for more info.");
 		process.exit(1);
 	}
