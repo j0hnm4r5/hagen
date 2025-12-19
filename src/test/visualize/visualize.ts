@@ -11,7 +11,6 @@ export function test() {
 	visualizeMultipleLabels();
 	visualizeStylingTransparency();
 	visualizeFixedWidth();
-	visualizeGroups();
 	visualizeQuantization();
 	visualizeDefaultConfig();
 	visualizeFixedWidthConfig();
@@ -19,7 +18,7 @@ export function test() {
 	visualizeMultiLineContent();
 	visualizeDataTypes();
 	visualizeCustomColorsEdge();
-	visualizeGroupsEdge();
+	visualizeGroups();
 	visualizeLogMethodErrorHandling();
 	visualizeLayoutTemplates();
 }
@@ -143,6 +142,21 @@ export function visualizeLayoutTemplates() {
 		new Error("Test error")
 	);
 
+	logger = createHagen({
+		layout: "%l %dot %l %dot %l %dot %m %dot %m %dot %m",
+	});
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345, { JKL: "MNO", PQR: "STU" });
+
+	logger = createHagen({
+		layout: "%l %dot %l %dot %l %dot %m",
+	});
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345, { JKL: "MNO", PQR: "STU" });
+
+	logger = createHagen({
+		layout: "%l %dot %l %dot %l %dot %m %dot %m %dot %m %dot %m",
+	});
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345);
+
 	console.log();
 }
 
@@ -196,19 +210,6 @@ export function visualizeFixedWidth() {
 	console.log();
 }
 
-export function visualizeGroups() {
-	console.log("--- GROUPS ---\n");
-
-	console.group();
-	hagen.log(`LEVEL 1`);
-	console.group();
-	hagen.log(`LEVEL 2`);
-	console.groupEnd();
-	console.groupEnd();
-
-	console.log();
-}
-
 /**
  * Visualize palette quantization at different sizes
  */
@@ -231,8 +232,6 @@ export function visualizeQuantization() {
 		}
 		console.log();
 	};
-
-	console.log("--- SPECIALIZED LOGGERS ---\n");
 
 	comparePalettes("INFO", (l) => {
 		l.info("Info", "Information message");
@@ -358,19 +357,18 @@ export function visualizeCustomColorsEdge() {
 	console.log();
 }
 
-export function visualizeGroupsEdge() {
+export function visualizeGroups() {
 	console.log("--- CONSOLE GROUPS ---\n");
 
-	const logger = createHagen();
-	logger.log("Level 0", "Root level");
+	hagen.log("Level 0", "Root level");
 	console.group();
-	logger.log("Level 1", "Indented once");
+	hagen.log("Level 1", "Indented once");
 	console.group();
-	logger.log("Level 2", "Indented twice");
+	hagen.log("Level 2", "Indented twice");
 	console.groupEnd();
-	logger.log("Level 1", "Back to level 1");
+	hagen.log("Level 1", "Back to level 1");
 	console.groupEnd();
-	logger.log("Level 0", "Back to root");
+	hagen.log("Level 0", "Back to root");
 
 	console.log();
 }
