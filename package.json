@@ -27,6 +27,9 @@
 	],
 	"main": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
+	"bin": {
+		"hagen": "./dist/cli.mjs"
+	},
 	"sideEffects": false,
 	"exports": {
 		".": {
@@ -41,11 +44,11 @@
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage",
-		"lint:check": "eslint .",
-		"lint:fix": "eslint . --fix",
-		"format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
-		"format:fix": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
-		"type:check": "tsc --noEmit",
+		"lint:check": "eslint . && echo \"Lint check complete.\" | npm run __success__ -s",
+		"lint:fix": "eslint . --fix && echo \"Lint fix complete.\" | npm run __success__ -s",
+		"format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\" && echo \"Format check complete.\" | npm run __success__ -s",
+		"format:fix": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\" && echo \"Format fix complete.\" | npm run __success__ -s",
+		"type:check": "tsc --noEmit && echo \"Type check complete.\" | npm run __success__ -s",
 		"pkg:check": "attw --pack . --profile esm-only --no-summary",
 		"size:check": "size-limit",
 		"clean": "rm -rf dist coverage .vitest",
@@ -53,7 +56,8 @@
 		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
 		"visualize:node": "tsx src/test/visualize/node/index.ts",
 		"visualize:node:no-color": "NO_COLOR=true npm run visualize:node",
-		"visualize:browser": "vite --config src/test/visualize/browser/vite.config.ts"
+		"visualize:browser": "vite --config src/test/visualize/browser/vite.config.ts",
+		"__success__": "npx hagen -l \"✓ Success\" -f green -b black"
 	},
 	"dependencies": {
 		"ansis": "^4.2.0"

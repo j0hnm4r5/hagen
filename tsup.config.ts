@@ -3,6 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
 	entry: {
 		index: "src/index.ts",
+		cli: "src/cli.ts",
 	},
 	format: ["esm"],
 	dts: {
@@ -20,6 +21,6 @@ export default defineConfig({
 	},
 	target: "es2020",
 	platform: "neutral",
-	external: [],
+	external: ["node:util"],
 	noExternal: ["ansis"],
 });
