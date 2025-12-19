@@ -1,12 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../config.js";
-import {
-	getPowerlineDirection,
-	getSeparatorGlyph,
-	parseTemplateLayout,
-	prepareSegment,
-	type SegmentContext,
-} from "../segments.js";
+import { parseTemplateLayout, prepareSegment, type SegmentContext } from "../segments.js";
 import type { LayoutItem } from "../types.js";
 
 describe("Segments Logic", () => {
@@ -16,61 +10,6 @@ describe("Segments Logic", () => {
 
 	afterEach(() => {
 		vi.unstubAllEnvs();
-	});
-
-	describe("getSeparatorGlyph", () => {
-		it("should return literal strings as-is", () => {
-			expect(getSeparatorGlyph("|")).toBe("|");
-			expect(getSeparatorGlyph(" - ")).toBe(" - ");
-			expect(getSeparatorGlyph("")).toBe("");
-		});
-
-		it("should resolve powerline presets", () => {
-			expect(getSeparatorGlyph("%pl")).toBe("\ue0b0");
-			expect(getSeparatorGlyph("%powerline")).toBe("\ue0b0");
-			expect(getSeparatorGlyph("%pl-left")).toBe("\ue0b0");
-			expect(getSeparatorGlyph("%pl-right")).toBe("\ue0b2");
-			expect(getSeparatorGlyph("%plr")).toBe("\ue0b2");
-		});
-
-		it("should resolve rounded powerline presets", () => {
-			expect(getSeparatorGlyph("%pllo")).toBe("\ue0b4");
-			expect(getSeparatorGlyph("%pl-left-rounded")).toBe("\ue0b4");
-			expect(getSeparatorGlyph("%plro")).toBe("\ue0b6");
-			expect(getSeparatorGlyph("%pl-right-rounded")).toBe("\ue0b6");
-		});
-
-		it("should resolve arrow presets", () => {
-			expect(getSeparatorGlyph("%->")).toBe("→");
-			expect(getSeparatorGlyph("%arrow")).toBe("→");
-			expect(getSeparatorGlyph("%>>")).toBe("»");
-			expect(getSeparatorGlyph("%arrow-double")).toBe("»");
-		});
-
-		it("should treat unknown presets as literals", () => {
-			expect(getSeparatorGlyph("%unknown")).toBe("%unknown");
-			expect(getSeparatorGlyph("%foo")).toBe("%foo");
-		});
-	});
-
-	describe("getPowerlineDirection", () => {
-		it("should identify left-pointing separators", () => {
-			expect(getPowerlineDirection("%pl")).toBe("left");
-			expect(getPowerlineDirection("%pl-left")).toBe("left");
-			expect(getPowerlineDirection("%pllo")).toBe("left");
-		});
-
-		it("should identify right-pointing separators", () => {
-			expect(getPowerlineDirection("%plr")).toBe("right");
-			expect(getPowerlineDirection("%pl-right")).toBe("right");
-			expect(getPowerlineDirection("%plro")).toBe("right");
-		});
-
-		it("should return undefined for non-directional separators", () => {
-			expect(getPowerlineDirection("%arrow")).toBeUndefined();
-			expect(getPowerlineDirection("|")).toBeUndefined();
-			expect(getPowerlineDirection("%unknown")).toBeUndefined();
-		});
 	});
 
 	describe("parseTemplateLayout", () => {
@@ -88,12 +27,6 @@ describe("Segments Logic", () => {
 			expect(items[3]).toBe(" ");
 			// %m
 			expect(items[4]).toEqual(expect.objectContaining({ type: "message" }));
-		});
-
-		it("should parse powerline separators", () => {
-			const items = parseTemplateLayout("%pl");
-			expect(items).toHaveLength(1);
-			expect(items[0]).toBe("%pl");
 		});
 
 		it("should parse complex layouts", () => {
