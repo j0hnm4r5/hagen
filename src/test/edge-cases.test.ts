@@ -43,7 +43,7 @@ describe("Edge Cases", () => {
 			const stripped = stripAnsi(label).trim();
 
 			// Should be exactly 10 chars (no ellipsis, no padding)
-			expect(stripped.replace(/\s+/g, "")).toBe("EXACTWIDTH");
+			expect(stripped.replaceAll(/\s+/g, "")).toBe("EXACTWIDTH");
 		});
 
 		it("should handle start truncation method", async () => {

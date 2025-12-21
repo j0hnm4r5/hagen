@@ -153,7 +153,7 @@ export function visualizeLayoutTemplates() {
 	logger = createHagen({
 		layout: [
 			{ type: "label", bgColor: "#333", fgColor: "#fff" },
-			"\ue0b0", // Powerline left arrow
+			"\uE0B0", // Powerline left arrow
 			" ",
 			{ type: "message" },
 		],
@@ -165,11 +165,11 @@ export function visualizeLayoutTemplates() {
 
 	logger = createHagen({
 		layout: [
-			"\ue0b6", // Right rounded
+			"\uE0B6", // Right rounded
 			{ type: "label", bgColor: "#00ffff" },
-			"\ue0b0", // Left hard divider
+			"\uE0B0", // Left hard divider
 			{ type: "label", bgColor: "#550055" },
-			"\ue0b4", // Left rounded
+			"\uE0B4", // Left rounded
 			{ type: "message" },
 		],
 	});
@@ -177,11 +177,11 @@ export function visualizeLayoutTemplates() {
 
 	logger = createHagen({
 		layout: [
-			"\ue0be", // Upper right triangle
+			"\uE0BE", // Upper right triangle
 			{ type: "label", bgColor: "#ff00ff" },
-			"\ue0b1", // Soft divider
+			"\uE0B1", // Soft divider
 			{ type: "label", bgColor: "#ff00ff" },
-			"\ue0b8", // Lower left triangle
+			"\uE0B8", // Lower left triangle
 			{ type: "message" },
 		],
 	});
@@ -193,7 +193,7 @@ export function visualizeLayoutTemplates() {
 	logger.log(
 		["ABC", "DEF", "GHI"],
 		"Hello!",
-		12345,
+		12_345,
 		{ JKL: "MNO", PQR: "STU" },
 		new Error("Test error")
 	);
@@ -201,17 +201,17 @@ export function visualizeLayoutTemplates() {
 	logger = createHagen({
 		layout: "%l %dot %l %dot %l %dot %m %dot %m %dot %m",
 	});
-	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345, { JKL: "MNO", PQR: "STU" });
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12_345, { JKL: "MNO", PQR: "STU" });
 
 	logger = createHagen({
 		layout: "%l %dot %l %dot %l %dot %m",
 	});
-	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345, { JKL: "MNO", PQR: "STU" });
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12_345, { JKL: "MNO", PQR: "STU" });
 
 	logger = createHagen({
 		layout: "%l %dot %l %dot %l %dot %m %dot %m %dot %m %dot %m",
 	});
-	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12345);
+	logger.log(["ABC", "DEF", "GHI"], "Hello!", 12_345);
 
 	console.log();
 }
@@ -430,7 +430,7 @@ export function visualizeLogMethodErrorHandling() {
 	const logger = createHagen();
 	const testLogMethodVariants = (
 		levelName: string,
-		logMethod: (label: any, ...args: any[]) => void
+		logMethod: (label: any, ...arguments_: any[]) => void
 	) => {
 		logMethod(undefined, `Testing ${levelName} with undefined label`);
 		logMethod("CustomError", `Testing ${levelName} with custom label`);

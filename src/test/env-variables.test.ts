@@ -6,20 +6,20 @@ const mockIsSupported = vi.fn();
 const createMockAnsis = () => {
 	const chain = (text: any) => `[ANSI]${text}[/ANSI]`;
 	const proxy: any = new Proxy(chain, {
-		get: (_target, prop, receiver) => {
-			if (prop === "isSupported") {
+		get: (_target, property, receiver) => {
+			if (property === "isSupported") {
 				return () => {
-					const val = mockIsSupported();
-					return val;
+					const value = mockIsSupported();
+					return value;
 				};
 			}
 			// Handle strip specifically
-			if (prop === "strip") return (t: string) => t.replace(/\[ANSI\]|\[\/ANSI\]/g, "");
+			if (property === "strip") return (t: string) => t.replaceAll(/\[ANSI\]|\[\/ANSI\]/g, "");
 			// Return a function that returns the proxy itself for chaining
 			return () => receiver;
 		},
-		apply: (_target, _thisArg, args) => {
-			return `[ANSI]${args[0]}[/ANSI]`;
+		apply: (_target, _thisArgument, arguments_) => {
+			return `[ANSI]${arguments_[0]}[/ANSI]`;
 		},
 	});
 	return proxy;

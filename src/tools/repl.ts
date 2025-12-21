@@ -27,7 +27,7 @@ declare global {
 	var hagen: HagenInstance;
 }
 
-global.hagen = hagen;
+globalThis.hagen = hagen;
 
 start({
 	prompt: "> ",

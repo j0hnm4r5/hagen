@@ -164,22 +164,22 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
-			const obj = { key: "value", num: 42 };
-			logger.log("LABEL", obj);
+			const object = { key: "value", num: 42 };
+			logger.log("LABEL", object);
 
 			const message = consoleLogSpy.mock.calls[0]?.[1];
-			expect(message).toEqual(obj);
+			expect(message).toEqual(object);
 		});
 
 		it("should handle arrays as messages", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
-			const arr = [1, 2, 3, "four"];
-			logger.log("LABEL", arr);
+			const array = [1, 2, 3, "four"];
+			logger.log("LABEL", array);
 
 			const message = consoleLogSpy.mock.calls[0]?.[1];
-			expect(message).toEqual(arr);
+			expect(message).toEqual(array);
 		});
 
 		it("should handle multiline messages", async () => {

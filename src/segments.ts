@@ -94,7 +94,7 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
 
 	// Add remaining text
 	if (currentIndex < template.length) {
-		result.push(template.substring(currentIndex));
+		result.push(template.slice(Math.max(0, currentIndex)));
 	}
 
 	return result;
@@ -221,13 +221,15 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 			context.incrementLabelIndex();
 			break;
 		}
-		case "timestamp":
+		case "timestamp": {
 			text = formatTimestamp(context.config);
 			break;
-		case "message":
+		}
+		case "message": {
 			// Message is handled elsewhere/later, but we still need a placeholder
 			text = "";
 			break;
+		}
 	}
 
 	// Apply fixed width

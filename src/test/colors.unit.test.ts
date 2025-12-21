@@ -32,7 +32,7 @@ describe("Colors Logic", () => {
 		it("should not change color if palette size is undefined (logic handled by caller usually, but function assumes size)", () => {
 			// Actually the function signature requires paletteSize.
 			// If we pass a large palette size it should be precise.
-			expect(quantizeColor([100, 150, 200], 16000000)).toEqual([100, 150, 200]);
+			expect(quantizeColor([100, 150, 200], 16_000_000)).toEqual([100, 150, 200]);
 		});
 
 		it("should quantize to nearest step for small palette (size 8 -> 2 levels: 0, 255)", () => {

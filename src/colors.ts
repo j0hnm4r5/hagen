@@ -71,7 +71,7 @@ export function quantizeColor(rgb: RGB, paletteSize: number): RGB {
 export function getLuminance(rgb: RGB): number {
 	const [r, g, b] = rgb.map((c) => {
 		const sRGB = c / 255;
-		return sRGB <= 0.03928 ? sRGB / 12.92 : ((sRGB + 0.055) / 1.055) ** 2.4;
+		return sRGB <= 0.039_28 ? sRGB / 12.92 : ((sRGB + 0.055) / 1.055) ** 2.4;
 	});
 	return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
@@ -162,12 +162,12 @@ export function createAnsiFormatter({
 	if (fgColor === null) {
 		return (text: string) => {
 			let colored = applyNamed(text, bgColor, true);
-			if (colored !== undefined) {
-				colored = ansisInstance.hidden(ansisInstance.strip(colored));
-			} else {
+			if (colored === undefined) {
 				const rgb = parseColor(bgColor);
-				const qBg = paletteSize !== undefined ? quantizeColor(rgb, paletteSize) : rgb;
+				const qBg = paletteSize === undefined ? rgb : quantizeColor(rgb, paletteSize);
 				colored = ansisInstance.bgRgb(...qBg).hidden(text);
+			} else {
+				colored = ansisInstance.hidden(ansisInstance.strip(colored));
 			}
 			return forceNoColor ? ansisInstance.strip(colored) : colored;
 		};
@@ -178,6 +178,7 @@ export function createAnsiFormatter({
 	if (namedBg) {
 		return (text: string) => {
 			let res = text;
+			
 			// Apply named foreground if present
 			const namedFg =
 				fgColor && typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
@@ -187,7 +188,7 @@ export function createAnsiFormatter({
 				res = inst[namedFg](res);
 			} else if (fgColor) {
 				const fgRgb = parseColor(fgColor);
-				const qFg = paletteSize !== undefined ? quantizeColor(fgRgb, paletteSize) : fgRgb;
+				const qFg = paletteSize === undefined ? fgRgb : quantizeColor(fgRgb, paletteSize);
 				res = ansisInstance.rgb(...qFg)(res);
 			}
 
@@ -206,7 +207,7 @@ export function createAnsiFormatter({
 
 	// Fallback to RGB logic for background
 	const rgbBg = parseColor(bgColor);
-	const qBg = paletteSize !== undefined ? quantizeColor(rgbBg, paletteSize) : rgbBg;
+	const qBg = paletteSize === undefined ? rgbBg : quantizeColor(rgbBg, paletteSize);
 
 	if (fgColor) {
 		const namedFg = typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
@@ -223,7 +224,7 @@ export function createAnsiFormatter({
 
 		// Regular RGB foreground
 		const rgbFg = parseColor(fgColor);
-		const qFg = paletteSize !== undefined ? quantizeColor(rgbFg, paletteSize) : rgbFg;
+		const qFg = paletteSize === undefined ? rgbFg : quantizeColor(rgbFg, paletteSize);
 		return (text: string) => {
 			const colored = ansisInstance.bgRgb(...qBg).rgb(...qFg)(text);
 			return forceNoColor ? ansisInstance.strip(colored) : colored;
@@ -248,21 +249,21 @@ export function createAnsiFormatter({
  */
 export function getColorFromLabel(label: string): RGB {
 	// FNV-1a Hash
-	let hash = 2166136261;
-	for (let i = 0; i < label.length; i++) {
-		hash ^= label.charCodeAt(i);
-		hash = Math.imul(hash, 16777619);
+	let hash = 2_166_136_261;
+	for (let index = 0; index < label.length; index++) {
+		hash ^= label.charCodeAt(index);
+		hash = Math.imul(hash, 16_777_619);
 	}
 
 	// Final mixing
-	hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
-	hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+	hash = Math.imul(hash ^ (hash >>> 16), 2_246_822_507);
+	hash = Math.imul(hash ^ (hash >>> 13), 3_266_489_909);
 	hash ^= hash >>> 16;
 
 	// Generate RGB from hash
-	const r = (hash & 0xff0000) >>> 16;
-	const g = (hash & 0x00ff00) >>> 8;
-	const b = hash & 0x0000ff;
+	const r = (hash & 0xFF_00_00) >>> 16;
+	const g = (hash & 0x00_FF_00) >>> 8;
+	const b = hash & 0x00_00_FF;
 
 	return [r, g, b];
 }

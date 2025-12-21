@@ -22,13 +22,14 @@ import type { Color, HagenInstance, Label } from "./types";
  * ```typescript
  * import { createHagen } from "hagen";
  *
- * // Create logger with custom layout including timestamps
+ * // Create logger with timestamps
  * const logger = createHagen({
- *   layout: "[%t] %l %m"
+ *   layout: "%l %t %m"
  * });
  *
  * logger.log("API", "Request received");
  * logger.info("AUTH", "User logged in");
+ * logger.success("DB", "Connection established");
  * logger.warn("CACHE", "High memory usage");
  * logger.error("API", "Request failed", error);
  * ```
@@ -41,9 +42,9 @@ import type { Color, HagenInstance, Label } from "./types";
  *
  * @example
  * ```typescript
- * // Create multiple independent loggers with custom layouts
- * const apiLogger = createHagen({ layout: "[API] %l %m" });
- * const dbLogger = createHagen({ layout: "[DB] %l %m" });
+ * // Create multiple independent loggers
+ * const apiLogger = createHagen({ labelPrefix: "[API]" });
+ * const dbLogger = createHagen({ labelPrefix: "[DB]" });
  *
  * apiLogger.log("FETCH", "Fetching data...");
  * dbLogger.log("QUERY", "Running query...");
@@ -75,7 +76,7 @@ function determineColorSupport(userSetting?: boolean): boolean {
 }
 
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
-	// Merge with defaults
+	// Merge with defaults (deep merge for nested objects)
 	const mergedConfig: LoggerConfig = {
 		...defaultConfig,
 		...config,
@@ -125,12 +126,15 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 			defaultText: string;
 		}
 	): Label => {
-		// If it's an object, we just return it (it already has its own colors/labels)
+		// Pass through user-provided Label objects unchanged
+		// If it's an object (FormatterLabel or ColorLabel or Array), we assume the user intends
+		// to control the styling, so we don't override it with our defaults.
 		if (typeof label === "object" && label !== null) {
 			return label;
 		}
 
 		// Wrap string/null/undefined in a ColorLabel with the specialized styling
+		// The prefix is specified here but APPLIED in print.ts
 		return {
 			kind: "color",
 			label: typeof label === "string" ? label : defaults.defaultText,
@@ -143,7 +147,7 @@ export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
 	const log = (label: Label, ...data: unknown[]): void => {
 		print({
 			logger: console.log,
-			label: label,
+			label,
 			data,
 			config: instanceConfig,
 		});

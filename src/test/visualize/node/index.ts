@@ -1,7 +1,7 @@
 import { run, VISUALIZATIONS, type VisualizationName } from "../visualize";
 
-const args = process.argv.slice(2);
-const filter = args[0];
+const arguments_ = process.argv.slice(2);
+const filter = arguments_[0];
 
 // Show help if requested
 if (filter === "--help" || filter === "-h") {

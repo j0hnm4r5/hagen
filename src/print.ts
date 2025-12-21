@@ -4,16 +4,11 @@
  */
 
 import type { InternalConfig } from "./config";
-import {
-	parseTemplateLayout,
-	prepareSegment,
-	renderPreparedSegment,
-	type SegmentContext,
-} from "./segments";
-import { type Label, TOKEN_CONFIG } from "./types";
+import { parseTemplateLayout, renderSegment, type SegmentContext } from "./segments";
+import type { Label } from "./types";
 
 /** Parameters for the print function */
-export interface PrintParams {
+export interface PrintParameters {
 	logger: (...parameters: unknown[]) => void;
 	label: Label;
 	data: unknown[];
@@ -24,7 +19,7 @@ export interface PrintParams {
  * Prints the formatted label and data to the console.
  * @internal
  */
-export function print({ logger, label, data, config }: PrintParams): void {
+export function print({ logger, label, data, config }: PrintParameters): void {
 	const layoutInput = config.layout;
 	const layoutItems =
 		typeof layoutInput === "string" ? parseTemplateLayout(layoutInput) : layoutInput;
@@ -41,48 +36,16 @@ export function print({ logger, label, data, config }: PrintParams): void {
 		},
 	};
 
-	// Prepare segments (resolve content and colors)
-	const preparedSegments = layoutItems.map((item, i) => {
-		context.segmentIndex = i;
-		return prepareSegment(item, context);
-	});
+	const parts: string[] = [];
 
-	// Check if the layout contains the message token
-	const messageAliases = TOKEN_CONFIG.find((t) => t.type === "message")?.aliases || [];
-	const hasMessageToken = layoutItems.some(
-		(item) =>
-			(typeof item === "string" && (messageAliases as readonly string[]).includes(item)) ||
-			(typeof item === "object" && item.type === "message")
-	);
-
-	let finalLabel: string;
-
-	if (hasMessageToken) {
-		// Re-render, but this time we substitute the format string for the message segment
-		let dataIndex = 0;
-		finalLabel = preparedSegments
-			.map((ps) => {
-				const isMessage =
-					(typeof ps.item === "string" &&
-						(messageAliases as readonly string[]).includes(ps.item)) ||
-					(typeof ps.item === "object" && "type" in ps.item && ps.item.type === "message");
-
-				if (isMessage) {
-					if (dataIndex >= data.length) return ""; // No more data to show
-
-					const arg = data[dataIndex];
-					dataIndex++;
-
-					// Use %s for strings to avoid quotes, %o for everything else
-					return typeof arg === "string" ? "%s" : "%o";
-				}
-				return renderPreparedSegment(ps, config);
-			})
-			.join("");
-
-		logger(finalLabel, ...data);
-	} else {
-		finalLabel = preparedSegments.map((ps) => renderPreparedSegment(ps, config)).join("");
-		logger(finalLabel, ...data);
+	for (const [index, layoutItem] of layoutItems.entries()) {
+		context.segmentIndex = index;
+		parts.push(renderSegment(layoutItem, context));
 	}
+
+	// Join parts
+	const finalLabel = parts.join("");
+
+	// Log with data
+	logger(finalLabel, ...data);
 }

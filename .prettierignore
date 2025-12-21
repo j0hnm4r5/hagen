@@ -1,7 +1,5 @@
 dist
 node_modules
 coverage
-playwright-report
-*.md
 CHANGELOG.md
 package-lock.json

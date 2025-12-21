@@ -120,74 +120,74 @@ export const TOKEN_CONFIG = [
  */
 export const POWERLINE_SYMBOLS = {
 	// Basic powerline arrows
-	leftHardDivider: "\ue0b0",
-	rightHardDivider: "\ue0b2",
-	leftSoftDivider: "\ue0b1",
-	rightSoftDivider: "\ue0b3",
+	leftHardDivider: "\uE0B0",
+	rightHardDivider: "\uE0B2",
+	leftSoftDivider: "\uE0B1",
+	rightSoftDivider: "\uE0B3",
 
 	// Rounded variants
-	leftHardDividerRounded: "\ue0b4",
-	rightHardDividerRounded: "\ue0b6",
-	leftSoftDividerRounded: "\ue0b5",
-	rightSoftDividerRounded: "\ue0b7",
+	leftHardDividerRounded: "\uE0B4",
+	rightHardDividerRounded: "\uE0B6",
+	leftSoftDividerRounded: "\uE0B5",
+	rightSoftDividerRounded: "\uE0B7",
 
 	// Triangles
-	upperLeftTriangle: "\ue0bc",
-	upperRightTriangle: "\ue0be",
-	lowerLeftTriangle: "\ue0b8",
-	lowerRightTriangle: "\ue0ba",
+	upperLeftTriangle: "\uE0BC",
+	upperRightTriangle: "\uE0BE",
+	lowerLeftTriangle: "\uE0B8",
+	lowerRightTriangle: "\uE0BA",
 
 	// Flame variants
-	flameThick: "\ue0c0",
-	flameThin: "\ue0c1",
-	flameThickMirrored: "\ue0c2",
-	flameThinMirrored: "\ue0c3",
+	flameThick: "\uE0C0",
+	flameThin: "\uE0C1",
+	flameThickMirrored: "\uE0C2",
+	flameThinMirrored: "\uE0C3",
 
 	// Ice waveform
-	iceWaveform: "\ue0c8",
-	iceWaveformMirrored: "\ue0ca",
+	iceWaveform: "\uE0C8",
+	iceWaveformMirrored: "\uE0CA",
 
 	// Honeycomb
-	honeycomb: "\ue0cc",
-	honeycombOutline: "\ue0cd",
+	honeycomb: "\uE0CC",
+	honeycombOutline: "\uE0CD",
 
 	// Trapezoid
-	trapezoidTopBottom: "\ue0d2",
-	trapezoidTopBottomMirrored: "\ue0d4",
+	trapezoidTopBottom: "\uE0D2",
+	trapezoidTopBottomMirrored: "\uE0D4",
 
 	// Half circles
-	leftHalfCircleThick: "\ue0b4",
-	rightHalfCircleThick: "\ue0b6",
-	leftHalfCircleThin: "\ue0b5",
-	rightHalfCircleThin: "\ue0b7",
+	leftHalfCircleThick: "\uE0B4",
+	rightHalfCircleThick: "\uE0B6",
+	leftHalfCircleThin: "\uE0B5",
+	rightHalfCircleThin: "\uE0B7",
 
 	// Lego blocks
-	legoBlockFacing: "\ue0d0",
-	legoBlockSideways: "\ue0d1",
-	legoSeparatorThin: "\ue0cf",
+	legoBlockFacing: "\uE0D0",
+	legoBlockSideways: "\uE0D1",
+	legoSeparatorThin: "\uE0CF",
 
 	// Column/Current indicators
-	columnNumber: "\ue0a3",
-	currentColumn: "\ue0a3",
+	columnNumber: "\uE0A3",
+	currentColumn: "\uE0A3",
 
 	// Slashes
-	backslashSeparator: "\ue0b9",
-	forwardslashSeparator: "\ue0bb",
-	backslashSeparatorRedundant: "\ue0bf",
-	forwardslashSeparatorRedundant: "\ue0bd",
+	backslashSeparator: "\uE0B9",
+	forwardslashSeparator: "\uE0BB",
+	backslashSeparatorRedundant: "\uE0BF",
+	forwardslashSeparatorRedundant: "\uE0BD",
 
 	// Pixelated squares
-	pixelatedSquaresBig: "\ue0c4",
-	pixelatedSquaresSmall: "\ue0c6",
-	pixelatedSquaresBigMirrored: "\ue0c5",
-	pixelatedSquaresSmallMirrored: "\ue0c7",
+	pixelatedSquaresBig: "\uE0C4",
+	pixelatedSquaresSmall: "\uE0C6",
+	pixelatedSquaresBigMirrored: "\uE0C5",
+	pixelatedSquaresSmallMirrored: "\uE0C7",
 
 	// Inverse dividers
-	leftHardDividerInverse: "\ue0d6",
-	rightHardDividerInverse: "\ue0d7",
+	leftHardDividerInverse: "\uE0D6",
+	rightHardDividerInverse: "\uE0D7",
 
 	// Lego separator (from image)
-	legoSeparator: "\ue0ce",
+	legoSeparator: "\uE0CE",
 } as const;
 
 /** Type for powerline symbol keys */

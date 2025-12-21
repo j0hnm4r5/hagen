@@ -44,11 +44,11 @@
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage",
-		"lint:check": "eslint . && echo \"Lint check complete.\" | npm run __success__ -s",
-		"lint:fix": "eslint . --fix && echo \"Lint fix complete.\" | npm run __success__ -s",
-		"format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\" && echo \"Format check complete.\" | npm run __success__ -s",
-		"format:fix": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\" && echo \"Format fix complete.\" | npm run __success__ -s",
-		"type:check": "tsc --noEmit && echo \"Type check complete.\" | npm run __success__ -s",
+		"lint:check": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format:check": "prettier . --check",
+		"format:fix": "prettier . --write",
+		"type:check": "tsc --noEmit",
 		"pkg:check": "attw --pack . --profile esm-only --no-summary",
 		"size:check": "size-limit",
 		"clean": "rm -rf dist coverage .vitest",
@@ -56,8 +56,7 @@
 		"prepublishOnly": "npm run lint && npm run type-check && npm run test && npm run build",
 		"visualize:node": "tsx src/test/visualize/node/index.ts",
 		"visualize:node:no-color": "NO_COLOR=true npm run visualize:node",
-		"visualize:browser": "vite --config src/test/visualize/browser/vite.config.ts",
-		"__success__": "npx hagen -l \"✓ Success\" -f green -b black"
+		"visualize:browser": "vite --config src/test/visualize/browser/vite.config.ts"
 	},
 	"dependencies": {
 		"ansis": "^4.2.0"
@@ -67,6 +66,7 @@
 		"@commitlint/cli": "^20.1.0",
 		"@commitlint/config-conventional": "^20.0.0",
 		"@eslint/js": "^9.39.1",
+		"@eslint/markdown": "^7.5.1",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^12.0.2",
@@ -77,6 +77,7 @@
 		"@vitest/ui": "^4.0.15",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-markdownlint": "^0.9.0",
 		"eslint-plugin-prettier": "^5.5.4",
 		"eslint-plugin-unicorn": "^62.0.0",
 		"husky": "^9.1.7",
@@ -104,8 +105,7 @@
 	},
 	"size-limit": [
 		{
-			"path": "dist/index.mjs",
-			"limit": "5 KB"
+			"path": "dist/index.mjs"
 		}
 	]
 }

@@ -1,83 +1,65 @@
+// @ts-check
+
 import eslint from "@eslint/js";
-import prettier from "eslint-plugin-prettier";
-import unicorn from "eslint-plugin-unicorn";
+import markdown from "@eslint/markdown";
+import eslintPluginUnicorn from "eslint-plugin-unicorn";
+import { defineConfig, globalIgnores } from "eslint/config";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig([
+	// GLOBAL IGNORES
+	globalIgnores(["node_modules/", "**/dist/", "**/coverage/", "**/*.scratch.md", "**/cache/"]),
+
+	// BASE CONFIGS
 	eslint.configs.recommended,
-	...tseslint.configs.strictTypeChecked,
-	...tseslint.configs.stylisticTypeChecked,
+	tseslint.configs.recommendedTypeChecked,
+	eslintPluginUnicorn.configs.recommended,
+
+	// MARKDOWN CONFIGS
+	markdown.configs.recommended,
+
+	// GLOBAL SETTINGS & TYPE AWARENESS
 	{
 		languageOptions: {
+			globals: {
+				...globals.node,
+				...globals.browser,
+			},
 			parserOptions: {
-				projectService: true,
-				tsconfigRootDir: import.meta.dirname,
+				projectService: {
+					allowDefaultProject: ["*.js", "*.ts", "*.vue"],
+				},
+				extraFileExtensions: [".vue"],
 			},
 		},
 	},
+
+	// MARKDOWN OVERRIDES
 	{
-		plugins: {
-			prettier,
-			unicorn,
-		},
+		files: ["**/*.md"],
+		language: "markdown/gfm",
+
+		// these need to be disabled for markdown files, since markdown can't handle rules that expect js/ts
+		extends: [tseslint.configs.disableTypeChecked],
 		rules: {
-			// Prettier integration
-			"prettier/prettier": "error",
+			"no-irregular-whitespace": "off",
+			"unicorn/expiring-todo-comments": "off",
+		},
+	},
 
-			// Unicorn rules
-			"unicorn/prevent-abbreviations": "off",
-			"unicorn/no-null": "off",
-			"unicorn/prefer-module": "error",
-			"unicorn/prefer-node-protocol": "error",
-			"unicorn/no-array-for-each": "error",
-			"unicorn/prefer-top-level-await": "off",
-			"unicorn/no-process-exit": "off",
-
-			// TypeScript specific
-			"@typescript-eslint/explicit-function-return-type": "off",
-			"@typescript-eslint/no-explicit-any": "warn",
-			"@typescript-eslint/no-unused-vars": [
+	// GLOBAL RULES
+	{
+		rules: {
+			"unicorn/prevent-abbreviations": [
 				"error",
 				{
-					argsIgnorePattern: "^_",
-					varsIgnorePattern: "^_",
+					replacements: {
+						dir: false,
+						dist: false,
+					},
 				},
 			],
-			"@typescript-eslint/restrict-template-expressions": "off",
-			"@typescript-eslint/no-non-null-assertion": "off",
-			"@typescript-eslint/prefer-nullish-coalescing": "off",
-			"@typescript-eslint/no-misused-spread": "off",
 		},
 	},
-	{
-		// Relaxed rules for test files
-		files: ["src/test/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
-		rules: {
-			"@typescript-eslint/no-unsafe-assignment": "off",
-			"@typescript-eslint/no-unsafe-member-access": "off",
-			"@typescript-eslint/no-unsafe-call": "off",
-			"@typescript-eslint/no-empty-function": "off",
-			"@typescript-eslint/unbound-method": "off",
-			"@typescript-eslint/no-unsafe-return": "off",
-			"@typescript-eslint/no-unsafe-argument": "off",
-			"@typescript-eslint/no-explicit-any": "off",
-			"no-control-regex": "off", // ANSI codes contain control characters
-		},
-	},
-	{
-		ignores: [
-			"dist/",
-			"docs/",
-			"docs-generated/",
-			"scripts/",
-			"tools/",
-			"node_modules/",
-			"coverage/",
-			"src/test/coverage/",
-			"playwright-report/",
-			"test-results/",
-			"*.config.js",
-			"*.config.ts",
-		],
-	}
-);
+]);

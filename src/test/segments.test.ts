@@ -96,10 +96,10 @@ describe("Segments Logic", () => {
 		});
 
 		it("should prepare powerline symbol as literal string", () => {
-			const item: LayoutItem = "\ue0b0"; // Left hard divider
+			const item: LayoutItem = "\uE0B0"; // Left hard divider
 			const prepared = prepareSegment(item, mockContext);
 
-			expect(prepared.text).toBe("\ue0b0");
+			expect(prepared.text).toBe("\uE0B0");
 		});
 	});
 });
