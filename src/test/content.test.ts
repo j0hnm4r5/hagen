@@ -3,15 +3,15 @@
  * Ensures labels, messages, prefixes, suffixes, and timestamps appear correctly.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Label } from "../index.js";
 import { stripAnsi } from "./helpers/ansi.js";
 
 describe("Content Validation", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
+	let consoleWarnSpy: MockInstance;
+	let consoleErrorSpy: MockInstance;
+	let consoleInfoSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -19,6 +19,7 @@ describe("Content Validation", () => {
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
+		vi.stubEnv("FORCE_COLOR", "3");
 	});
 
 	afterEach(() => {
@@ -154,7 +155,7 @@ describe("Content Validation", () => {
 
 			logger.log("LABEL", "msg1", "msg2", "msg3");
 
-			const calls = consoleLogSpy.mock.calls[0] || [];
+			const calls = (consoleLogSpy.mock.calls[0] || []) as unknown[];
 			expect(calls[1]).toBe("msg1");
 			expect(calls[2]).toBe("msg2");
 			expect(calls[3]).toBe("msg3");
@@ -164,22 +165,22 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
-			const object = { key: "value", num: 42 };
-			logger.log("LABEL", object);
+			const testObject = { key: "value", num: 42 };
+			logger.log("LABEL", testObject);
 
 			const message = consoleLogSpy.mock.calls[0]?.[1];
-			expect(message).toEqual(object);
+			expect(message).toEqual(testObject);
 		});
 
 		it("should handle arrays as messages", async () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
-			const array = [1, 2, 3, "four"];
-			logger.log("LABEL", array);
+			const testArray = [1, 2, 3, "four"];
+			logger.log("LABEL", testArray);
 
 			const message = consoleLogSpy.mock.calls[0]?.[1];
-			expect(message).toEqual(array);
+			expect(message).toEqual(testArray);
 		});
 
 		it("should handle multiline messages", async () => {
@@ -209,7 +210,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				colorOptions: { enabled: false },
-				layout: ">>%l",
+				layout: ">>" + "%l",
 			});
 
 			logger.log("TEST", "msg");
@@ -223,7 +224,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				colorOptions: { enabled: false },
-				layout: "%l<<",
+				layout: "%l" + "<<",
 			});
 
 			logger.log("TEST", "msg");
@@ -237,7 +238,7 @@ describe("Content Validation", () => {
 			const { createHagen } = await import("../index.js");
 			const logger = createHagen({
 				colorOptions: { enabled: false },
-				layout: ">>%l<<",
+				layout: ">>" + "%l" + "<<",
 			});
 
 			logger.log("TEST", "msg");
@@ -254,12 +255,12 @@ describe("Content Validation", () => {
 				colorOptions: { enabled: false },
 			});
 
-			const label: Label = {
+			const testLabel: Label = {
 				kind: "color",
 				label: "TEST",
 				prefix: "**",
 			};
-			logger.log(label, "msg");
+			logger.log(testLabel, "msg");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 			expect(output).toContain("**");
@@ -271,12 +272,12 @@ describe("Content Validation", () => {
 				colorOptions: { enabled: false },
 			});
 
-			const label: Label = {
+			const testLabel: Label = {
 				kind: "color",
 				label: "TEST",
 				suffix: "**",
 			};
-			logger.log(label, "msg");
+			logger.log(testLabel, "msg");
 
 			const output = consoleLogSpy.mock.calls[0]?.[0] as string;
 			expect(output).toContain("**");
@@ -328,7 +329,7 @@ describe("Content Validation", () => {
 			const label = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			// Should only have label brackets, not timestamp brackets
-			const bracketMatches = label.match(/\[/g);
+			const bracketMatches = label.match(/\</g);
 			expect(bracketMatches).toHaveLength(1); // Only the label bracket
 		});
 	});

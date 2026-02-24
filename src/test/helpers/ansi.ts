@@ -87,7 +87,8 @@ export const ANSI_CODES = {
  * ```
  */
 export function hasAnsiCodes(string_: string): boolean {
-	return /\u001B\[[0-9;]+m/.test(string_);
+	const esc = String.fromCharCode(27);
+	return new RegExp(`${esc}\[[0-9;]+m`).test(string_);
 }
 
 /**
@@ -103,7 +104,8 @@ export function hasAnsiCodes(string_: string): boolean {
  * ```
  */
 export function extractAnsiCodes(string_: string): string[] {
-	return string_.match(/\u001B\[[0-9;]+m/g) || [];
+	const esc = String.fromCharCode(27);
+	return string_.match(new RegExp(`${esc}\[[0-9;]+m`, "g")) || [];
 }
 
 /**
@@ -141,7 +143,8 @@ export function hasBold(string_: string): boolean {
  */
 export function hasForegroundColor(string_: string): boolean {
 	// Match 30-39, 90-97, or 38;x (256/RGB colors)
-	return /\u001B\[(?:3[0-9]|9[0-7]|38;[0-9;]+)m/.test(string_);
+	const esc = String.fromCharCode(27);
+	return new RegExp(`${esc}\[(?:3[0-9]|9[0-7]|38;[0-9;]+)m`).test(string_);
 }
 
 /**
@@ -152,7 +155,8 @@ export function hasForegroundColor(string_: string): boolean {
  */
 export function hasBackgroundColor(string_: string): boolean {
 	// Match 40-49, 100-107, or 48;x (256/RGB colors)
-	return /\u001B\[(?:4[0-9]|10[0-7]|48;[0-9;]+)m/.test(string_);
+	const esc = String.fromCharCode(27);
+	return new RegExp(`${esc}\[(?:4[0-9]|10[0-7]|48;[0-9;]+)m`).test(string_);
 }
 
 /**

@@ -7,6 +7,7 @@ import ansis, { Ansis } from "ansis";
 import { defaultConfig, type InternalConfig, type LoggerConfig } from "./config";
 
 import { print } from "./print";
+import { detectNerdFonts } from "./segments";
 import type { Color, HagenInstance, Label } from "./types";
 
 /**
@@ -24,7 +25,9 @@ import type { Color, HagenInstance, Label } from "./types";
  *
  * // Create logger with timestamps
  * const logger = createHagen({
- *   layout: "%l %t %m"
+ *   showTimestamp: true,
+ *   showTimestamp: true,
+ *   dateFormat: "iso"
  * });
  *
  * logger.log("API", "Request received");
@@ -76,44 +79,42 @@ function determineColorSupport(userSetting?: boolean): boolean {
 }
 
 export function createHagen(config?: Partial<LoggerConfig>): HagenInstance {
-	// Merge with defaults (deep merge for nested objects)
-	const mergedConfig: LoggerConfig = {
-		...defaultConfig,
-		...config,
-		labelOptions: { ...defaultConfig.labelOptions, ...config?.labelOptions },
-		colorOptions: { ...defaultConfig.colorOptions, ...config?.colorOptions },
-		timestampOptions: { ...defaultConfig.timestampOptions, ...config?.timestampOptions },
-		segmentStyles: { ...defaultConfig.segmentStyles, ...config?.segmentStyles },
-	};
+	// Merge with defaults
+	const mergedConfig: LoggerConfig = { ...defaultConfig, ...config };
+
+	// Resolve Nerd Fonts setting
+	if (mergedConfig.useNerdFonts === undefined) {
+		mergedConfig.useNerdFonts = detectNerdFonts();
+	}
+
+	// Resolve Layout
+	// Backward compatibility: showTimestamp
+	// If explicit layout is NOT provided, but showTimestamp IS provided:
+	if (mergedConfig.layout === undefined && config?.showTimestamp === true) {
+		mergedConfig.layout = "%l %t %m";
+	}
+	// Note: We don't need to default to "%l %m" here because defaultConfig calls it that.
+	// But duplicate check is fine.
+	if (mergedConfig.layout === undefined) {
+		mergedConfig.layout = defaultConfig.layout ?? "%l %m";
+	}
 
 	// Determine final color support
-	const enableColor = determineColorSupport(mergedConfig.colorOptions?.enabled);
+	const enableColor = determineColorSupport(mergedConfig.enableColor);
 
 	// Create appropriate ansis instance
 	// Use the same ansis instance but handle no-color mode in formatters
 	const ansisInstance = enableColor ? new Ansis() : new Ansis(0);
 
-	// Determine final layout
-	let finalLayout = mergedConfig.layout ?? (defaultConfig.layout as string);
-
-	// Apply brackets for colorless mode if not already present
-	if (!enableColor && typeof finalLayout === "string") {
-		if (finalLayout.includes("%l") && !finalLayout.includes("[%l]")) {
-			finalLayout = finalLayout.replace("%l", "[%l]");
-		}
-		if (finalLayout.includes("%t") && !finalLayout.includes("[%t]")) {
-			finalLayout = finalLayout.replace("%t", "[%t]");
-		}
-	}
-
-	// Create the final configuration object
 	const instanceConfig: InternalConfig = {
 		...mergedConfig,
-		colorOptions: { ...mergedConfig.colorOptions, enabled: enableColor },
-		ansisInstance: ansisInstance,
-		// Ensure layout is compiled
-		layout: finalLayout,
+		enableColor: enableColor, // Final resolved value
+		ansisInstance,
+		colors: undefined,
+		// Cast these to required types as we ensured them above or via defaults
+		layout: mergedConfig.layout,
 		segmentStyles: mergedConfig.segmentStyles || {},
+		useNerdFonts: mergedConfig.useNerdFonts,
 	};
 
 	// Helper to create common label logic

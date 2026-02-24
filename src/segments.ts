@@ -4,6 +4,8 @@ import { fixedWidthFormat, formatTimestamp } from "./format";
 import type {
 	AnsiFormatter,
 	Color,
+	ColorLabel,
+	FormatterLabel,
 	Label,
 	LayoutItem,
 	SegmentDefinition,
@@ -47,11 +49,11 @@ export const defaultSegmentStyles: Partial<Record<SegmentType, Partial<SegmentDe
 		padding: 1,
 	},
 	timestamp: {
-		bgColor: null, // Transparent
+		bgColor: undefined, // Transparent
 		padding: 0,
 	},
 	message: {
-		bgColor: null, // Transparent
+		bgColor: undefined, // Transparent
 		padding: 0,
 	},
 };
@@ -70,7 +72,7 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
 	while ((match = regex.exec(template)) !== null) {
 		// Add text before the match as a literal string
 		if (match.index > currentIndex) {
-			result.push(template.substring(currentIndex, match.index));
+			result.push(template.slice(currentIndex, match.index));
 		}
 
 		const token = match[0];
@@ -105,7 +107,7 @@ export function parseTemplateLayout(template: string): LayoutItem[] {
  */
 function resolveSegmentStyle(
 	type: SegmentType,
-	def: SegmentDefinition,
+	definition: SegmentDefinition,
 	config: InternalConfig
 ): SegmentDefinition {
 	const defaults = defaultSegmentStyles[type] || {};
@@ -113,22 +115,22 @@ function resolveSegmentStyle(
 	const configStyle = configStyles[type] || {};
 
 	return {
-		type: def.type,
+		type: definition.type,
 		// Merge order: definition > config > default
-		bgColor: def.bgColor ?? configStyle.bgColor ?? defaults.bgColor ?? undefined,
-		fgColor: def.fgColor ?? configStyle.fgColor ?? defaults.fgColor ?? undefined,
-		padding: def.padding ?? configStyle.padding ?? defaults.padding ?? (type === "message" ? 0 : 0),
+		bgColor: definition.bgColor ?? configStyle.bgColor ?? defaults.bgColor ?? undefined,
+		fgColor: definition.fgColor ?? configStyle.fgColor ?? defaults.fgColor ?? undefined,
+		padding: definition.padding ?? configStyle.padding ?? defaults.padding ?? (type === "message" ? 0 : 0),
 		fixedWidth:
-			def.fixedWidth ??
+			definition.fixedWidth ??
 			configStyle.fixedWidth ??
 			defaults.fixedWidth ??
 			(type === "label" ? config.labelOptions?.fixedWidth : undefined),
 		truncationMethod:
-			def.truncationMethod ??
+			definition.truncationMethod ??
 			configStyle.truncationMethod ??
 			defaults.truncationMethod ??
 			(type === "label" ? config.labelOptions?.truncationMethod : undefined),
-		ansiFormatter: def.ansiFormatter ?? configStyle.ansiFormatter ?? defaults.ansiFormatter,
+		ansiFormatter: definition.ansiFormatter ?? configStyle.ansiFormatter ?? defaults.ansiFormatter,
 	};
 }
 
@@ -149,22 +151,23 @@ function resolveLabelContent(
 	const fallback = config.labelOptions?.defaultText ?? "*";
 
 	// Normalize to array
-	const labels = Array.isArray(label) ? label : [label];
+	const labels = (Array.isArray(label) ? label : [label]) as unknown[];
 
 	// Get the item at index (or fallback)
-	const item = labels[index];
+	const rawItem = labels[index];
 
-	if (item === undefined || item === null) {
+	if (rawItem === undefined || rawItem === null) {
 		return { text: fallback };
 	}
 
-	if (typeof item === "string") {
-		return { text: item };
+	if (typeof rawItem === "string") {
+		return { text: rawItem };
 	}
 
 	// It's a FormatterLabel or ColorLabel (both extend BaseLabel)
+	const item = rawItem as FormatterLabel | ColorLabel;
 	const prefix = item.prefix ? `${item.prefix} ` : "";
-	const content = (item.label as string | undefined) ?? fallback;
+	const content = item.label ?? fallback;
 	const suffix = item.suffix ?? "";
 	const text = prefix + content + suffix;
 
@@ -173,10 +176,11 @@ function resolveLabelContent(
 	}
 
 	// It's a ColorLabel
+	const colorLabel = item as ColorLabel;
 	return {
 		text,
-		color: item.fgColor,
-		bgColor: item.bgColor,
+		color: colorLabel.fgColor,
+		bgColor: colorLabel.bgColor,
 	};
 }
 
@@ -197,15 +201,15 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 	}
 
 	// Handle SegmentDefinition
-	const segmentDef = item;
-	const style = resolveSegmentStyle(segmentDef.type, segmentDef, context.config);
+	const segmentDefinition = item;
+	const style = resolveSegmentStyle(segmentDefinition.type, segmentDefinition, context.config);
 
 	let text = "";
 	let effectiveBg = style.bgColor;
 	let effectiveFg = style.fgColor;
 	let customFormatter = style.ansiFormatter;
 
-	switch (segmentDef.type) {
+	switch (segmentDefinition.type) {
 		case "label": {
 			const resolved = resolveLabelContent(context.label, context.labelIndex, context.config);
 			text = resolved.text;
@@ -238,7 +242,7 @@ export function prepareSegment(item: LayoutItem, context: SegmentContext): Prepa
 	}
 
 	// Resolve auto-color for labels IF not explicitly set
-	if (effectiveBg === undefined && segmentDef.type === "label") {
+	if (effectiveBg === undefined && segmentDefinition.type === "label") {
 		effectiveBg = getColorFromLabel(text);
 	}
 
@@ -265,7 +269,7 @@ export function renderPreparedSegment(prepared: PreparedSegment, config: Interna
 		}
 
 		const fmt = createAnsiFormatter({
-			bgColor: bgColor ?? null, // Default to transparent if still undefined
+			bgColor: bgColor ?? undefined, // Default to transparent if still undefined
 			fgColor: fgColor,
 			paletteSize: config.colorOptions.paletteSize,
 			ansisInstance: config.ansisInstance,

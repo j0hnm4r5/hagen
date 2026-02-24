@@ -96,7 +96,9 @@ async function main() {
 	hagen[level](label, message);
 }
 
-main().catch((error: unknown) => {
+try {
+	await main();
+} catch (error: unknown) {
 	console.error(error);
 	process.exit(1);
-});
+}

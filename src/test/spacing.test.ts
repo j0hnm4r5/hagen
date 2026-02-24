@@ -12,6 +12,7 @@ describe("Spacing and Margins", () => {
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
+		vi.stubEnv("FORCE_COLOR", "3");
 	});
 
 	afterEach(() => {

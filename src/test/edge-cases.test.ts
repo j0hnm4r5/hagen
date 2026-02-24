@@ -3,24 +3,30 @@
  * Tests specific scenarios to improve code coverage.
  */
 
-import { Ansis } from "ansis";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Edge Cases", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
+	let consoleInfoSpy: MockInstance;
+	let consoleWarnSpy: MockInstance;
+	let consoleErrorSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
+		vi.stubEnv("FORCE_COLOR", "3");
 	});
 
 	afterEach(() => {
 		consoleLogSpy.mockRestore();
 		consoleInfoSpy.mockRestore();
+		consoleWarnSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -134,7 +140,6 @@ describe("Edge Cases", () => {
 
 		it("should handle warn with custom colors (bgColor/fgColor)", async () => {
 			const { createHagen } = await import("../index.js");
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
@@ -152,21 +157,19 @@ describe("Edge Cases", () => {
 
 			const label = consoleWarnSpy.mock.calls[0]?.[0] as string;
 
+			const esc = String.fromCharCode(27);
 			// Should have RGB ANSI codes
-			expect(label).toMatch(/\u001B\[48;2;\d+;\d+;\d+m/);
-			expect(label).toMatch(/\u001B\[38;2;\d+;\d+;\d+m/);
+			expect(label).toMatch(new RegExp(`${esc}\[48;2;\\d+;\\d+;\\d+m`));
+			expect(label).toMatch(new RegExp(`${esc}\[38;2;\\d+;\\d+;\\d+m`));
 
 			const stripped = stripAnsi(label);
 			expect(stripped).toContain(">>");
 			expect(stripped).toContain("<<");
 			expect(stripped).toContain("CUSTOM");
-
-			consoleWarnSpy.mockRestore();
 		});
 
 		it("should handle error with custom colors (bgColor/fgColor)", async () => {
 			const { createHagen } = await import("../index.js");
-			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 			const logger = createHagen({ colorOptions: { enabled: true } });
 
@@ -184,20 +187,20 @@ describe("Edge Cases", () => {
 
 			const label = consoleErrorSpy.mock.calls[0]?.[0] as string;
 
+			const esc = String.fromCharCode(27);
 			// Should have RGB ANSI codes
-			expect(label).toMatch(/\u001B\[48;2;\d+;\d+;\d+m/);
-			expect(label).toMatch(/\u001B\[38;2;\d+;\d+;\d+m/);
+			expect(label).toMatch(new RegExp(`${esc}\[48;2;\\d+;\\d+;\\d+m`));
+			expect(label).toMatch(new RegExp(`${esc}\[38;2;\\d+;\\d+;\\d+m`));
 
 			const stripped = stripAnsi(label);
 			expect(stripped).toContain(">>");
 			expect(stripped).toContain("<<");
 			expect(stripped).toContain("CUSTOM");
-
-			consoleErrorSpy.mockRestore();
 		});
 
 		it("should handle info with custom color instance", async () => {
 			const { createHagen } = await import("../index.js");
+			const { Ansis } = await import("ansis");
 			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
 
@@ -220,7 +223,7 @@ describe("Edge Cases", () => {
 
 		it("should handle warn with custom color instance", async () => {
 			const { createHagen } = await import("../index.js");
-			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const { Ansis } = await import("ansis");
 
 			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
@@ -242,13 +245,11 @@ describe("Edge Cases", () => {
 			expect(stripped).toContain(">>");
 			expect(stripped).toContain("<<");
 			expect(stripped).toContain("CUSTOM");
-
-			consoleWarnSpy.mockRestore();
 		});
 
 		it("should handle error with custom color instance", async () => {
 			const { createHagen } = await import("../index.js");
-			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+			const { Ansis } = await import("ansis");
 
 			const logger = createHagen({ colorOptions: { enabled: true } });
 			const testAnsis = new Ansis();
@@ -270,8 +271,6 @@ describe("Edge Cases", () => {
 			expect(stripped).toContain(">>");
 			expect(stripped).toContain("<<");
 			expect(stripped).toContain("CUSTOM");
-
-			consoleErrorSpy.mockRestore();
 		});
 	});
 });

@@ -3,7 +3,7 @@
  */
 
 import { Ansis } from "ansis";
-import type { Layout, SegmentDefinition, SegmentType } from "./types";
+import type { Layout, LayoutItem, LogLevelConfig, SegmentDefinition, SegmentType } from "./types";
 
 /**
  * Configuration options for Hagen logger instances.
@@ -22,6 +22,17 @@ export interface LoggerConfig {
 	 * Merged with per-segment overrides.
 	 */
 	segmentStyles?: Partial<Record<SegmentType, Partial<SegmentDefinition>>>;
+
+	/**
+	 * Configuration for specific log levels (info, warn, error, debug).
+	 * Allows overriding colors, prefixes, suffixes, and default text.
+	 */
+	logLevels?: {
+		info?: LogLevelConfig;
+		warn?: LogLevelConfig;
+		error?: LogLevelConfig;
+		debug?: LogLevelConfig;
+	};
 
 	/**
 	 * Whether to enable colored output.
@@ -81,8 +92,14 @@ export interface LoggerConfig {
 export interface InternalConfig extends LoggerConfig {
 	/** Ansis instance for generating codes */
 	ansisInstance: Ansis;
-	layout: Layout;
+	layout: LayoutItem[];
 	segmentStyles: Partial<Record<SegmentType, Partial<SegmentDefinition>>>;
+	logLevels: {
+		info: LogLevelConfig;
+		warn: LogLevelConfig;
+		error: LogLevelConfig;
+		debug: LogLevelConfig;
+	};
 }
 
 /** Default configuration values */
@@ -98,4 +115,30 @@ export const defaultConfig: LoggerConfig = {
 	},
 	layout: "%l",
 	segmentStyles: {},
+	logLevels: {
+		info: {
+			prefix: "i",
+			bgColor: "#4169E1", // Royal Blue
+			fgColor: "#FFFFFF",
+			defaultText: "INFO",
+		},
+		warn: {
+			prefix: "!",
+			bgColor: "#FFA500", // Orange
+			fgColor: "#000000",
+			defaultText: "WARN",
+		},
+		error: {
+			prefix: "×",
+			bgColor: "#DC143C", // Crimson
+			fgColor: "#FFFFFF",
+			defaultText: "ERROR",
+		},
+		debug: {
+			prefix: "?",
+			bgColor: "#e000dc",
+			fgColor: "#000000",
+			defaultText: "DEBUG",
+		},
+	},
 };

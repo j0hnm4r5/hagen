@@ -3,14 +3,14 @@
  * Ensures that correct RGB color codes are used for each color variant.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasAnsiCodes, hasBackgroundColor, hasBold } from "./helpers/ansi.js";
 
 describe("Color Formatting", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
+	let consoleWarnSpy: MockInstance;
+	let consoleErrorSpy: MockInstance;
+	let consoleInfoSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -18,6 +18,7 @@ describe("Color Formatting", () => {
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
+		vi.stubEnv("FORCE_COLOR", "3");
 	});
 
 	afterEach(() => {
@@ -59,7 +60,8 @@ describe("Color Formatting", () => {
 			const output2 = consoleLogSpy.mock.calls[0]?.[0] as string;
 
 			// Both outputs should use the same color (same ANSI codes for color part)
-			const colorRegex = /\u001B\[48;2;\d+;\d+;\d+m/;
+			const esc = String.fromCharCode(27);
+			const colorRegex = new RegExp(`${esc}\[48;2;\\d+;\\d+;\\d+m`);
 			const color1 = colorRegex.exec(output1)?.[0];
 			const color2 = colorRegex.exec(output2)?.[0];
 			expect(color1).toBe(color2);
@@ -77,7 +79,8 @@ describe("Color Formatting", () => {
 			logger.log("LABEL_B", "test");
 			const output2 = consoleLogSpy.mock.calls[0]?.[0] as string;
 
-			const colorRegex = /\u001B\[48;2;\d+;\d+;\d+m/;
+			const esc = String.fromCharCode(27);
+			const colorRegex = new RegExp(`${esc}\[48;2;\\d+;\\d+;\\d+m`);
 			const color1 = colorRegex.exec(output1)?.[0];
 			const color2 = colorRegex.exec(output2)?.[0];
 

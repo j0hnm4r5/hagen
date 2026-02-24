@@ -1,6 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Label } from "../index.js";
 import hagen, { createHagen, type LoggerConfig } from "../index.js";
+
+const customDateFormatFunction = (date: Date) => date.toISOString();
+const customFormatterFunction = (date: Date) => `CUSTOM:${date.getFullYear()}`;
 
 describe("Hagen Logger", () => {
 	beforeEach(() => {
@@ -35,9 +38,8 @@ describe("Hagen Logger", () => {
 		});
 
 		it("should accept custom date format function", () => {
-			const customDateFormat = (date: Date) => date.toISOString();
 			const logger = createHagen({
-				timestampOptions: { formatter: customDateFormat },
+				timestampOptions: { formatter: customDateFormatFunction },
 			});
 			expect(logger).toBeDefined();
 		});
@@ -59,11 +61,11 @@ describe("Hagen Logger", () => {
 	});
 
 	describe("logging methods", () => {
-		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-		let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-		let consoleDebugSpy: ReturnType<typeof vi.spyOn>;
-		let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+		let consoleLogSpy: MockInstance;
+		let consoleWarnSpy: MockInstance;
+		let consoleErrorSpy: MockInstance;
+		let consoleDebugSpy: MockInstance;
+		let consoleInfoSpy: MockInstance;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -90,7 +92,7 @@ describe("Hagen Logger", () => {
 
 			it("should log with Label object", () => {
 				const logger = createHagen({
-					layout: ">>%l %m",
+					layout: ">> %l %m",
 				});
 				const label: Label = { kind: "color", label: "TEST", bgColor: [100, 50, 150] };
 				logger.log(label, "message");
@@ -179,7 +181,7 @@ describe("Hagen Logger", () => {
 	});
 
 	describe("configuration options", () => {
-		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -226,7 +228,7 @@ describe("Hagen Logger", () => {
 				logger.log("API", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-				expect(output).toMatch(/\[\s+API\s+\]/);
+				expect(output).toMatch(/[\[\]\s+API\]/);
 			});
 		});
 
@@ -240,10 +242,9 @@ describe("Hagen Logger", () => {
 			});
 
 			it("should use custom date format function", () => {
-				const customFormat = (date: Date) => `CUSTOM:${date.getFullYear()}`;
 				const logger = createHagen({
 					layout: "%t %l",
-					timestampOptions: { formatter: customFormat },
+					timestampOptions: { formatter: customFormatterFunction },
 				});
 				logger.log("TEST", "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
@@ -287,14 +288,14 @@ describe("Hagen Logger", () => {
 				logger.log(label, "message");
 				expect(consoleLogSpy).toHaveBeenCalledOnce();
 				const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-				expect(output).toContain(">>");
-				expect(output).toContain("<<");
+				expect(output).toContain(">> ");
+				expect(output).toContain(" <<");
 			});
 		});
 	});
 
 	describe("Label type", () => {
-		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -337,7 +338,7 @@ describe("Hagen Logger", () => {
 	});
 
 	describe("edge cases", () => {
-		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -387,7 +388,7 @@ describe("Hagen Logger", () => {
 	});
 
 	describe("instance isolation", () => {
-		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
 			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});

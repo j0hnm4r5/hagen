@@ -3,22 +3,29 @@
  * Tests multiple features working together.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Integration Tests", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
+	let consoleInfoSpy: MockInstance;
+	let consoleWarnSpy: MockInstance;
+	let consoleErrorSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 		vi.stubEnv("CI", "");
+		vi.stubEnv("FORCE_COLOR", "3");
 	});
 
 	afterEach(() => {
 		consoleLogSpy.mockRestore();
 		consoleInfoSpy.mockRestore();
+		consoleWarnSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 		vi.unstubAllEnvs();
 		vi.resetModules();
 	});
@@ -54,7 +61,7 @@ describe("Integration Tests", () => {
 		// ISO format: 2024-03-15T10:30:00.000Z
 		expect(stripped).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 
-		// Message should be separate
+		// Message should be separate argument
 		expect(message).toBe("message");
 	});
 
@@ -126,9 +133,10 @@ describe("Integration Tests", () => {
 		// Should have ANSI codes
 		expect(hasAnsiCodes(label)).toBe(true);
 
+		const esc = String.fromCharCode(27);
 		// Should have RGB color codes
-		expect(label).toMatch(/\u001B\[48;2;\d+;\d+;\d+m/);
-		expect(label).toMatch(/\u001B\[38;2;\d+;\d+;\d+m/);
+		expect(label).toMatch(new RegExp(`${esc}\[48;2;\\d+;\\d+;\\d+m`));
+		expect(label).toMatch(new RegExp(`${esc}\[38;2;\\d+;\\d+;\\d+m`));
 
 		// Should have all parts
 		const stripped = stripAnsi(label);
@@ -167,8 +175,6 @@ describe("Integration Tests", () => {
 
 	it("should handle all log levels with same config", async () => {
 		const { createHagen } = await import("../index.js");
-		const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		const logger = createHagen({
 			colorOptions: { enabled: true },
@@ -197,9 +203,6 @@ describe("Integration Tests", () => {
 		expect(stripped2).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 		expect(stripped4).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 		expect(stripped5).toMatch(/\d{1,2}:\d{2}:\d{2}/);
-
-		consoleWarnSpy.mockRestore();
-		consoleErrorSpy.mockRestore();
 	});
 
 	it("should handle complex nested data with all features", async () => {
@@ -220,7 +223,7 @@ describe("Integration Tests", () => {
 
 		logger.log("DATA", complexData, "extra", "args");
 
-		const calls = consoleLogSpy.mock.calls[0] || [];
+		const calls = (consoleLogSpy.mock.calls[0] || []) as unknown[];
 		const label = calls[0] as string;
 		const data = calls[1];
 		const extra1 = calls[2];
@@ -232,7 +235,7 @@ describe("Integration Tests", () => {
 		expect(stripped).toContain(">>");
 		expect(stripped).toContain("DATA");
 		expect(stripped).toContain("<<");
-		expect(stripped).toMatch(/\d+:\d+:\d+/);
+		expect(stripped).toMatch(/\d+\:\d+\:\d+/);
 
 		// Data should be preserved
 		expect(data).toEqual(complexData);

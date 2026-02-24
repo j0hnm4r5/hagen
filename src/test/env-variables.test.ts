@@ -1,15 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock ansis using Proxy to handle chaining
-const mockIsSupported = vi.fn();
+const mockIsSupportedFunction = vi.fn();
 
 const createMockAnsis = () => {
-	const chain = (text: any) => `[ANSI]${text}[/ANSI]`;
+	const chain = (text: unknown) => `[ANSI]${text}[/ANSI]`;
 	const proxy: any = new Proxy(chain, {
 		get: (_target, property, receiver) => {
 			if (property === "isSupported") {
 				return () => {
-					const value = mockIsSupported();
+					const value = mockIsSupportedFunction();
 					return value;
 				};
 			}
@@ -33,7 +33,7 @@ vi.mock("ansis", () => {
 				return mock;
 			}
 			isSupported() {
-				return mockIsSupported();
+				return mockIsSupportedFunction();
 			}
 		},
 		default: mock,
@@ -41,12 +41,12 @@ vi.mock("ansis", () => {
 });
 
 describe("Environment Variables Integration", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.resetModules();
-		mockIsSupported.mockReset();
+		mockIsSupportedFunction.mockReset();
 	});
 
 	afterEach(() => {
@@ -55,10 +55,10 @@ describe("Environment Variables Integration", () => {
 	});
 
 	// Helper to check if output has mocked ANSI codes
-	const hasAnsiCodes = (text: string) => text.includes("[ANSI]");
+	const checkHasAnsiCodes = (text: string) => text.includes("[ANSI]");
 
 	it("should enable color when Ansis reports supported", async () => {
-		mockIsSupported.mockReturnValue(true);
+		mockIsSupportedFunction.mockReturnValue(true);
 		const { createHagen } = await import("../index.js");
 
 		// Default config (enabled: undefined)
@@ -66,22 +66,22 @@ describe("Environment Variables Integration", () => {
 		logger.log("TEST", "test message");
 
 		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-		expect(hasAnsiCodes(output)).toBe(true);
+		expect(checkHasAnsiCodes(output)).toBe(true);
 	});
 
 	it("should disable color when Ansis reports unsupported", async () => {
-		mockIsSupported.mockReturnValue(false);
+		mockIsSupportedFunction.mockReturnValue(false);
 		const { createHagen } = await import("../index.js");
 
 		const logger = createHagen();
 		logger.log("TEST", "test message");
 
 		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-		expect(hasAnsiCodes(output)).toBe(false);
+		expect(checkHasAnsiCodes(output)).toBe(false);
 	});
 
 	it("should override detection with enabled: false", async () => {
-		mockIsSupported.mockReturnValue(true); // Supported by env
+		mockIsSupportedFunction.mockReturnValue(true); // Supported by env
 		const { createHagen } = await import("../index.js");
 
 		// Explicitly disabled
@@ -89,11 +89,11 @@ describe("Environment Variables Integration", () => {
 		logger.log("TEST", "test message");
 
 		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-		expect(hasAnsiCodes(output)).toBe(false);
+		expect(checkHasAnsiCodes(output)).toBe(false);
 	});
 
-	it("should override detection with enabled: true", async () => {
-		mockIsSupported.mockReturnValue(false); // Unsupported by env
+	it("should NOT override detection when terminal unsupported even with enabled: true", async () => {
+		mockIsSupportedFunction.mockReturnValue(false); // Unsupported by env
 		const { createHagen } = await import("../index.js");
 
 		// Explicitly enabled
@@ -101,6 +101,6 @@ describe("Environment Variables Integration", () => {
 		logger.log("TEST", "test message");
 
 		const output = consoleLogSpy.mock.calls[0]?.[0] as string;
-		expect(hasAnsiCodes(output)).toBe(true);
+		expect(checkHasAnsiCodes(output)).toBe(false);
 	});
 });

@@ -204,6 +204,15 @@ export interface SegmentDefinition {
 	padding?: number | undefined;
 }
 
+/** Configuration for a specific log level (info, warn, error, debug) */
+export interface LogLevelConfig {
+	prefix?: string | undefined;
+	suffix?: string | undefined;
+	bgColor?: Color | undefined;
+	fgColor?: Color | undefined;
+	defaultText?: string | undefined;
+}
+
 /** Layout item types */
 export type LayoutItem = SegmentDefinition | string;
 

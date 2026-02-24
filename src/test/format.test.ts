@@ -5,13 +5,13 @@
  * - Colorless mode (colors disabled): plain brackets with no ANSI codes
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasAnsiCodes, stripAnsi } from "./helpers/ansi.js";
 
 describe("Output Format", () => {
-	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-	let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: MockInstance;
+	let consoleWarnSpy: MockInstance;
+	let consoleErrorSpy: MockInstance;
 
 	beforeEach(() => {
 		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -28,6 +28,10 @@ describe("Output Format", () => {
 	});
 
 	describe("Normal Mode (Colors ON, Not CI)", () => {
+		beforeEach(() => {
+			vi.stubEnv("FORCE_COLOR", "3");
+		});
+
 		it("should format with spaces but NO brackets around label", async () => {
 			// Ensure we're not in CI mode
 			vi.stubEnv("CI", "");
@@ -40,7 +44,7 @@ describe("Output Format", () => {
 			logger.log("TEST", "message");
 
 			// console.log takes multiple arguments: label, ...data
-			const calls = consoleLogSpy.mock.calls[0] || [];
+			const calls = (consoleLogSpy.mock.calls[0] || []) as unknown[];
 			const label = calls[0] as string;
 			const message = calls[1] as string;
 
@@ -73,11 +77,12 @@ describe("Output Format", () => {
 			// Should NOT have bold code (removed to fix color issues)
 			expect(label).not.toContain("\u001B[1m");
 
+			const esc = String.fromCharCode(27);
 			// Should have color codes (foreground or background)
-			expect(label).toMatch(/\u001B\[(?:[34]\d|9\d|10\d|38;2|48;2)m/);
+			expect(label).toMatch(new RegExp(`${esc}\[(?:[34]\d|9\d|10\d|38;2|48;2)m`));
 
 			// Should have reset codes
-			expect(label).toMatch(/\u001B\[(?:39|49|0)m/);
+			expect(label).toMatch(new RegExp(`${esc}\[(?:39|49|0)m`));
 		});
 
 		it("should format correctly for different label lengths", async () => {
@@ -165,6 +170,7 @@ describe("Output Format", () => {
 	describe("Format Consistency", () => {
 		it("should maintain format with timestamps in normal mode", async () => {
 			vi.stubEnv("CI", "");
+			vi.stubEnv("FORCE_COLOR", "3");
 			vi.resetModules();
 			const { createHagen } = await import("../index.js");
 
@@ -182,7 +188,7 @@ describe("Output Format", () => {
 			expect(hasAnsiCodes(label)).toBe(true);
 
 			// Label should have timestamp (in brackets with ISO format)
-			expect(stripAnsi(label)).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]/);
+			expect(stripAnsi(label)).toMatch(/[\[]\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z]/);
 
 			// Strip and check structure
 			const stripped = stripAnsi(label);
@@ -215,7 +221,7 @@ describe("Output Format", () => {
 			expect(label).toContain("[ TEST ]");
 
 			// Label should have timestamp brackets
-			expect(stripAnsi(label)).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]/);
+			expect(stripAnsi(label)).toMatch(/[\[]\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z]/);
 
 			// Message should be separate
 			expect(message).toBe("message");

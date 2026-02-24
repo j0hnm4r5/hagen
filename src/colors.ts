@@ -23,10 +23,7 @@ export function parseColor(color: Color): RGB {
 
 	// Expand 3-digit hex to 6-digit
 	if (cleanHex.length === 3) {
-		cleanHex = cleanHex
-			.split("")
-			.map((c) => c + c)
-			.join("");
+		cleanHex = [...cleanHex].map((c) => c + c).join("");
 	}
 
 	const r = Number.parseInt(cleanHex.slice(0, 2), 16);
@@ -73,7 +70,7 @@ export function getLuminance(rgb: RGB): number {
 		const sRGB = c / 255;
 		return sRGB <= 0.039_28 ? sRGB / 12.92 : ((sRGB + 0.055) / 1.055) ** 2.4;
 	});
-	return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+	return 0.2126 * (r ?? 0) + 0.7152 * (g ?? 0) + 0.0722 * (b ?? 0);
 }
 
 /**
@@ -88,6 +85,51 @@ export function getContrastingTextColor(bgColor: RGB): RGB {
 }
 
 // ========= COLOR FORMATTER CREATION =========
+
+const ANSI_COLORS = new Set([
+	"black",
+	"red",
+	"green",
+	"yellow",
+	"blue",
+	"magenta",
+	"cyan",
+	"white",
+	"gray",
+	"redBright",
+	"greenBright",
+	"yellowBright",
+	"blueBright",
+	"magentaBright",
+	"cyanBright",
+	"whiteBright",
+	"bgBlack",
+	"bgRed",
+	"bgGreen",
+	"bgYellow",
+	"bgBlue",
+	"bgMagenta",
+	"bgCyan",
+	"bgWhite",
+	"bgGray",
+	"bgRedBright",
+	"bgGreenBright",
+	"bgYellowBright",
+	"bgBlueBright",
+	"bgMagentaBright",
+	"bgCyanBright",
+	"bgWhiteBright",
+	// Styles
+	"reset",
+	"inverse",
+	"hidden",
+	"visible",
+	"bold",
+	"dim",
+	"italic",
+	"underline",
+	"strikethrough",
+]);
 
 /**
  * Creates a color formatter function from a background color.
@@ -108,134 +150,64 @@ export function createAnsiFormatter({
 	ansisInstance?: Ansis | undefined;
 	forceNoColor?: boolean | undefined;
 }): AnsiFormatter {
-	// Helper to apply named colors if they exist on the instance
-	const applyNamed = (text: string, color: Color, isBg: boolean): string | undefined => {
-		if (typeof color !== "string" || color.startsWith("#")) return undefined;
+	// 1. Resolve Background Formatter
+	let backgroundFormatter: AnsiFormatter | undefined;
+	let computedBgRgb: RGB | undefined;
 
-		const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
-		const method = inst[color];
+	if (bgColor !== null && bgColor !== undefined) {
+		if (typeof bgColor === "string" && !bgColor.startsWith("#")) {
+			// Named Background
+			const bgName = bgColor.startsWith("bg")
+				? bgColor
+				: "bg" + bgColor.charAt(0).toUpperCase() + bgColor.slice(1);
 
-		if (typeof method === "function") return method(text);
-
-		// If it's a background color, also try bg[Color]
-		if (isBg) {
-			const bgName = "bg" + color.charAt(0).toUpperCase() + color.slice(1);
-			const bgMethod = inst[bgName];
-			if (typeof bgMethod === "function") return bgMethod(text);
-		}
-		return undefined;
-	};
-
-	// Handle transparent background
-	if (bgColor === null || bgColor === undefined) {
-		// If fgColor is null, we want hidden text on transparent background (invisible)
-		if (fgColor === null) {
-			return (text: string) => {
-				const colored = ansisInstance.hidden(text);
-				return forceNoColor ? ansisInstance.strip(colored) : colored;
-			};
-		}
-
-		// If fgColor is provided, apply it
-		if (fgColor) {
-			return (text: string) => {
-				let colored = applyNamed(text, fgColor, false);
-				if (colored === undefined) {
-					let fg = parseColor(fgColor);
-					if (paletteSize !== undefined) {
-						fg = quantizeColor(fg, paletteSize);
-					}
-					colored = ansisInstance.rgb(...fg)(text);
+			if (ANSI_COLORS.has(bgName)) {
+				const method = (ansisInstance as unknown as Record<string, unknown>)[bgName];
+				if (typeof method === "function") {
+					backgroundFormatter = method as AnsiFormatter;
 				}
-				return forceNoColor ? ansisInstance.strip(colored) : colored;
-			};
-		}
-
-		// Default: No formatting (transparent bg, default fg)
-		return (text: string) => {
-			const colored = text;
-			return forceNoColor ? ansisInstance.strip(colored) : colored;
-		};
-	}
-
-	// Handle foreground invisibility on colored background
-	if (fgColor === null) {
-		return (text: string) => {
-			let colored = applyNamed(text, bgColor, true);
-			if (colored === undefined) {
-				const rgb = parseColor(bgColor);
-				const qBg = paletteSize === undefined ? rgb : quantizeColor(rgb, paletteSize);
-				colored = ansisInstance.bgRgb(...qBg).hidden(text);
-			} else {
-				colored = ansisInstance.hidden(ansisInstance.strip(colored));
-			}
-			return forceNoColor ? ansisInstance.strip(colored) : colored;
-		};
-	}
-
-	// Handle named background color
-	const namedBg = typeof bgColor === "string" && !bgColor.startsWith("#") ? bgColor : undefined;
-	if (namedBg) {
-		return (text: string) => {
-			let res = text;
-			
-			// Apply named foreground if present
-			const namedFg =
-				fgColor && typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
-			const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
-
-			if (namedFg && typeof inst[namedFg] === "function") {
-				res = inst[namedFg](res);
-			} else if (fgColor) {
-				const fgRgb = parseColor(fgColor);
-				const qFg = paletteSize === undefined ? fgRgb : quantizeColor(fgRgb, paletteSize);
-				res = ansisInstance.rgb(...qFg)(res);
-			}
-
-			// Apply named background
-			const bgName = namedBg.startsWith("bg")
-				? namedBg
-				: "bg" + namedBg.charAt(0).toUpperCase() + namedBg.slice(1);
-			const bgMethod = inst[bgName];
-			if (typeof bgMethod === "function") {
-				res = bgMethod(res);
-			}
-
-			return forceNoColor ? ansisInstance.strip(res) : res;
-		};
-	}
-
-	// Fallback to RGB logic for background
-	const rgbBg = parseColor(bgColor);
-	const qBg = paletteSize === undefined ? rgbBg : quantizeColor(rgbBg, paletteSize);
-
-	if (fgColor) {
-		const namedFg = typeof fgColor === "string" && !fgColor.startsWith("#") ? fgColor : undefined;
-		if (namedFg) {
-			const inst = ansisInstance as unknown as Record<string, (t: string) => string>;
-			if (typeof inst[namedFg] === "function") {
-				return (text: string) => {
-					let res = inst[namedFg]!(text);
-					res = ansisInstance.bgRgb(...qBg)(res);
-					return forceNoColor ? ansisInstance.strip(res) : res;
-				};
 			}
 		}
 
-		// Regular RGB foreground
-		const rgbFg = parseColor(fgColor);
-		const qFg = paletteSize === undefined ? rgbFg : quantizeColor(rgbFg, paletteSize);
-		return (text: string) => {
-			const colored = ansisInstance.bgRgb(...qBg).rgb(...qFg)(text);
-			return forceNoColor ? ansisInstance.strip(colored) : colored;
-		};
+		// Fallback to RGB if not named or named lookup failed
+		if (!backgroundFormatter) {
+			const rgb = parseColor(bgColor);
+			computedBgRgb = paletteSize === undefined ? rgb : quantizeColor(rgb, paletteSize);
+			backgroundFormatter = ansisInstance.bgRgb(...computedBgRgb);
+		}
 	}
 
-	// Auto-contrasting foreground
-	const qFg = getContrastingTextColor(qBg);
+	// 2. Resolve Foreground Formatter
+	let foregroundFormatter: AnsiFormatter | undefined;
+
+	if (fgColor !== null && fgColor !== undefined) {
+		if (typeof fgColor === "string" && !fgColor.startsWith("#") && ANSI_COLORS.has(fgColor)) {
+			// Named Foreground
+			const method = (ansisInstance as unknown as Record<string, unknown>)[fgColor];
+			if (typeof method === "function") {
+				foregroundFormatter = method as AnsiFormatter;
+			}
+		} else {
+			// RGB Foreground
+			const rgb = parseColor(fgColor);
+			const qFg = paletteSize === undefined ? rgb : quantizeColor(rgb, paletteSize);
+			foregroundFormatter = ansisInstance.rgb(...qFg);
+		}
+	} else if (fgColor === null) {
+		// Explicitly hidden text
+		foregroundFormatter = ansisInstance.hidden;
+	} else if (computedBgRgb) {
+		// Auto-contrast foreground (only if BG was RGB)
+		const qFg = getContrastingTextColor(computedBgRgb);
+		foregroundFormatter = ansisInstance.rgb(...qFg);
+	}
+
+	// 3. Return composed formatter
 	return (text: string) => {
-		const colored = ansisInstance.bgRgb(...qBg).rgb(...qFg)(text);
-		return forceNoColor ? ansisInstance.strip(colored) : colored;
+		let result = text;
+		if (foregroundFormatter) result = foregroundFormatter(result);
+		if (backgroundFormatter) result = backgroundFormatter(result);
+		return forceNoColor ? ansisInstance.strip(result) : result;
 	};
 }
 
@@ -251,7 +223,7 @@ export function getColorFromLabel(label: string): RGB {
 	// FNV-1a Hash
 	let hash = 2_166_136_261;
 	for (let index = 0; index < label.length; index++) {
-		hash ^= label.charCodeAt(index);
+		hash ^= label.codePointAt(index) ?? 0;
 		hash = Math.imul(hash, 16_777_619);
 	}
 

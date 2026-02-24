@@ -8,7 +8,7 @@ import { parseTemplateLayout, renderSegment, type SegmentContext } from "./segme
 import type { Label } from "./types";
 
 /** Parameters for the print function */
-export interface PrintParameters {
+export interface PrintParams {
 	logger: (...parameters: unknown[]) => void;
 	label: Label;
 	data: unknown[];
@@ -19,7 +19,7 @@ export interface PrintParameters {
  * Prints the formatted label and data to the console.
  * @internal
  */
-export function print({ logger, label, data, config }: PrintParameters): void {
+export function print({ logger, label, data, config }: PrintParams): void {
 	const layoutInput = config.layout;
 	const layoutItems =
 		typeof layoutInput === "string" ? parseTemplateLayout(layoutInput) : layoutInput;
@@ -38,9 +38,9 @@ export function print({ logger, label, data, config }: PrintParameters): void {
 
 	const parts: string[] = [];
 
-	for (const [index, layoutItem] of layoutItems.entries()) {
-		context.segmentIndex = index;
-		parts.push(renderSegment(layoutItem, context));
+	for (let i = 0; i < layoutItems.length; i++) {
+		context.segmentIndex = i;
+		parts.push(renderSegment(layoutItems[i]!, context));
 	}
 
 	// Join parts
